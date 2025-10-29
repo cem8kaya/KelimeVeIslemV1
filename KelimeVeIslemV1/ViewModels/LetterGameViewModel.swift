@@ -12,6 +12,7 @@
 
 import Foundation
 import Combine
+import UIKit
 
 @MainActor
 class LetterGameViewModel: ObservableObject {
@@ -175,6 +176,26 @@ class LetterGameViewModel: ObservableObject {
         suggestedWords = []
     }
     
+    func shuffleLetters() {
+        guard var game = game else { return }
+        
+        // Shuffle the letters array
+        let shuffledLetters = game.letters.shuffled()
+        
+        // Create a new game instance with shuffled letters while preserving other properties
+        var newGame = LetterGame(letters: shuffledLetters, language: game.language)
+        newGame.playerWord = game.playerWord
+        newGame.timeRemaining = game.timeRemaining
+        newGame.score = game.score
+        newGame.isValid = game.isValid
+        
+        self.game = newGame
+        
+        // Play haptic and sound feedback
+        audioService.playSound(.buttonTap)
+        audioService.playHaptic(style: .light)
+    }
+    
     // MARK: - Word Suggestions
     
     private func findSuggestedWords() async {
@@ -261,12 +282,12 @@ class LetterGameViewModel: ObservableObject {
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
                 try self?.persistenceService.saveResult(result)
-                print("✅ Result saved successfully")
+                print("âœ… Result saved successfully")
             } catch {
                 DispatchQueue.main.async {
                     self?.error = .persistenceError("Failed to save result")
                 }
-                print("⚠️ Failed to save result: \(error)")
+                print("âš ï¸ Failed to save result: \(error)")
             }
         }
     }

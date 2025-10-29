@@ -125,6 +125,7 @@ struct LetterGameView: View {
                         letters: viewModel.game?.letters ?? [],
                         currentWord: viewModel.currentWord,
                         isTextFieldFocused: $isTextFieldFocused,
+                        viewModel: viewModel,
                         onWordChange: { word in
                             viewModel.updateWord(word)
                         },
@@ -221,6 +222,7 @@ struct PlayingView: View {
     
     let currentWord: String
     var isTextFieldFocused: FocusState<Bool>.Binding
+    let viewModel: LetterGameViewModel
     let onWordChange: (String) -> Void
     let onSubmit: () -> Void
     let onGiveUp: () -> Void  // NEW: Give up callback
@@ -319,22 +321,51 @@ struct PlayingView: View {
             .padding(.top, 5)
             
             // Reset button to deselect letters
-            Button(action: {
-                usedLetterIndices = []
-                onWordChange("")
-                // Haptic feedback
-                let generator = UIImpactFeedbackGenerator(style: .medium)
-                generator.impactOccurred()
-            }) {
-                Text("Deselect All")
-                    .font(.subheadline)
+            HStack(spacing: 12) {
+                // Deselect All button
+                Button(action: {
+                    usedLetterIndices = []
+                    onWordChange("")
+                    // Haptic feedback
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                }) {
+                    HStack {
+                        Image(systemName: "arrow.counterclockwise")
+                        Text("Deselect All")
+                    }
+                    .font(.subheadline.bold())
                     .foregroundColor(.white.opacity(0.9))
+                    .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 15)
                     .background(Color.white.opacity(0.1))
                     .cornerRadius(10)
+                }
+                .accessibilityLabel("Deselect all chosen letters")
+                
+                // Shuffle Letters button
+                Button(action: {
+                    viewModel.shuffleLetters()
+                    // Also clear selected letters when shuffling
+                    usedLetterIndices = []
+                    onWordChange("")
+                }) {
+                    HStack {
+                        Image(systemName: "shuffle")
+                        Text("Mix Letters")
+                    }
+                    .font(.subheadline.bold())
+                    .foregroundColor(.white.opacity(0.9))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 15)
+                    .background(Color(hex: "#8B5CF6").opacity(0.6)) // Purple accent
+                    .cornerRadius(10)
+                }
+                .accessibilityLabel("Shuffle letters for new arrangement")
             }
-            .accessibilityLabel("Deselect all chosen letters")
+            .padding(.horizontal, 40)
         }
     }
 }
