@@ -1,12 +1,5 @@
 //
 //  NumberGameView.swift
-//  KelimeVeIslemV1
-//
-//  Created by Cem Kaya on 10/29/25.
-//
-
-//
-//  NumberGameView.swift
 //  KelimeVeIslem
 //
 
@@ -225,6 +218,7 @@ struct NumberGameView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .navigationBarLeading) {
             Button {
+                // Logic: Confirm exit if playing, otherwise dismiss immediately
                 if viewModel.gameState == .playing {
                     showExitConfirmation = true
                 } else {
@@ -244,13 +238,25 @@ struct NumberGameView: View {
                 .foregroundColor(.white)
         }
         
-        ToolbarItem(placement: .navigationBarTrailing) {
+        // FIX: Use ToolbarItemGroup to show both Delete and Exit buttons when playing
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
             if viewModel.gameState == .playing {
+                // 1. Delete Button (existing functionality)
                 Button(action: handleDelete) {
                     Image(systemName: "delete.left")
                         .font(.title2)
                         .foregroundColor(.white)
                 }
+                
+                // 2. Exit Button (New 'Give Up' option)
+                Button {
+                    showExitConfirmation = true
+                } label: {
+                    Text("Exit")
+                        .foregroundColor(.white)
+                        .fontWeight(.semibold)
+                }
+                .accessibilityLabel("Exit game")
             }
         }
     }

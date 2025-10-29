@@ -71,7 +71,8 @@ struct SettingsView: View {
                     } header: {
                         Text("Numbers Game")
                     } footer: {
-                        Text("Easy: 5 small + 1 large Ã¢â‚¬Â¢ Medium: 4 small + 2 large Ã¢â‚¬Â¢ Hard: 3 small + 3 large")
+                        // FIX: Use localized description from GameSettings
+                        Text(GameSettings.DifficultyLevel.allCases.map { $0.description }.joined(separator: " • "))
                     }
                     
                     // Audio Settings

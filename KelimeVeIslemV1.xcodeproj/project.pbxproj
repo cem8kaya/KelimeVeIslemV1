@@ -103,16 +103,16 @@
 		87D71E1A2EB2453900B16425 /* KelimeVeIslemV1 */ = {
 			isa = PBXGroup;
 			children = (
-				87D71E252EB245BB00B16425 /* ViewModels */,
-				87D71E242EB245B100B16425 /* Utilities */,
-				87D71E232EB245AA00B16425 /* Services */,
-				87D71E222EB2459C00B16425 /* Resources */,
-				87D71E212EB2459500B16425 /* Models */,
-				87D71E202EB2458500B16425 /* Views */,
-				87D71E1F2EB2457800B16425 /* App */,
-				87D71E172EB2453900B16425 /* Assets.xcassets */,
-				87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */,
 				87D71E192EB2453900B16425 /* Persistence.swift */,
+				87D71E172EB2453900B16425 /* Assets.xcassets */,
+				87D71E1F2EB2457800B16425 /* App */,
+				87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */,
+				87D71E212EB2459500B16425 /* Models */,
+				87D71E222EB2459C00B16425 /* Resources */,
+				87D71E232EB245AA00B16425 /* Services */,
+				87D71E242EB245B100B16425 /* Utilities */,
+				87D71E252EB245BB00B16425 /* ViewModels */,
+				87D71E202EB2458500B16425 /* Views */,
 			);
 			path = KelimeVeIslemV1;
 			sourceTree = "<group>";

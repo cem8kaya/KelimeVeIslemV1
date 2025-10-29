@@ -33,6 +33,13 @@ struct NumberGame: Codable, Identifiable {
     }
     
     mutating func evaluateAndScore() throws {
+        // CRITICAL: Check if the expression uses only the available numbers
+        guard usesOnlyAvailableNumbers(playerSolution) else {
+            self.playerResult = nil
+            self.score = 0
+            throw AppError.invalidInput("Solution uses invalid or duplicate numbers")
+        }
+
         // Try to evaluate the expression
         if let result = try? evaluateExpression(playerSolution) {
             self.playerResult = result

@@ -1,12 +1,5 @@
 //
 //  LetterGameView.swift
-//  KelimeVeIslemV1
-//
-//  Created by Cem Kaya on 10/29/25.
-//
-
-//
-//  LetterGameView.swift
 //  KelimeVeIslem
 //
 
@@ -157,6 +150,7 @@ struct LetterGameView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .navigationBarLeading) {
             Button {
+                // Logic: Confirm exit if playing, otherwise dismiss immediately
                 if viewModel.gameState == .playing {
                     showExitConfirmation = true
                 } else {
@@ -177,12 +171,13 @@ struct LetterGameView: View {
                 .foregroundColor(.white)
         }
         
+        // FIX: Ensure the trailing button is always present when playing
         ToolbarItem(placement: .navigationBarTrailing) {
             if viewModel.gameState == .playing {
                 Button {
                     showExitConfirmation = true
                 } label: {
-                    Text("Exit")
+                    Text("Exit") // You should localize this string
                         .foregroundColor(.white)
                         .fontWeight(.semibold)
                 }
