@@ -6,17 +6,72 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E172EB2453900B16425 /* Assets.xcassets */; };
+		87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */; };
+		87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E192EB2453900B16425 /* Persistence.swift */; };
+		87D71E272EB245D000B16425 /* KelimeVeIslemApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */; };
+		87D71E292EB245F600B16425 /* GameMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E282EB245F600B16425 /* GameMode.swift */; };
+		87D71E2B2EB2460F00B16425 /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E2A2EB2460F00B16425 /* GameResult.swift */; };
+		87D71E2D2EB2462000B16425 /* GameSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E2C2EB2462000B16425 /* GameSettings.swift */; };
+		87D71E2F2EB2463000B16425 /* LetterGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E2E2EB2463000B16425 /* LetterGame.swift */; };
+		87D71E312EB2464000B16425 /* NumberGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E302EB2464000B16425 /* NumberGame.swift */; };
+		87D71E332EB2466200B16425 /* english_words.txt in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E322EB2465D00B16425 /* english_words.txt */; };
+		87D71E352EB2467500B16425 /* Localizable.strings.en in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E342EB2467300B16425 /* Localizable.strings.en */; };
+		87D71E372EB2468300B16425 /* Localizable.strings.tr in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E362EB2468200B16425 /* Localizable.strings.tr */; };
+		87D71E392EB2469D00B16425 /* turkish_words.txt in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E382EB2469900B16425 /* turkish_words.txt */; };
+		87D71E3C2EB246D500B16425 /* AudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E3B2EB246D400B16425 /* AudioService.swift */; };
+		87D71E402EB2470000B16425 /* DictionaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E3F2EB246FF00B16425 /* DictionaryService.swift */; };
+		87D71E422EB2470D00B16425 /* LetterGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E412EB2470D00B16425 /* LetterGenerator.swift */; };
+		87D71E442EB2471A00B16425 /* NumberGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E432EB2471900B16425 /* NumberGenerator.swift */; };
+		87D71E462EB2472600B16425 /* PersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E452EB2472500B16425 /* PersistenceService.swift */; };
+		87D71E482EB2473B00B16425 /* ErrorHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E472EB2473A00B16425 /* ErrorHandling.swift */; };
+		87D71E4A2EB2474800B16425 /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E492EB2474700B16425 /* SharedComponents.swift */; };
+		87D71E4C2EB2475D00B16425 /* LetterGameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E4B2EB2475C00B16425 /* LetterGameViewModel.swift */; };
+		87D71E4E2EB2476E00B16425 /* NumberGameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E4D2EB2476D00B16425 /* NumberGameViewModel.swift */; };
+		87D71E502EB2477C00B16425 /* StatisticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E4F2EB2477B00B16425 /* StatisticsViewModel.swift */; };
+		87D71E532EB2479900B16425 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E522EB2479900B16425 /* HomeView.swift */; };
+		87D71E562EB247B400B16425 /* LetterGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E552EB247B300B16425 /* LetterGameView.swift */; };
+		87D71E582EB247C300B16425 /* LetterResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E572EB247C200B16425 /* LetterResultView.swift */; };
+		87D71E5B2EB247DC00B16425 /* NumberGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E5A2EB247DB00B16425 /* NumberGameView.swift */; };
+		87D71E5D2EB247EC00B16425 /* NumberResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E5C2EB247EB00B16425 /* NumberResultView.swift */; };
+		87D71E602EB2480700B16425 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E5F2EB2480700B16425 /* SettingsView.swift */; };
+		87D71E632EB2482000B16425 /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E622EB2481F00B16425 /* StatisticsView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KelimeVeIslemV1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		87D71E172EB2453900B16425 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		87D71E192EB2453900B16425 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = KelimeVeIslemV1.xcdatamodel; sourceTree = "<group>"; };
+		87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KelimeVeIslemApp.swift; sourceTree = "<group>"; };
+		87D71E282EB245F600B16425 /* GameMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameMode.swift; sourceTree = "<group>"; };
+		87D71E2A2EB2460F00B16425 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
+		87D71E2C2EB2462000B16425 /* GameSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSettings.swift; sourceTree = "<group>"; };
+		87D71E2E2EB2463000B16425 /* LetterGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterGame.swift; sourceTree = "<group>"; };
+		87D71E302EB2464000B16425 /* NumberGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGame.swift; sourceTree = "<group>"; };
+		87D71E322EB2465D00B16425 /* english_words.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = english_words.txt; sourceTree = "<group>"; };
+		87D71E342EB2467300B16425 /* Localizable.strings.en */ = {isa = PBXFileReference; lastKnownFileType = text; path = Localizable.strings.en; sourceTree = "<group>"; };
+		87D71E362EB2468200B16425 /* Localizable.strings.tr */ = {isa = PBXFileReference; lastKnownFileType = text; path = Localizable.strings.tr; sourceTree = "<group>"; };
+		87D71E382EB2469900B16425 /* turkish_words.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = turkish_words.txt; sourceTree = "<group>"; };
+		87D71E3B2EB246D400B16425 /* AudioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
+		87D71E3F2EB246FF00B16425 /* DictionaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryService.swift; sourceTree = "<group>"; };
+		87D71E412EB2470D00B16425 /* LetterGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterGenerator.swift; sourceTree = "<group>"; };
+		87D71E432EB2471900B16425 /* NumberGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGenerator.swift; sourceTree = "<group>"; };
+		87D71E452EB2472500B16425 /* PersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceService.swift; sourceTree = "<group>"; };
+		87D71E472EB2473A00B16425 /* ErrorHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandling.swift; sourceTree = "<group>"; };
+		87D71E492EB2474700B16425 /* SharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedComponents.swift; sourceTree = "<group>"; };
+		87D71E4B2EB2475C00B16425 /* LetterGameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterGameViewModel.swift; sourceTree = "<group>"; };
+		87D71E4D2EB2476D00B16425 /* NumberGameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGameViewModel.swift; sourceTree = "<group>"; };
+		87D71E4F2EB2477B00B16425 /* StatisticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsViewModel.swift; sourceTree = "<group>"; };
+		87D71E522EB2479900B16425 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		87D71E552EB247B300B16425 /* LetterGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterGameView.swift; sourceTree = "<group>"; };
+		87D71E572EB247C200B16425 /* LetterResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterResultView.swift; sourceTree = "<group>"; };
+		87D71E5A2EB247DB00B16425 /* NumberGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGameView.swift; sourceTree = "<group>"; };
+		87D71E5C2EB247EB00B16425 /* NumberResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberResultView.swift; sourceTree = "<group>"; };
+		87D71E5F2EB2480700B16425 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		87D71E622EB2481F00B16425 /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		87D71E062EB2452200B16425 /* KelimeVeIslemV1 */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = KelimeVeIslemV1;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		87D71E012EB2452200B16425 /* Frameworks */ = {
@@ -32,7 +87,7 @@
 		87D71DFB2EB2452200B16425 = {
 			isa = PBXGroup;
 			children = (
-				87D71E062EB2452200B16425 /* KelimeVeIslemV1 */,
+				87D71E1A2EB2453900B16425 /* KelimeVeIslemV1 */,
 				87D71E052EB2452200B16425 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +98,139 @@
 				87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		87D71E1A2EB2453900B16425 /* KelimeVeIslemV1 */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E252EB245BB00B16425 /* ViewModels */,
+				87D71E242EB245B100B16425 /* Utilities */,
+				87D71E232EB245AA00B16425 /* Services */,
+				87D71E222EB2459C00B16425 /* Resources */,
+				87D71E212EB2459500B16425 /* Models */,
+				87D71E202EB2458500B16425 /* Views */,
+				87D71E1F2EB2457800B16425 /* App */,
+				87D71E172EB2453900B16425 /* Assets.xcassets */,
+				87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */,
+				87D71E192EB2453900B16425 /* Persistence.swift */,
+			);
+			path = KelimeVeIslemV1;
+			sourceTree = "<group>";
+		};
+		87D71E1F2EB2457800B16425 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		87D71E202EB2458500B16425 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E612EB2481600B16425 /* Statistics */,
+				87D71E5E2EB247FD00B16425 /* Settings */,
+				87D71E592EB247D200B16425 /* NumberGame */,
+				87D71E542EB247AA00B16425 /* LetterGame */,
+				87D71E512EB2478C00B16425 /* Home */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		87D71E212EB2459500B16425 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E2C2EB2462000B16425 /* GameSettings.swift */,
+				87D71E2A2EB2460F00B16425 /* GameResult.swift */,
+				87D71E2E2EB2463000B16425 /* LetterGame.swift */,
+				87D71E302EB2464000B16425 /* NumberGame.swift */,
+				87D71E282EB245F600B16425 /* GameMode.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		87D71E222EB2459C00B16425 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E322EB2465D00B16425 /* english_words.txt */,
+				87D71E342EB2467300B16425 /* Localizable.strings.en */,
+				87D71E382EB2469900B16425 /* turkish_words.txt */,
+				87D71E362EB2468200B16425 /* Localizable.strings.tr */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		87D71E232EB245AA00B16425 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E3B2EB246D400B16425 /* AudioService.swift */,
+				87D71E3F2EB246FF00B16425 /* DictionaryService.swift */,
+				87D71E412EB2470D00B16425 /* LetterGenerator.swift */,
+				87D71E432EB2471900B16425 /* NumberGenerator.swift */,
+				87D71E452EB2472500B16425 /* PersistenceService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		87D71E242EB245B100B16425 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E472EB2473A00B16425 /* ErrorHandling.swift */,
+				87D71E492EB2474700B16425 /* SharedComponents.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		87D71E252EB245BB00B16425 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E4B2EB2475C00B16425 /* LetterGameViewModel.swift */,
+				87D71E4D2EB2476D00B16425 /* NumberGameViewModel.swift */,
+				87D71E4F2EB2477B00B16425 /* StatisticsViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		87D71E512EB2478C00B16425 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E522EB2479900B16425 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		87D71E542EB247AA00B16425 /* LetterGame */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E552EB247B300B16425 /* LetterGameView.swift */,
+				87D71E572EB247C200B16425 /* LetterResultView.swift */,
+			);
+			path = LetterGame;
+			sourceTree = "<group>";
+		};
+		87D71E592EB247D200B16425 /* NumberGame */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E5A2EB247DB00B16425 /* NumberGameView.swift */,
+				87D71E5C2EB247EB00B16425 /* NumberResultView.swift */,
+			);
+			path = NumberGame;
+			sourceTree = "<group>";
+		};
+		87D71E5E2EB247FD00B16425 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E5F2EB2480700B16425 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		87D71E612EB2481600B16425 /* Statistics */ = {
+			isa = PBXGroup;
+			children = (
+				87D71E622EB2481F00B16425 /* StatisticsView.swift */,
+			);
+			path = Statistics;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -59,9 +247,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				87D71E062EB2452200B16425 /* KelimeVeIslemV1 */,
 			);
 			name = KelimeVeIslemV1;
 			packageProductDependencies = (
@@ -109,6 +294,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				87D71E372EB2468300B16425 /* Localizable.strings.tr in Resources */,
+				87D71E392EB2469D00B16425 /* turkish_words.txt in Resources */,
+				87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */,
+				87D71E332EB2466200B16425 /* english_words.txt in Resources */,
+				87D71E352EB2467500B16425 /* Localizable.strings.en in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +309,31 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				87D71E292EB245F600B16425 /* GameMode.swift in Sources */,
+				87D71E632EB2482000B16425 /* StatisticsView.swift in Sources */,
+				87D71E272EB245D000B16425 /* KelimeVeIslemApp.swift in Sources */,
+				87D71E2D2EB2462000B16425 /* GameSettings.swift in Sources */,
+				87D71E4E2EB2476E00B16425 /* NumberGameViewModel.swift in Sources */,
+				87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */,
+				87D71E442EB2471A00B16425 /* NumberGenerator.swift in Sources */,
+				87D71E462EB2472600B16425 /* PersistenceService.swift in Sources */,
+				87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */,
+				87D71E562EB247B400B16425 /* LetterGameView.swift in Sources */,
+				87D71E602EB2480700B16425 /* SettingsView.swift in Sources */,
+				87D71E5B2EB247DC00B16425 /* NumberGameView.swift in Sources */,
+				87D71E3C2EB246D500B16425 /* AudioService.swift in Sources */,
+				87D71E2B2EB2460F00B16425 /* GameResult.swift in Sources */,
+				87D71E4A2EB2474800B16425 /* SharedComponents.swift in Sources */,
+				87D71E4C2EB2475D00B16425 /* LetterGameViewModel.swift in Sources */,
+				87D71E482EB2473B00B16425 /* ErrorHandling.swift in Sources */,
+				87D71E402EB2470000B16425 /* DictionaryService.swift in Sources */,
+				87D71E312EB2464000B16425 /* NumberGame.swift in Sources */,
+				87D71E582EB247C300B16425 /* LetterResultView.swift in Sources */,
+				87D71E2F2EB2463000B16425 /* LetterGame.swift in Sources */,
+				87D71E422EB2470D00B16425 /* LetterGenerator.swift in Sources */,
+				87D71E5D2EB247EC00B16425 /* NumberResultView.swift in Sources */,
+				87D71E502EB2477C00B16425 /* StatisticsViewModel.swift in Sources */,
+				87D71E532EB2479900B16425 /* HomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,6 +471,7 @@
 				DEVELOPMENT_TEAM = 5T896483H9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.educational-games";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -288,6 +504,7 @@
 				DEVELOPMENT_TEAM = 5T896483H9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.educational-games";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -332,6 +549,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */,
+			);
+			currentVersion = 87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */;
+			path = KelimeVeIslemV1.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 87D71DFC2EB2452200B16425 /* Project object */;
 }

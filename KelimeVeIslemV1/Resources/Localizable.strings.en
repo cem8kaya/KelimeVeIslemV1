@@ -1,0 +1,29 @@
+/* Game Modes */
+"game.mode.letters" = "LETTERS";
+"game.mode.numbers" = "NUMBERS";
+
+/* Difficulty */
+"difficulty.easy" = "Easy";
+"difficulty.medium" = "Medium";
+"difficulty.hard" = "Hard";
+
+/* Success Messages */
+"success.valid_word" = "Valid word! Great!";
+"success.perfect_match" = "Perfect! Exact match!";
+"success.close_match" = "Close! Off by %d";
+
+/* Error Messages */
+"error.invalid_letters" = "Used unavailable letters";
+"error.not_in_dictionary" = "Word not found in dictionary. Keep trying!";
+"error.invalid_expression" = "Invalid expression";
+
+/* Info Messages */
+"info.result" = "Result: %d (target: %d)";
+
+/* Letter Game Messages */
+"letter_result.suggestions" = "Possible Words (from dictionary)";
+"letter_result.no_suggestions" = "No other words found.";
+
+/* Statistics */
+"stats.never_played" = "Never played";
+

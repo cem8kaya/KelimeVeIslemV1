@@ -1,0 +1,28 @@
+/* Game Modes */
+"game.mode.letters" = "HARFLER";
+"game.mode.numbers" = "SAYILAR";
+
+/* Difficulty */
+"difficulty.easy" = "Kolay";
+"difficulty.medium" = "Orta";
+"difficulty.hard" = "Zor";
+
+/* Success Messages */
+"success.valid_word" = "Geçerli kelime! Harika!";
+"success.perfect_match" = "Mükemmel! Tam hedef!";
+"success.close_match" = "Yakın! %d fark ile";
+
+/* Error Messages */
+"error.invalid_letters" = "Geçersiz harfler kullanıldı";
+"error.not_in_dictionary" = "Kelime sözlükte bulunamadı. Denemeye devam et!";
+"error.invalid_expression" = "Geçersiz ifade";
+
+/* Info Messages */
+"info.result" = "Sonuç: %d (hedef: %d)";
+
+/* Letter Game Messages */
+"letter_result.suggestions" = "Olası Kelimeler (sözlükten)";
+"letter_result.no_suggestions" = "Başka kelime bulunamadı.";
+
+/* Statistics */
+"stats.never_played" = "Hiç oynanmadı";
