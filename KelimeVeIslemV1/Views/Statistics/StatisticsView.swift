@@ -97,9 +97,7 @@ struct StatisticsView: View {
             .alert("Clear Statistics?", isPresented: $showClearAlert) {
                 Button("Cancel", role: .cancel) {}
                 Button("Clear", role: .destructive) {
-                    Task {
-                        await viewModel.clearAllResults()
-                    }
+                    viewModel.clearAllResults()
                 }
             } message: {
                 Text("This will permanently delete all your game history and statistics.")

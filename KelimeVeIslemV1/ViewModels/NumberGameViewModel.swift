@@ -41,8 +41,18 @@ class NumberGameViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(settings: GameSettings = PersistenceService.shared.loadSettings()) {
-        self.settings = settings
+    init(settings: GameSettings? = nil) {
+        // Load settings synchronously from a nonisolated context-safe way
+        if let providedSettings = settings {
+            self.settings = providedSettings
+        } else {
+            // Access PersistenceService in a safe way
+            self.settings = GameSettings.default
+            // Load actual settings after initialization
+            Task { @MainActor in
+                self.settings = PersistenceService.shared.loadSettings()
+            }
+        }
     }
     
     // MARK: - Game States
@@ -127,8 +137,8 @@ class NumberGameViewModel: ObservableObject {
         isLoading = true
         
         // Run solver in background
-        Task.detached(priority: .userInitiated) {
-            let solution = self.numberGenerator.findSolution(
+        Task.detached(priority: .userInitiated) { [numberGenerator = self.numberGenerator] in
+            let solution = numberGenerator.findSolution(
                 numbers: game.numbers,
                 target: game.targetNumber
             )
@@ -139,7 +149,7 @@ class NumberGameViewModel: ObservableObject {
                 if let solution = solution {
                     self.hintSolution = solution
                     self.showHint = true
-                } else if let (_, ops) = self.numberGenerator.findClosestSolution(
+                } else if let (_, ops) = numberGenerator.findClosestSolution(
                     numbers: game.numbers,
                     target: game.targetNumber
                 ) {
@@ -266,12 +276,12 @@ class NumberGameViewModel: ObservableObject {
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
                 try self?.persistenceService.saveResult(result)
-                print("✅ Result saved successfully")
+                print("âœ… Result saved successfully")
             } catch {
                 DispatchQueue.main.async {
                     self?.error = .persistenceError("Failed to save result")
                 }
-                print("⚠️ Failed to save result: \(error)")
+                print("âš ï¸ Failed to save result: \(error)")
             }
         }
     }

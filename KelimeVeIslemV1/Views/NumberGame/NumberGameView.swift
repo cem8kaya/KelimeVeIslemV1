@@ -44,8 +44,8 @@ struct NumberGameView: View {
             } message: {
                 Text("Your current progress will be lost.")
             }
-            .onChange(of: viewModel.gameState) { newState in
-                if newState == .playing {
+            .onChange(of: viewModel.gameState) { oldValue, newValue in
+                if newValue == .playing {
                     usedNumberIndices = []
                 }
             }
@@ -136,6 +136,9 @@ struct NumberGameView: View {
                     },
                     onHint: {
                         viewModel.requestHint()
+                    },
+                    onGiveUp: {
+                        showExitConfirmation = true
                     }
                 )
             }
@@ -167,17 +170,17 @@ struct NumberGameView: View {
         let currentSolution = viewModel.currentSolution
         let lastChar = currentSolution.last
         
-        // General rule: operators (+-x÷) must follow a number or closing parenthesis.
+        // General rule: operators (+-xÃ·) must follow a number or closing parenthesis.
         // Parentheses (open) must follow an operator or be the first character.
         // Parentheses (close) must follow a number or another closing parenthesis.
         
-        if "+−×÷".contains(op) {
+        if "+âˆ’Ã—Ã·".contains(op) {
             guard lastChar?.isNumber == true || lastChar == ")" else {
                 AudioService.shared.playErrorHaptic()
                 return
             }
         } else if op == "(" {
-            guard "+−×÷".contains(lastChar ?? " ") || currentSolution.isEmpty else {
+            guard "+âˆ’Ã—Ã·".contains(lastChar ?? " ") || currentSolution.isEmpty else {
                 AudioService.shared.playErrorHaptic()
                 return
             }
@@ -197,11 +200,8 @@ struct NumberGameView: View {
         // Check if the character being deleted is a number
         let lastChar = viewModel.currentSolution.last!
         if lastChar.isNumber {
-            // Find the last added number index and remove it from the used set
-            if let lastIndex = usedNumberIndices.popLast() {
-                // If this logic fails (e.g., if the user manually typed), we might need a more robust check.
-                // For now, rely on tap interaction.
-            }
+            // Remove the last added number index from the used set
+            _ = usedNumberIndices.popLast()
         }
         
         viewModel.deleteLast()
@@ -294,6 +294,7 @@ struct NumberPlayingView: View {
     let onClear: () -> Void
     let onSubmit: () -> Void
     let onHint: () -> Void
+    let onGiveUp: () -> Void  // NEW: Give up callback
     
     var body: some View {
         VStack(spacing: 25) {
@@ -360,6 +361,22 @@ struct NumberPlayingView: View {
                 )
                 .disabled(currentSolution.isEmpty)
                 .padding(.horizontal, 20)
+                
+                // Give Up button
+                Button(action: onGiveUp) {
+                    HStack {
+                        Image(systemName: "xmark.circle")
+                        Text("Give Up")
+                    }
+                    .font(.subheadline.bold())
+                    .foregroundColor(.white.opacity(0.9))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.red.opacity(0.6))
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 5)
             }
         }
     }
@@ -404,7 +421,7 @@ struct NumberTilesView: View {
 struct OperatorButtonsView: View {
     let onOperatorTap: (String) -> Void
     
-    let operators = ["+", "−", "×", "÷", "(", ")"]
+    let operators = ["+", "-", "*", "/", "(", ")"]  // Use clean ASCII operators
     
     var body: some View {
         HStack(spacing: 10) {

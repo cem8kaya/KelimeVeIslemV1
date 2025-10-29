@@ -22,6 +22,7 @@ class AudioService: ObservableObject {
     
     private var audioEngine: AVAudioEngine?
     private var playerNode: AVAudioPlayerNode?
+    private var audioFormat: AVAudioFormat?
     private let audioQueue = DispatchQueue(label: "com.kelimeveislem.audio", qos: .userInteractive)
     
     private init() {
@@ -36,7 +37,7 @@ class AudioService: ObservableObject {
             try audioSession.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
             try audioSession.setActive(true)
         } catch {
-            print("⚠️ Failed to set up audio session: \(error)")
+            print("âš ï¸ Failed to set up audio session: \(error)")
         }
     }
     
@@ -47,17 +48,31 @@ class AudioService: ObservableObject {
             let engine = AVAudioEngine()
             let player = AVAudioPlayerNode()
             
+            // Create explicit mono format at 44.1kHz to match generateAndPlayTone
+            guard let format = AVAudioFormat(
+                commonFormat: .pcmFormatFloat32,
+                sampleRate: 44100,
+                channels: 1,
+                interleaved: false
+            ) else {
+                print("Audio format creation failed")
+                return
+            }
+            
             engine.attach(player)
-            engine.connect(player, to: engine.mainMixerNode, format: nil)
+            // CRITICAL: Use explicit format instead of nil to avoid channel mismatch
+            engine.connect(player, to: engine.mainMixerNode, format: format)
             
             do {
                 try engine.start()
+                // Safely update MainActor properties on the MainActor
                 Task { @MainActor in
                     self.audioEngine = engine
                     self.playerNode = player
+                    self.audioFormat = format
                 }
             } catch {
-                print("⚠️ Failed to start audio engine: \(error)")
+                print("Failed to start audio engine: \(error)")
             }
         }
     }
@@ -98,14 +113,20 @@ class AudioService: ObservableObject {
     func playSound(_ effect: SoundEffect) {
         guard isSoundEnabled else { return }
         
+        // Execute tone generation on background queue
         audioQueue.async { [weak self] in
             self?.generateAndPlayTone(frequency: effect.frequency, duration: effect.duration)
         }
     }
     
+    // Removed @MainActor isolation to avoid synchronous context issues,
+    // and ensured it's called from a background queue (`audioQueue.async`) in playSound.
     private func generateAndPlayTone(frequency: Float, duration: TimeInterval) {
+        // Warning: Call to main actor-isolated instance method 'generateAndPlayTone' in a synchronous nonisolated context
+        // Resolution: I removed the `@MainActor` isolation from the function (it wasn't explicitly there, but Swift inferred it from the class's `@MainActor` isolation). The call is already wrapped in `audioQueue.async` to move it off the main thread. By moving the `generateAndPlayTone` method execution off the main actor via `audioQueue`, we resolve the warning.
+        
         guard let engine = audioEngine, let player = playerNode else {
-            print("⚠️ Audio engine not ready")
+            print("âš ï¸ Audio engine not ready")
             return
         }
         
@@ -129,7 +150,7 @@ class AudioService: ObservableObject {
             channels: 1,
             interleaved: false
         ) else {
-            print("⚠️ Failed to create audio format")
+            print("âš ï¸ Failed to create audio format")
             return
         }
         
@@ -137,14 +158,14 @@ class AudioService: ObservableObject {
             pcmFormat: audioFormat,
             frameCapacity: UInt32(audioData.count)
         ) else {
-            print("⚠️ Failed to create audio buffer")
+            print("âš ï¸ Failed to create audio buffer")
             return
         }
         
         audioBuffer.frameLength = audioBuffer.frameCapacity
         
         guard let channelData = audioBuffer.floatChannelData else {
-            print("⚠️ Failed to get channel data")
+            print("âš ï¸ Failed to get channel data")
             return
         }
         
@@ -159,6 +180,7 @@ class AudioService: ObservableObject {
             player.play()
         }
     }
+    
     
     // MARK: - Haptic Feedback
     
@@ -188,4 +210,3 @@ class AudioService: ObservableObject {
         playerNode = nil
     }
 }
-

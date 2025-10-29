@@ -46,7 +46,7 @@ struct LetterGameView: View {
             } message: {
                 Text("Your current progress will be lost.")
             }
-            .onChange(of: viewModel.error != nil) { hasError in
+            .onChange(of: viewModel.error != nil) { oldValue, hasError in
                 showError = hasError
             }
     }
@@ -133,6 +133,9 @@ struct LetterGameView: View {
                             Task {
                                 await viewModel.submitWord()
                             }
+                        },
+                        onGiveUp: {
+                            showExitConfirmation = true
                         }
                     )
                 }
@@ -220,6 +223,7 @@ struct PlayingView: View {
     var isTextFieldFocused: FocusState<Bool>.Binding
     let onWordChange: (String) -> Void
     let onSubmit: () -> Void
+    let onGiveUp: () -> Void  // NEW: Give up callback
     
     var body: some View {
         VStack(spacing: 30) {
@@ -297,6 +301,22 @@ struct PlayingView: View {
             }
             .disabled(currentWord.isEmpty)
             .padding(.horizontal, 40)
+            
+            // Give Up button
+            Button(action: onGiveUp) {
+                HStack {
+                    Image(systemName: "xmark.circle")
+                    Text("Give Up")
+                }
+                .font(.subheadline.bold())
+                .foregroundColor(.white.opacity(0.9))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.red.opacity(0.6))
+                .cornerRadius(10)
+            }
+            .padding(.horizontal, 40)
+            .padding(.top, 5)
             
             // Reset button to deselect letters
             Button(action: {
