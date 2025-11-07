@@ -46,15 +46,26 @@ class LetterGameViewModel: ObservableObject {
     
     // MARK: - Initialization
 
-    init(settings: GameSettings = PersistenceService.shared.loadSettings()) {
-        self.settings = settings
-        // Initialize published properties from settings
+    nonisolated init(settings: GameSettings? = nil) {
+        if let settings = settings {
+            self.settings = settings
+            self.letterCount = settings.letterCount
+        } else {
+            // Use default settings initially, load from persistence after init
+            self.settings = GameSettings.default
+            self.letterCount = GameSettings.default.letterCount
+        }
+    }
+
+    // Load settings after initialization
+    func loadPersistedSettings() {
+        self.settings = persistenceService.loadSettings()
         self.letterCount = settings.letterCount
     }
 
     // Custom initializer for daily challenges with pre-generated letters
-    init(customGame: LetterGame) {
-        self.settings = PersistenceService.shared.loadSettings()
+    nonisolated init(customGame: LetterGame, settings: GameSettings) {
+        self.settings = settings
         self.letterCount = customGame.letters.count
         self.game = customGame
         self.timeRemaining = settings.letterTimerDuration
@@ -63,7 +74,10 @@ class LetterGameViewModel: ObservableObject {
         self.validationMessage = ""
         self.suggestedWords = []
         self.comboCount = 0
+    }
 
+    // Start the game timer (call this after custom init)
+    func startGameTimer() {
         audioService.playSound(.gameStart)
         startTimer()
     }
@@ -80,27 +94,22 @@ class LetterGameViewModel: ObservableObject {
     // MARK: - Game Actions
     
     func startNewGame() {
-        do {
-            let letters = letterGenerator.generateLetters(
-                count: settings.letterCount,
-                language: settings.language
-            )
-            
-            game = LetterGame(letters: letters, language: settings.language)
-            currentWord = ""
-            timeRemaining = settings.letterTimerDuration
-            gameState = .playing
-            validationMessage = ""
-            error = nil
-            suggestedWords = [] // Reset suggestions
-            comboCount = 0 // Reset combo counter
+        let letters = letterGenerator.generateLetters(
+            count: settings.letterCount,
+            language: settings.language
+        )
 
-            audioService.playSound(.gameStart)
-            startTimer()
-        } catch {
-            self.error = .invalidInput("Failed to generate letters")
-            gameState = .ready
-        }
+        game = LetterGame(letters: letters, language: settings.language)
+        currentWord = ""
+        timeRemaining = settings.letterTimerDuration
+        gameState = .playing
+        validationMessage = ""
+        error = nil
+        suggestedWords = [] // Reset suggestions
+        comboCount = 0 // Reset combo counter
+
+        audioService.playSound(.gameStart)
+        startTimer()
     }
     
     func updateWord(_ word: String) {
@@ -207,20 +216,20 @@ class LetterGameViewModel: ObservableObject {
     }
     
     func shuffleLetters() {
-        guard var game = game else { return }
-        
+        guard let game = game else { return }
+
         // Shuffle the letters array
         let shuffledLetters = game.letters.shuffled()
-        
+
         // Create a new game instance with shuffled letters while preserving other properties
         var newGame = LetterGame(letters: shuffledLetters, language: game.language)
         newGame.playerWord = game.playerWord
         newGame.timeRemaining = game.timeRemaining
         newGame.score = game.score
         newGame.isValid = game.isValid
-        
+
         self.game = newGame
-        
+
         // Play haptic and sound feedback
         audioService.playSound(.buttonTap)
         audioService.playHaptic(style: .light)

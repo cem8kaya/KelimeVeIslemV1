@@ -11,7 +11,7 @@ import SwiftUI
 
 // MARK: - Achievement Model
 
-struct Achievement: Identifiable, Codable {
+struct Achievement: Identifiable, Codable, Equatable {
     let id: String
     let title: String
     let description: String
@@ -22,7 +22,7 @@ struct Achievement: Identifiable, Codable {
     var unlockedAt: Date?
     var progress: Int = 0
 
-    enum AchievementCategory: String, Codable {
+    enum AchievementCategory: String, Codable, Equatable {
         case general
         case letters
         case numbers
@@ -32,7 +32,7 @@ struct Achievement: Identifiable, Codable {
         case mastery
     }
 
-    enum AchievementRequirement: Codable {
+    enum AchievementRequirement: Codable, Equatable {
         case gamesPlayed(Int)
         case totalScore(Int)
         case validWords(Int)
@@ -237,7 +237,7 @@ extension Achievement {
 
 // MARK: - Achievement Progress
 
-struct AchievementProgress: Codable {
+struct AchievementProgress: Codable, Sendable {
     var achievements: [String: Achievement] = [:]
     var totalUnlocked: Int {
         achievements.values.filter { $0.isUnlocked }.count

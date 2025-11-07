@@ -58,8 +58,8 @@ class NumberGameViewModel: ObservableObject {
     }
 
     // Custom initializer for daily challenges with pre-generated numbers
-    init(customGame: NumberGame) {
-        self.settings = PersistenceService.shared.loadSettings()
+    nonisolated init(customGame: NumberGame, settings: GameSettings) {
+        self.settings = settings
         self.game = customGame
         self.timeRemaining = settings.numberTimerDuration
         self.gameState = .playing
@@ -68,7 +68,10 @@ class NumberGameViewModel: ObservableObject {
         self.showHint = false
         self.hintSolution = nil
         self.comboCount = 0
+    }
 
+    // Start the game timer (call this after custom init)
+    func startGameTimer() {
         audioService.playSound(.gameStart)
         startTimer()
     }

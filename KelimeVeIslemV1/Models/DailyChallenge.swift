@@ -110,7 +110,7 @@ struct DailyChallenge: Codable, Identifiable {
 }
 
 // Daily Challenge Result for leaderboard
-struct DailyChallengeResult: Codable, Identifiable {
+struct DailyChallengeResult: Codable, Identifiable, Sendable {
     let id: UUID
     let challengeDate: Date
     let playerName: String
@@ -129,7 +129,7 @@ struct DailyChallengeResult: Codable, Identifiable {
 }
 
 // Daily Challenge Statistics
-struct DailyChallengeStats: Codable {
+struct DailyChallengeStats: Codable, Sendable {
     var totalChallengesCompleted: Int = 0
     var currentStreak: Int = 0
     var longestStreak: Int = 0
