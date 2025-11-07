@@ -334,7 +334,7 @@ struct NumberPlayingView: View {
 
     private var currentResult: Int? {
         guard let game = game, !currentSolution.isEmpty else { return nil }
-        return game.evaluateExpression(currentSolution)
+        return try? game.evaluateExpression(currentSolution)
     }
     
     var body: some View {
