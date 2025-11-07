@@ -37,72 +37,72 @@ struct SettingsView: View {
                 Form {
                     // Language Section
                     Section {
-                        Picker("Language", selection: $settings.language) {
+                        Picker("Dil", selection: $settings.language) {
                             ForEach(GameLanguage.allCases, id: \.self) { lang in
                                 Text(lang.displayName).tag(lang)
                             }
                         }
                         .pickerStyle(.segmented)
                     } header: {
-                        Text("Game Language")
+                        Text("Oyun Dili")
                     } footer: {
-                        Text("Select dictionary language for word validation")
+                        Text("Kelime doğrulama için sözlük dilini seçin")
                     }
-                    
+
                     // Letters Game Settings
                     Section {
-                        Stepper("Letter Count: \(settings.letterCount)", value: $settings.letterCount, in: 6...12)
-                        
-                        Stepper("Timer: \(settings.letterTimerDuration)s", value: $settings.letterTimerDuration, in: 30...120, step: 10)
+                        Stepper("Harf Sayısı: \(settings.letterCount)", value: $settings.letterCount, in: 6...12)
+
+                        Stepper("Süre: \(settings.letterTimerDuration)s", value: $settings.letterTimerDuration, in: 30...120, step: 10)
                     } header: {
-                        Text("Letters Game")
+                        Text("Harfler Oyunu")
                     }
-                    
+
                     // Numbers Game Settings
                     Section {
-                        Picker("Difficulty", selection: $settings.difficultyLevel) {
+                        Picker("Zorluk", selection: $settings.difficultyLevel) {
                             ForEach(GameSettings.DifficultyLevel.allCases, id: \.self) { level in
                                 Text(level.displayName).tag(level)
                             }
                         }
                         .pickerStyle(.segmented)
-                        
-                        Stepper("Timer: \(settings.numberTimerDuration)s", value: $settings.numberTimerDuration, in: 60...180, step: 10)
+
+                        Stepper("Süre: \(settings.numberTimerDuration)s", value: $settings.numberTimerDuration, in: 60...180, step: 10)
                     } header: {
-                        Text("Numbers Game")
+                        Text("Sayılar Oyunu")
                     } footer: {
                         // FIX: Use localized description from GameSettings
                         Text(GameSettings.DifficultyLevel.allCases.map { $0.description }.joined(separator: " • "))
                     }
-                    
+
                     // Audio Settings
                     Section {
-                        Toggle("Sound Effects", isOn: $audioService.isSoundEnabled)
+                        Toggle("Ses Efektleri", isOn: $audioService.isSoundEnabled)
                     } header: {
-                        Text("Audio")
+                        Text("Ses")
                     }
-                    
+
                     // Dictionary Settings
                     Section {
-                        Toggle("Use Online Dictionary", isOn: $settings.useOnlineDictionary)
+                        Toggle("Çevrimiçi Sözlük Kullan", isOn: $settings.useOnlineDictionary)
                     } header: {
-                        Text("Dictionary")
+                        Text("Sözlük")
                     } footer: {
-                        Text("Enable to validate words using online dictionary API (requires internet connection)")
+                        Text("Kelimeleri çevrimiçi sözlük API'si ile doğrulamak için etkinleştirin (internet bağlantısı gerektirir)")
                     }
-                    
+
                     // App Info
                     Section {
                         HStack {
-                            Text("Version")
+                            Text("Sürüm")
                             Spacer()
                             Text("1.0.0")
                                 .foregroundColor(.secondary)
                         }
                     } header: {
-                        Text("About")
+                        Text("Hakkında")
                     }
-                    
+
                     // Troubleshooting
                     Section {
                         Button(role: .destructive) {
@@ -110,34 +110,34 @@ struct SettingsView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "arrow.counterclockwise.circle.fill")
-                                Text("Reset All Data")
+                                Text("Tüm Verileri Sıfırla")
                             }
                         }
                     } header: {
-                        Text("Troubleshooting")
+                        Text("Sorun Giderme")
                     } footer: {
-                        Text("Use this if you're experiencing crashes or freezing. This will delete all game history, statistics, and settings.")
+                        Text("Çökme veya donma yaşıyorsanız bunu kullanın. Bu işlem tüm oyun geçmişini, istatistikleri ve ayarları silecektir.")
                     }
                 }
                 .scrollContentBackground(.hidden)
             }
-            .navigationTitle("Settings")
+            .navigationTitle("Ayarlar")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button("Tamam") {
                         saveSettings()
                         dismiss()
                     }
                 }
             }
-            .alert("Reset All Data?", isPresented: $showResetAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Reset", role: .destructive) {
+            .alert("Tüm Veriler Sıfırlansın mı?", isPresented: $showResetAlert) {
+                Button("İptal", role: .cancel) {}
+                Button("Sıfırla", role: .destructive) {
                     resetAllData()
                 }
             } message: {
-                Text("This will permanently delete all game history, statistics, and reset settings to defaults. This cannot be undone.")
+                Text("Bu işlem tüm oyun geçmişinizi, istatistiklerinizi kalıcı olarak silecek ve ayarları varsayılana döndürecektir. Bu işlem geri alınamaz.")
             }
         }
     }

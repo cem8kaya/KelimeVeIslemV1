@@ -24,27 +24,27 @@ struct LetterGameView: View {
             .sheet(isPresented: $showResult) {
                 resultSheet
             }
-            .alert("Error", isPresented: $showError, presenting: viewModel.error) { error in
-                Button("OK") {
+            .alert("Hata", isPresented: $showError, presenting: viewModel.error) { error in
+                Button("Tamam") {
                     showError = false
                 }
             } message: { error in
                 Text(error.localizedDescription)
             }
             .confirmationDialog(
-                "Exit Game?",
+                "Oyundan Çıkılsın mı?",
                 isPresented: $showExitConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Exit Game", role: .destructive) {
+                Button("Oyundan Çık", role: .destructive) {
                     viewModel.resetGame()
                     dismiss()
                 }
-                Button("Resume", role: .cancel) {
+                Button("Devam Et", role: .cancel) {
                     showExitConfirmation = false
                 }
             } message: {
-                Text("Your current progress will be lost.")
+                Text("Mevcut ilerlemeniz kaybolacak.")
             }
             .onChange(of: viewModel.error != nil) { oldValue, hasError in
                 showError = hasError
@@ -107,9 +107,9 @@ struct LetterGameView: View {
             Group {
                 if viewModel.gameState == .ready {
                     GameReadyView(
-                        title: "Ready to play?",
-                        subtitle: "You'll get \(viewModel.letterCount) letters.\nMake the longest word you can!",
-                        actionTitle: "Start Game",
+                        title: "Oynamaya Hazır mısınız?",
+                        subtitle: "\(viewModel.letterCount) harf alacaksınız.\nYapabileceğiniz en uzun kelimeyi oluşturun!",
+                        actionTitle: "Oyunu Başlat",
                         color: Color(hex: "#10B981"), // Emerald Green
                         onStart: { viewModel.startNewGame() }
                     )
@@ -143,7 +143,7 @@ struct LetterGameView: View {
             }
             
             if viewModel.isLoading {
-                LoadingOverlay(message: "Validating Word...")
+                LoadingOverlay(message: "Kelime doğrulanıyor...")
             }
         }
     }
@@ -170,7 +170,7 @@ struct LetterGameView: View {
         }
         
         ToolbarItem(placement: .principal) {
-            Text("Letters Game")
+            Text("Harfler Oyunu")
                 .font(.headline)
                 .foregroundColor(.white)
         }
@@ -181,11 +181,11 @@ struct LetterGameView: View {
                 Button {
                     showExitConfirmation = true
                 } label: {
-                    Text("Exit") // You should localize this string
+                    Text("Çık")
                         .foregroundColor(.white)
                         .fontWeight(.semibold)
                 }
-                .accessibilityLabel("Exit game")
+                .accessibilityLabel("Oyundan çık")
             }
         }
     }
@@ -230,7 +230,7 @@ struct PlayingView: View {
     var body: some View {
         VStack(spacing: 30) {
             // Available letters
-            Text("Available Letters")
+            Text("Mevcut Harfler")
                 .font(.headline)
                 .foregroundColor(.white.opacity(0.9))
                 .accessibilityAddTraits(.isHeader)
@@ -250,13 +250,13 @@ struct PlayingView: View {
             // Current word input
             VStack(spacing: 12) {
                 HStack {
-                    Text("Your Word")
+                    Text("Kelimeniz")
                         .font(.headline)
                         .foregroundColor(.white.opacity(0.9))
                         .accessibilityAddTraits(.isHeader)
-                    
+
                     Spacer()
-                    
+
                     if !currentWord.isEmpty {
                         Button {
                             // Clear word
@@ -267,14 +267,14 @@ struct PlayingView: View {
                                 .font(.title2)
                                 .foregroundColor(Color(hex: "#F87171")) // Red
                         }
-                        .accessibilityLabel("Clear word")
+                        .accessibilityLabel("Kelimeyi temizle")
                     }
                 }
                 .padding(.horizontal, 40)
-                
+
                 // Read-only word display
                 HStack {
-                    Text(currentWord.isEmpty ? "Tap letters above..." : currentWord)
+                    Text(currentWord.isEmpty ? "Yukarıdaki harflere dokunun..." : currentWord)
                         .font(.system(size: 30, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -291,7 +291,7 @@ struct PlayingView: View {
             
             // Submit button
             Button(action: onSubmit) {
-                Text("Submit Word")
+                Text("Kelimeyi Gönder")
                     .font(.title3.bold())
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -303,12 +303,12 @@ struct PlayingView: View {
             }
             .disabled(currentWord.isEmpty)
             .padding(.horizontal, 40)
-            
+
             // Give Up button
             Button(action: onGiveUp) {
                 HStack {
                     Image(systemName: "xmark.circle")
-                    Text("Give Up")
+                    Text("Pes Et")
                 }
                 .font(.subheadline.bold())
                 .foregroundColor(.white.opacity(0.9))
@@ -332,7 +332,7 @@ struct PlayingView: View {
                 }) {
                     HStack {
                         Image(systemName: "arrow.counterclockwise")
-                        Text("Deselect All")
+                        Text("Tümünü Kaldır")
                     }
                     .font(.subheadline.bold())
                     .foregroundColor(.white.opacity(0.9))
@@ -342,8 +342,8 @@ struct PlayingView: View {
                     .background(Color.white.opacity(0.1))
                     .cornerRadius(10)
                 }
-                .accessibilityLabel("Deselect all chosen letters")
-                
+                .accessibilityLabel("Seçilen tüm harfleri kaldır")
+
                 // Shuffle Letters button
                 Button(action: {
                     viewModel.shuffleLetters()
@@ -353,7 +353,7 @@ struct PlayingView: View {
                 }) {
                     HStack {
                         Image(systemName: "shuffle")
-                        Text("Mix Letters")
+                        Text("Harfleri Karıştır")
                     }
                     .font(.subheadline.bold())
                     .foregroundColor(.white.opacity(0.9))
@@ -363,7 +363,7 @@ struct PlayingView: View {
                     .background(Color(hex: "#8B5CF6").opacity(0.6)) // Purple accent
                     .cornerRadius(10)
                 }
-                .accessibilityLabel("Shuffle letters for new arrangement")
+                .accessibilityLabel("Harfleri yeni bir düzene göre karıştır")
             }
             .padding(.horizontal, 40)
         }

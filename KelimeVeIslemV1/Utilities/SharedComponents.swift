@@ -176,18 +176,18 @@ struct ScoreView: View {
 // MARK: - Loading Overlay (Resolves "Cannot find 'LoadingOverlay'")
 
 struct LoadingOverlay: View {
-    var message: String = "Loading..."
-    
+    var message: String = "Yükleniyor..."
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 15) {
                 ProgressView()
                     .scaleEffect(1.5)
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                
+
                 Text(message)
                     .font(.headline)
                     .foregroundColor(.white)

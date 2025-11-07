@@ -37,13 +37,13 @@ struct StatisticsView: View {
                         // Best Scores
                         VStack(spacing: 20) {
                             ScoreCard(
-                                title: "Best Letter Score",
+                                title: "En İyi Harf Skoru",
                                 score: viewModel.statistics.bestLetterScore,
                                 icon: "textformat.abc"
                             )
-                            
+
                             ScoreCard(
-                                title: "Best Number Score",
+                                title: "En İyi Sayı Skoru",
                                 score: viewModel.statistics.bestNumberScore,
                                 icon: "number"
                             )
@@ -56,7 +56,7 @@ struct StatisticsView: View {
                         // Recent Results
                         if !viewModel.recentResults.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Recent Games")
+                                Text("Son Oyunlar")
                                     .font(.title2.bold())
                                     .padding(.horizontal)
                                 
@@ -71,7 +71,7 @@ struct StatisticsView: View {
                         Button(role: .destructive) {
                             showClearAlert = true
                         } label: {
-                            Text("Clear All Statistics")
+                            Text("Tüm İstatistikleri Temizle")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -85,22 +85,22 @@ struct StatisticsView: View {
                     .padding(.vertical)
                 }
             }
-            .navigationTitle("Statistics")
+            .navigationTitle("İstatistikler")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button("Tamam") {
                         dismiss()
                     }
                 }
             }
-            .alert("Clear Statistics?", isPresented: $showClearAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Clear", role: .destructive) {
+            .alert("İstatistikler Temizlensin mi?", isPresented: $showClearAlert) {
+                Button("İptal", role: .cancel) {}
+                Button("Temizle", role: .destructive) {
                     viewModel.clearAllResults()
                 }
             } message: {
-                Text("This will permanently delete all your game history and statistics.")
+                Text("Bu işlem tüm oyun geçmişinizi ve istatistiklerinizi kalıcı olarak silecektir.")
             }
         }
         .onAppear {
@@ -116,14 +116,14 @@ struct OverallStatsCard: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Overall Statistics")
+            Text("Genel İstatistikler")
                 .font(.title2.bold())
-            
+
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                StatBox(title: "Games Played", value: "\(statistics.totalGamesPlayed)", icon: "gamecontroller.fill")
-                StatBox(title: "Total Score", value: "\(statistics.totalScore)", icon: "star.fill")
-                StatBox(title: "Average Score", value: String(format: "%.1f", statistics.averageScore), icon: "chart.bar.fill")
-                StatBox(title: "Perfect Matches", value: "\(statistics.perfectNumberMatches)", icon: "target")
+                StatBox(title: "Oynanan Oyun", value: "\(statistics.totalGamesPlayed)", icon: "gamecontroller.fill")
+                StatBox(title: "Toplam Skor", value: "\(statistics.totalScore)", icon: "star.fill")
+                StatBox(title: "Ortalama Skor", value: String(format: "%.1f", statistics.averageScore), icon: "chart.bar.fill")
+                StatBox(title: "Tam İsabet", value: "\(statistics.perfectNumberMatches)", icon: "target")
             }
         }
         .padding()
@@ -176,8 +176,8 @@ struct ScoreCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
-                
-                Text("\(score) points")
+
+                Text("\(score) puan")
                     .font(.title2.bold())
                     .foregroundColor(.primary)
             }
@@ -197,33 +197,33 @@ struct AchievementsCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text("Achievements")
+            Text("Başarımlar")
                 .font(.title2.bold())
-            
+
             AchievementRow(
-                title: "Word Master",
-                description: "\(statistics.letterGamesPlayed) letter games played",
+                title: "Kelime Ustası",
+                description: "\(statistics.letterGamesPlayed) harf oyunu oynandı",
                 icon: "text.book.closed.fill",
                 isUnlocked: statistics.letterGamesPlayed >= 10
             )
-            
+
             AchievementRow(
-                title: "Number Wizard",
-                description: "\(statistics.numberGamesPlayed) number games played",
+                title: "Sayı Sihirbazı",
+                description: "\(statistics.numberGamesPlayed) sayı oyunu oynandı",
                 icon: "number.circle.fill",
                 isUnlocked: statistics.numberGamesPlayed >= 10
             )
-            
+
             AchievementRow(
-                title: "Perfect Precision",
-                description: "\(statistics.perfectNumberMatches) perfect matches",
+                title: "Mükemmel Hassasiyet",
+                description: "\(statistics.perfectNumberMatches) tam isabet",
                 icon: "target",
                 isUnlocked: statistics.perfectNumberMatches >= 5
             )
-            
+
             if !statistics.longestWord.isEmpty {
                 AchievementRow(
-                    title: "Longest Word",
+                    title: "En Uzun Kelime",
                     description: statistics.longestWord,
                     icon: "text.alignleft",
                     isUnlocked: true

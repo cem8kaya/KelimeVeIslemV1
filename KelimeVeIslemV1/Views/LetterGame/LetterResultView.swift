@@ -56,13 +56,13 @@ struct LetterResultView: View {
                     // Word and Score Card
                     VStack(spacing: 15) {
                         ResultDetailCard(
-                            title: "Your Word",
+                            title: "Kelimeniz",
                             value: game.playerWord.isEmpty ? "—" : game.playerWord,
                             valueColor: game.isValid == true ? Color(hex: "#FACC15") : .white
                         )
-                        
+
                         ResultDetailCard(
-                            title: "Score",
+                            title: "Skor",
                             value: "\(game.score)",
                             valueColor: Color(hex: "#FACC15")
                         )
@@ -72,7 +72,7 @@ struct LetterResultView: View {
                     // --- Suggestion Section (New) ---
                     if game.isValid == false && !suggestedWords.isEmpty {
                         VStack(spacing: 15) {
-                            Text("Try These Words!")
+                            Text("Bu Kelimeleri Deneyin!")
                                 .font(.title2.bold())
                                 .foregroundColor(.white.opacity(0.95))
                             
@@ -95,10 +95,10 @@ struct LetterResultView: View {
                     
                     // Available letters (for reference)
                     VStack(spacing: 10) {
-                        Text("Available Letters")
+                        Text("Mevcut Harfler")
                             .font(.headline)
                             .foregroundColor(.white.opacity(0.9))
-                        
+
                         Text(game.letters.map { String($0) }.joined(separator: " "))
                             .font(.title2)
                             .foregroundColor(.white.opacity(0.9))
@@ -113,7 +113,7 @@ struct LetterResultView: View {
                             dismiss()
                             onPlayAgain()
                         }) {
-                            Text("Play Again")
+                            Text("Tekrar Oyna")
                                 .font(.title3.bold())
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -122,12 +122,12 @@ struct LetterResultView: View {
                                 .cornerRadius(15)
                                 .buttonStyle(GrowingButton())
                         }
-                        
+
                         Button(action: {
                             dismiss()
                             onExit()
                         }) {
-                            Text("Back to Menu")
+                            Text("Ana Menüye Dön")
                                 .font(.title3)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)

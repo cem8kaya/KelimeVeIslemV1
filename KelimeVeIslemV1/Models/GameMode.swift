@@ -17,12 +17,9 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .letters:
-            // Correctly uses the key "game.mode.letters" from Localizable.strings
-            return NSLocalizedString("Letters", comment: "Letters game mode")
-
+            return "Harfler"
         case .numbers:
-            // Correctly uses the key "game.mode.numbers" from Localizable.strings
-            return NSLocalizedString("Numbers", comment: "Numbers game mode")
+            return "Sayılar"
         }
     }
     
@@ -38,9 +35,9 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .letters:
-            return "Create words from letters"
+            return "Harflerden kelime oluştur"
         case .numbers:
-            return "Reach the target number"
+            return "Hedef sayıya ulaş"
         }
     }
 }

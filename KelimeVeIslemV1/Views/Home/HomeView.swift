@@ -76,13 +76,13 @@ struct HomeView: View {
                     // Bottom buttons
                     HStack(spacing: 20) {
                         BottomBarButton(
-                            title: "Stats",
+                            title: "İstatistikler",
                             icon: "chart.bar.fill",
                             action: { showStatistics = true }
                         )
-                        
+
                         BottomBarButton(
-                            title: "Settings",
+                            title: "Ayarlar",
                             icon: "gearshape.fill",
                             action: { showSettings = true }
                         )
@@ -149,31 +149,31 @@ struct QuickStatsView: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            Text("Your Progress")
+            Text("İlerlemeniz")
                 .font(.headline)
                 .foregroundColor(.white.opacity(0.9))
-            
+
             HStack(spacing: 20) {
                 StatItem(
-                    title: "Total Games",
+                    title: "Toplam Oyun",
                     value: "\(statistics.totalGamesPlayed)"
                 )
-                
+
                 Divider()
                     .background(Color.white.opacity(0.4))
                     .frame(height: 40)
-                
+
                 StatItem(
-                    title: "Avg Score",
+                    title: "Ort. Skor",
                     value: String(format: "%.0f", statistics.averageScore)
                 )
-                
+
                 Divider()
                     .background(Color.white.opacity(0.4))
                     .frame(height: 40)
-                
+
                 StatItem(
-                    title: "Best Score",
+                    title: "En İyi Skor",
                     value: "\(max(statistics.bestLetterScore, statistics.bestNumberScore))"
                 )
             }

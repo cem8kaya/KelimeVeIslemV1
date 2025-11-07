@@ -56,21 +56,21 @@ struct NumberResultView: View {
                 // Target and Result
                 HStack(spacing: 40) {
                     VStack(spacing: 8) {
-                        Text("Target")
+                        Text("Hedef")
                             .font(.headline)
                             .foregroundColor(.white.opacity(0.9))
-                        
+
                         Text("\(game.targetNumber)")
                             .font(.system(size: 40, weight: .bold))
                             .foregroundColor(.yellow)
                     }
-                    
+
                     if let result = game.playerResult {
                         VStack(spacing: 8) {
-                            Text("Your Result")
+                            Text("Sonucunuz")
                                 .font(.headline)
                                 .foregroundColor(.white.opacity(0.9))
-                            
+
                             Text("\(result)")
                                 .font(.system(size: 40, weight: .bold))
                                 .foregroundColor(.white)
@@ -82,18 +82,18 @@ struct NumberResultView: View {
                 if let result = game.playerResult {
                     let diff = abs(game.targetNumber - result)
                     if diff > 0 {
-                        Text("Difference: \(diff)")
+                        Text("Fark: \(diff)")
                             .font(.title3)
                             .foregroundColor(.white.opacity(0.9))
                     }
                 }
-                
+
                 // Score
                 VStack(spacing: 10) {
-                    Text("Score")
+                    Text("Skor")
                         .font(.headline)
                         .foregroundColor(.white.opacity(0.9))
-                    
+
                     Text("\(game.score)")
                         .font(.system(size: 50, weight: .bold))
                         .foregroundColor(.yellow)
@@ -102,10 +102,10 @@ struct NumberResultView: View {
                 // Solution
                 if !game.playerSolution.isEmpty {
                     VStack(spacing: 10) {
-                        Text("Your Solution")
+                        Text("Çözümünüz")
                             .font(.headline)
                             .foregroundColor(.white.opacity(0.9))
-                        
+
                         ScrollView(.horizontal, showsIndicators: false) {
                             Text(game.playerSolution)
                                 .font(.title3)
@@ -114,13 +114,13 @@ struct NumberResultView: View {
                         }
                     }
                 }
-                
+
                 // Available numbers (for reference)
                 VStack(spacing: 10) {
-                    Text("Available Numbers")
+                    Text("Mevcut Sayılar")
                         .font(.headline)
                         .foregroundColor(.white.opacity(0.9))
-                    
+
                     Text(game.numbers.map { String($0) }.joined(separator: ", "))
                         .font(.title3)
                         .foregroundColor(.white.opacity(0.9))
@@ -134,7 +134,7 @@ struct NumberResultView: View {
                         dismiss()
                         onPlayAgain()
                     }) {
-                        Text("Play Again")
+                        Text("Tekrar Oyna")
                             .font(.title3.bold())
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -142,12 +142,12 @@ struct NumberResultView: View {
                             .background(Color.green)
                             .cornerRadius(15)
                     }
-                    
+
                     Button(action: {
                         dismiss()
                         onExit()
                     }) {
-                        Text("Back to Menu")
+                        Text("Ana Menüye Dön")
                             .font(.title3)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
