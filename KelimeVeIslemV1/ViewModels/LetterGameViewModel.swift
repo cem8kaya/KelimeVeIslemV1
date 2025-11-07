@@ -46,7 +46,7 @@ class LetterGameViewModel: ObservableObject {
     
     // MARK: - Initialization
 
-    nonisolated init(settings: GameSettings? = nil) {
+    init(settings: GameSettings? = nil) {
         if let settings = settings {
             self.settings = settings
             self.letterCount = settings.letterCount
@@ -64,7 +64,7 @@ class LetterGameViewModel: ObservableObject {
     }
 
     // Custom initializer for daily challenges with pre-generated letters
-    nonisolated init(customGame: LetterGame, settings: GameSettings) {
+    init(customGame: LetterGame, settings: GameSettings) {
         self.settings = settings
         self.letterCount = customGame.letters.count
         self.game = customGame
