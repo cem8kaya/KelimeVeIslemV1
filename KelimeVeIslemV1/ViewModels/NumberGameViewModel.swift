@@ -58,7 +58,7 @@ class NumberGameViewModel: ObservableObject {
     }
 
     // Custom initializer for daily challenges with pre-generated numbers
-    nonisolated init(customGame: NumberGame, settings: GameSettings) {
+    init(customGame: NumberGame, settings: GameSettings) {
         self.settings = settings
         self.game = customGame
         self.timeRemaining = settings.numberTimerDuration
