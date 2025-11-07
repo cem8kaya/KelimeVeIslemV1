@@ -157,8 +157,8 @@ struct ParticleEffect: View {
             let angle = Double.random(in: 0...(2 * .pi))
             let speed = CGFloat.random(in: 50...150)
             let velocity = CGVector(
-                dx: cos(angle) * speed,
-                dy: sin(angle) * speed
+                dx: Darwin.cos(angle) * speed,
+                dy: Darwin.sin(angle) * speed
             )
 
             let particle = Particle(
@@ -309,7 +309,7 @@ struct ShakeEffect: GeometryEffect {
 
     func effectValue(size: CGSize) -> ProjectionTransform {
         ProjectionTransform(CGAffineTransform(
-            translationX: amount * sin(animatableData * .pi * CGFloat(shakesPerUnit)),
+            translationX: amount * Darwin.sin(animatableData * .pi * CGFloat(shakesPerUnit)),
             y: 0
         ))
     }
