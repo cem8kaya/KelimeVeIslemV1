@@ -67,7 +67,7 @@ struct NumberGame: Codable, Identifiable {
         }
     }
     
-    private func evaluateExpression(_ expression: String) throws -> Int {
+    func evaluateExpression(_ expression: String) throws -> Int {
         // Remove whitespace
         let cleaned = expression.replacingOccurrences(of: " ", with: "")
         
@@ -202,7 +202,7 @@ struct NumberGame: Codable, Identifiable {
         return number
     }
     
-    func usesOnlyAvailableNumbers(_ expression: String) -> Bool {
+    private func usesOnlyAvailableNumbers(_ expression: String) -> Bool {
         // Extract numbers from expression
         let pattern = "\\d+"
         guard let regex = try? NSRegularExpression(pattern: pattern) else {

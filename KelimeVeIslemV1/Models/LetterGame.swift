@@ -123,7 +123,7 @@ struct LetterGame: Codable, Identifiable {
         return true
     }
     
-    func getLetterUsageCount(_ letter: Character) -> Int {
+    private func getLetterUsageCount(_ letter: Character) -> Int {
         return letters.filter { $0 == letter }.count
     }
     
