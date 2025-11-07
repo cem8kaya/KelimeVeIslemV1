@@ -32,17 +32,17 @@ struct NumberGameView: View {
                 }
             }
             .confirmationDialog(
-                "Exit Game?",
+                "Oyundan Çıkılsın mı?",
                 isPresented: $showExitConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Exit Game", role: .destructive) {
+                Button("Oyundan Çık", role: .destructive) {
                     viewModel.resetGame()
                     dismiss()
                 }
-                Button("Resume", role: .cancel) {}
+                Button("Devam Et", role: .cancel) {}
             } message: {
-                Text("Your current progress will be lost.")
+                Text("Mevcut ilerlemeniz kaybolacak.")
             }
             .onChange(of: viewModel.gameState) { oldValue, newValue in
                 if newValue == .playing {
@@ -67,7 +67,7 @@ struct NumberGameView: View {
                 Spacer()
             }
             if viewModel.isLoading {
-                LoadingOverlay(message: "Calculating solution...")
+                LoadingOverlay(message: "Çözüm hesaplanıyor...")
             }
         }
     }
@@ -109,9 +109,9 @@ struct NumberGameView: View {
             if viewModel.gameState == .ready {
                 // Using the new shared GameReadyView
                 GameReadyView(
-                    title: "Ready for Numbers?",
-                    subtitle: "Reach the target number\nusing the given numbers!",
-                    actionTitle: "Start Game",
+                    title: "Sayılara Hazır mısınız?",
+                    subtitle: "Hedef sayıya\nverilen sayıları kullanarak ulaşın!",
+                    actionTitle: "Oyunu Başlat",
                     color: Color(hex: "#10B981"), // Emerald Green
                     onStart: { viewModel.startNewGame() }
                 )
@@ -233,7 +233,7 @@ struct NumberGameView: View {
         }
         
         ToolbarItem(placement: .principal) {
-            Text("Numbers Game")
+            Text("Sayılar Oyunu")
                 .font(.headline)
                 .foregroundColor(.white)
         }
@@ -252,11 +252,11 @@ struct NumberGameView: View {
                 Button {
                     showExitConfirmation = true
                 } label: {
-                    Text("Exit")
+                    Text("Çık")
                         .foregroundColor(.white)
                         .fontWeight(.semibold)
                 }
-                .accessibilityLabel("Exit game")
+                .accessibilityLabel("Oyundan çık")
             }
         }
     }
@@ -301,10 +301,10 @@ struct NumberPlayingView: View {
             // Target number
             if let game = game {
                 VStack(spacing: 8) {
-                    Text("Target")
+                    Text("Hedef")
                         .font(.headline)
                         .foregroundColor(.white.opacity(0.9))
-                    
+
                     Text("\(game.targetNumber)")
                         .font(.system(size: 48, weight: .black, design: .rounded))
                         .foregroundColor(Color(hex: "#FACC15")) // Amber Yellow
@@ -325,12 +325,12 @@ struct NumberPlayingView: View {
                 
                 // Current solution display
                 VStack(spacing: 8) {
-                    Text("Your Solution")
+                    Text("Çözümünüz")
                         .font(.headline)
                         .foregroundColor(.white.opacity(0.9))
-                    
+
                     ScrollView(.horizontal, showsIndicators: false) {
-                        Text(currentSolution.isEmpty ? "Build your expression..." : currentSolution)
+                        Text(currentSolution.isEmpty ? "İfadenizi oluşturun..." : currentSolution)
                             .font(.title2.bold())
                             .foregroundColor(.white)
                             .padding()
@@ -354,19 +354,19 @@ struct NumberPlayingView: View {
                 
                 // Submit button
                 PrimaryGameButton(
-                    title: "Submit Solution",
+                    title: "Çözümü Gönder",
                     icon: "play.circle.fill",
                     color: currentSolution.isEmpty ? .gray : Color(hex: "#22C55E"), // Lime Green
                     action: onSubmit
                 )
                 .disabled(currentSolution.isEmpty)
                 .padding(.horizontal, 20)
-                
+
                 // Give Up button
                 Button(action: onGiveUp) {
                     HStack {
                         Image(systemName: "xmark.circle")
-                        Text("Give Up")
+                        Text("Pes Et")
                     }
                     .font(.subheadline.bold())
                     .foregroundColor(.white.opacity(0.9))
@@ -454,7 +454,7 @@ struct ActionButtonsView: View {
             Button(action: onClear) {
                 HStack {
                     Image(systemName: "trash.fill")
-                    Text("Clear")
+                    Text("Temizle")
                 }
                 .font(.headline)
                 .foregroundColor(.white)
@@ -464,11 +464,11 @@ struct ActionButtonsView: View {
                 .cornerRadius(10)
             }
             .buttonStyle(GrowingButton())
-            
+
             Button(action: onHint) {
                 HStack {
                     Image(systemName: "lightbulb.fill")
-                    Text("Hint")
+                    Text("İpucu")
                 }
                 .font(.headline)
                 .foregroundColor(.white)
@@ -494,13 +494,13 @@ struct HintView: View {
             ZStack {
                 Color.black.opacity(0.9)
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 20) {
-                    Text("Solution Hint")
+                    Text("Çözüm İpucu")
                         .font(.title.bold())
                         .foregroundColor(Color(hex: "#FACC15"))
                         .padding(.top, 20)
-                    
+
                     ScrollView {
                         VStack(alignment: .leading, spacing: 15) {
                             ForEach(Array(operations.enumerated()), id: \.offset) { index, op in
@@ -509,7 +509,7 @@ struct HintView: View {
                                         .font(.headline)
                                         .foregroundColor(.white.opacity(0.7))
                                         .frame(width: 30)
-                                    
+
                                     Text(op.description)
                                         .font(.title3)
                                         .foregroundColor(.white)
@@ -527,7 +527,7 @@ struct HintView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Close") {
+                    Button("Kapat") {
                         dismiss()
                     }
                     .foregroundColor(.white)

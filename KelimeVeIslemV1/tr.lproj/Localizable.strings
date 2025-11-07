@@ -1,0 +1,144 @@
+/*
+ * Localizable.strings - Turkish
+ * KelimeVeIslemV1
+ */
+
+// MARK: - Game Modes
+"game.mode.letters" = "Harfler";
+"game.mode.numbers" = "Sayılar";
+"game.mode.letters.description" = "Harflerden kelime oluştur";
+"game.mode.numbers.description" = "Hedef sayıya ulaş";
+
+// MARK: - Home View
+"home.stats" = "İstatistikler";
+"home.settings" = "Ayarlar";
+"home.progress.title" = "İlerlemeniz";
+"home.stats.total_games" = "Toplam Oyun";
+"home.stats.avg_score" = "Ort. Skor";
+"home.stats.best_score" = "En İyi Skor";
+
+// MARK: - Game Common
+"game.score" = "Skor";
+"game.timer" = "Süre";
+"game.exit" = "Çık";
+"game.exit.confirmation.title" = "Oyundan Çıkılsın mı?";
+"game.exit.confirmation.message" = "Mevcut ilerlemeniz kaybolacak.";
+"game.exit.button" = "Oyundan Çık";
+"game.resume" = "Devam Et";
+
+// MARK: - Number Game
+"number_game.title" = "Sayılar Oyunu";
+"number_game.ready.title" = "Sayılara Hazır mısınız?";
+"number_game.ready.subtitle" = "Hedef sayıya\nverilen sayıları kullanarak ulaşın!";
+"number_game.start" = "Oyunu Başlat";
+"number_game.target" = "Hedef";
+"number_game.solution" = "Çözümünüz";
+"number_game.solution.placeholder" = "İfadenizi oluşturun...";
+"number_game.submit" = "Çözümü Gönder";
+"number_game.give_up" = "Pes Et";
+"number_game.clear" = "Temizle";
+"number_game.hint" = "İpucu";
+"number_game.hint.title" = "Çözüm İpucu";
+"number_game.hint.close" = "Kapat";
+"number_game.loading" = "Çözüm hesaplanıyor...";
+"number_game.available_numbers" = "Mevcut Sayılar";
+
+// MARK: - Letter Game
+"letter_game.title" = "Harfler Oyunu";
+"letter_game.ready.title" = "Oynamaya Hazır mısınız?";
+"letter_game.ready.subtitle" = "%d harf alacaksınız.\nYapabileceğiniz en uzun kelimeyi oluşturun!";
+"letter_game.start" = "Oyunu Başlat";
+"letter_game.available_letters" = "Mevcut Harfler";
+"letter_game.your_word" = "Kelimeniz";
+"letter_game.word.placeholder" = "Yukarıdaki harflere dokunun...";
+"letter_game.submit" = "Kelimeyi Gönder";
+"letter_game.give_up" = "Pes Et";
+"letter_game.deselect_all" = "Tümünü Kaldır";
+"letter_game.shuffle" = "Harfleri Karıştır";
+"letter_game.loading" = "Kelime doğrulanıyor...";
+
+// MARK: - Result Views - Number Game
+"result.number.your_result" = "Sonucunuz";
+"result.number.difference" = "Fark: %d";
+"result.number.your_solution" = "Çözümünüz";
+"result.number.play_again" = "Tekrar Oyna";
+"result.number.back_to_menu" = "Ana Menüye Dön";
+
+// MARK: - Result Views - Letter Game
+"result.letter.your_word" = "Kelimeniz";
+"result.letter.suggestions" = "Bu Kelimeleri Deneyin!";
+"result.letter.play_again" = "Tekrar Oyna";
+"result.letter.back_to_menu" = "Ana Menüye Dön";
+
+// MARK: - Statistics
+"stats.title" = "İstatistikler";
+"stats.done" = "Tamam";
+"stats.overall" = "Genel İstatistikler";
+"stats.games_played" = "Oynanan Oyun";
+"stats.total_score" = "Toplam Skor";
+"stats.average_score" = "Ortalama Skor";
+"stats.perfect_matches" = "Tam İsabet";
+"stats.best_letter_score" = "En İyi Harf Skoru";
+"stats.best_number_score" = "En İyi Sayı Skoru";
+"stats.points" = "%d puan";
+"stats.achievements" = "Başarımlar";
+"stats.achievement.word_master" = "Kelime Ustası";
+"stats.achievement.word_master.desc" = "%d harf oyunu oynandı";
+"stats.achievement.number_wizard" = "Sayı Sihirbazı";
+"stats.achievement.number_wizard.desc" = "%d sayı oyunu oynandı";
+"stats.achievement.perfect_precision" = "Mükemmel Hassasiyet";
+"stats.achievement.perfect_precision.desc" = "%d tam isabet";
+"stats.achievement.longest_word" = "En Uzun Kelime";
+"stats.recent_games" = "Son Oyunlar";
+"stats.clear_all" = "Tüm İstatistikleri Temizle";
+"stats.clear.confirmation.title" = "İstatistikler Temizlensin mi?";
+"stats.clear.confirmation.message" = "Bu işlem tüm oyun geçmişinizi ve istatistiklerinizi kalıcı olarak silecektir.";
+"stats.clear.cancel" = "İptal";
+"stats.clear.confirm" = "Temizle";
+
+// MARK: - Settings
+"settings.title" = "Ayarlar";
+"settings.done" = "Tamam";
+"settings.language" = "Dil";
+"settings.language.section" = "Oyun Dili";
+"settings.language.footer" = "Kelime doğrulama için sözlük dilini seçin";
+"settings.letters_game" = "Harfler Oyunu";
+"settings.letter_count" = "Harf Sayısı: %d";
+"settings.letter_timer" = "Süre: %ds";
+"settings.numbers_game" = "Sayılar Oyunu";
+"settings.difficulty" = "Zorluk";
+"settings.difficulty.easy" = "Kolay";
+"settings.difficulty.medium" = "Orta";
+"settings.difficulty.hard" = "Zor";
+"settings.difficulty.footer" = "Kolay: 5 küçük + 1 büyük sayı • Orta: 4 küçük + 2 büyük sayı • Zor: 3 küçük + 3 büyük sayı";
+"settings.number_timer" = "Süre: %ds";
+"settings.audio" = "Ses";
+"settings.sound_effects" = "Ses Efektleri";
+"settings.dictionary" = "Sözlük";
+"settings.online_dictionary" = "Çevrimiçi Sözlük Kullan";
+"settings.online_dictionary.footer" = "Kelimeleri çevrimiçi sözlük API'si ile doğrulamak için etkinleştirin (internet bağlantısı gerektirir)";
+"settings.about" = "Hakkında";
+"settings.version" = "Sürüm";
+"settings.troubleshooting" = "Sorun Giderme";
+"settings.reset_all" = "Tüm Verileri Sıfırla";
+"settings.reset.footer" = "Çökme veya donma yaşıyorsanız bunu kullanın. Bu işlem tüm oyun geçmişini, istatistikleri ve ayarları silecektir.";
+"settings.reset.confirmation.title" = "Tüm Veriler Sıfırlansın mı?";
+"settings.reset.confirmation.message" = "Bu işlem tüm oyun geçmişinizi, istatistiklerinizi kalıcı olarak silecek ve ayarları varsayılana döndürecektir. Bu işlem geri alınamaz.";
+"settings.reset.cancel" = "İptal";
+"settings.reset.confirm" = "Sıfırla";
+
+// MARK: - Difficulty Levels
+"difficulty.easy" = "Kolay";
+"difficulty.medium" = "Orta";
+"difficulty.hard" = "Zor";
+
+// MARK: - Language Names
+"language.turkish" = "Türkçe";
+"language.english" = "English";
+
+// MARK: - Common
+"common.ok" = "Tamam";
+"common.cancel" = "İptal";
+"common.close" = "Kapat";
+"common.delete" = "Sil";
+"common.error" = "Hata";

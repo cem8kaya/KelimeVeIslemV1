@@ -35,11 +35,11 @@ struct GameSettings: Codable {
         var displayName: String {
             switch self {
             case .easy:
-                return NSLocalizedString("difficulty.easy", comment: "Easy")
+                return "Kolay"
             case .medium:
-                return NSLocalizedString("difficulty.medium", comment: "Medium")
+                return "Orta"
             case .hard:
-                return NSLocalizedString("difficulty.hard", comment: "Hard")
+                return "Zor"
             }
         }
         
@@ -57,11 +57,11 @@ struct GameSettings: Codable {
         var description: String {
             switch self {
             case .easy:
-                return "5 small + 1 large numbers"
+                return "5 küçük + 1 büyük sayı"
             case .medium:
-                return "4 small + 2 large numbers"
+                return "4 küçük + 2 büyük sayı"
             case .hard:
-                return "3 small + 3 large numbers"
+                return "3 küçük + 3 büyük sayı"
             }
         }
     }
