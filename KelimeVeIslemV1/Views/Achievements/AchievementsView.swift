@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import Combine
 
 struct AchievementsView: View {
     @StateObject private var viewModel = AchievementsViewModel()
