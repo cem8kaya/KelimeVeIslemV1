@@ -18,6 +18,8 @@ struct HomeView: View {
     @State private var selectedMode: GameMode?
     @State private var showSettings = false
     @State private var showStatistics = false
+    @State private var showDailyChallenge = false
+    @State private var showAchievements = false
     
     var body: some View {
         NavigationView {
@@ -55,13 +57,16 @@ struct HomeView: View {
                             color: Color(hex: "#06B6D4"), // Cyan
                             action: { selectedMode = .letters }
                         )
-                        
+
                         // Numbers Button
                         GameModeButton(
                             mode: .numbers,
                             color: Color(hex: "#F97316"), // Orange
                             action: { selectedMode = .numbers }
                         )
+
+                        // Daily Challenge Button
+                        DailyChallengeButton(action: { showDailyChallenge = true })
                     }
                     .padding(.horizontal, 40)
                     
@@ -74,7 +79,13 @@ struct HomeView: View {
                     }
                     
                     // Bottom buttons
-                    HStack(spacing: 20) {
+                    HStack(spacing: 15) {
+                        BottomBarButton(
+                            title: "Başarımlar",
+                            icon: "trophy.fill",
+                            action: { showAchievements = true }
+                        )
+
                         BottomBarButton(
                             title: "İstatistikler",
                             icon: "chart.bar.fill",
@@ -96,6 +107,12 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showStatistics) {
                 StatisticsView()
+            }
+            .sheet(isPresented: $showDailyChallenge) {
+                DailyChallengeView()
+            }
+            .sheet(isPresented: $showAchievements) {
+                AchievementsView()
             }
             .fullScreenCover(item: $selectedMode) { mode in
                 GameContainerView(mode: mode)
@@ -214,7 +231,7 @@ struct BottomBarButton: View {
     let title: String
     let icon: String
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             VStack {
@@ -227,6 +244,62 @@ struct BottomBarButton: View {
             .padding(15)
             .background(Color.white.opacity(0.2))
             .cornerRadius(15)
+        }
+        .buttonStyle(GrowingButton())
+    }
+}
+
+// MARK: - Daily Challenge Button
+
+struct DailyChallengeButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: "calendar.badge.clock")
+                    .font(.system(size: 28))
+
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(spacing: 8) {
+                        Text("Günlük Meydan Okuma")
+                            .font(.system(size: 20, weight: .heavy))
+
+                        HStack(spacing: 3) {
+                            Image(systemName: "flame.fill")
+                                .font(.caption)
+                            Text("2x")
+                                .font(.caption.bold())
+                        }
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.orange.opacity(0.2))
+                        )
+                    }
+
+                    Text("Her gün yeni bir zorluk")
+                        .font(.caption)
+                }
+
+                Spacer()
+
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 25))
+            }
+            .foregroundColor(.white)
+            .padding(20)
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "#8B5CF6"), Color(hex: "#EC4899")],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(20)
+            .shadow(color: Color(hex: "#8B5CF6").opacity(0.6), radius: 10, x: 0, y: 8)
         }
         .buttonStyle(GrowingButton())
     }

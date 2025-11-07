@@ -300,27 +300,73 @@ extension View {
 struct ComboView: View {
     let comboCount: Int
     @State private var scale: CGFloat = 1.0
+    @State private var showMilestone: Bool = false
+
+    var comboMultiplier: Int {
+        if comboCount >= 10 { return 5 }
+        if comboCount >= 5 { return 3 }
+        if comboCount >= 3 { return 2 }
+        return 1
+    }
+
+    var comboColor: Color {
+        if comboCount >= 10 { return .purple }
+        if comboCount >= 5 { return .red }
+        if comboCount >= 3 { return .orange }
+        return .orange
+    }
+
+    var comboIcon: String {
+        if comboCount >= 10 { return "🔥🔥🔥" }
+        if comboCount >= 5 { return "🔥🔥" }
+        return "🔥"
+    }
 
     var body: some View {
         if comboCount >= 2 {
-            HStack(spacing: 5) {
-                Text("🔥")
-                    .font(.title2)
-                Text("\(comboCount) Combo!")
-                    .font(.headline.bold())
-                    .foregroundColor(.orange)
+            VStack(spacing: 5) {
+                HStack(spacing: 8) {
+                    Text(comboIcon)
+                        .font(.title3)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(comboCount) Combo!")
+                            .font(.headline.bold())
+                            .foregroundColor(comboColor)
+
+                        if comboMultiplier > 1 {
+                            Text("\(comboMultiplier)x Çarpan")
+                                .font(.caption.bold())
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(comboColor.opacity(0.2))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(comboColor, lineWidth: 2)
+                        )
+                )
+                .scaleEffect(scale)
+
+                // Milestone celebration text
+                if showMilestone {
+                    Text(milestoneText)
+                        .font(.caption.bold())
+                        .foregroundColor(.yellow)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.black.opacity(0.3))
+                        )
+                        .transition(.scale.combined(with: .opacity))
+                }
             }
-            .padding(.horizontal, 15)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.orange.opacity(0.2))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.orange, lineWidth: 2)
-                    )
-            )
-            .scaleEffect(scale)
             .onChange(of: comboCount) { oldValue, newValue in
                 // Animate when combo increases
                 if newValue > oldValue {
@@ -332,9 +378,33 @@ struct ComboView: View {
                             scale = 1.0
                         }
                     }
+
+                    // Show milestone message
+                    if isMilestone(newValue) {
+                        showMilestone = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            withAnimation {
+                                showMilestone = false
+                            }
+                        }
+                    }
                 }
             }
             .transition(.scale.combined(with: .opacity))
+        }
+    }
+
+    private func isMilestone(_ count: Int) -> Bool {
+        return count == 3 || count == 5 || count == 10 || count % 10 == 0
+    }
+
+    private var milestoneText: String {
+        switch comboCount {
+        case 3: return "🎉 2x Çarpan Kazandınız!"
+        case 5: return "⚡ 3x Çarpan Kazandınız!"
+        case 10: return "💥 5x Çarpan Kazandınız!"
+        case let n where n % 10 == 0: return "🌟 İnanılmaz! \(n) Combo!"
+        default: return ""
         }
     }
 }
@@ -413,6 +483,130 @@ struct ConfettiLayer: UIViewRepresentable {
             color.setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
         }
+    }
+}
+
+// MARK: - Achievement Notification
+
+struct AchievementNotification: View {
+    let achievement: Achievement
+    @State private var isVisible = false
+    @State private var offset: CGFloat = -200
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 15) {
+                // Icon
+                Image(systemName: achievement.iconName)
+                    .font(.system(size: 30))
+                    .foregroundColor(.yellow)
+                    .frame(width: 50, height: 50)
+                    .background(
+                        Circle()
+                            .fill(Color.yellow.opacity(0.2))
+                    )
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("🏆 Başarım Kazanıldı!")
+                        .font(.caption.bold())
+                        .foregroundColor(.yellow)
+
+                    Text(achievement.title)
+                        .font(.headline.bold())
+                        .foregroundColor(.white)
+
+                    Text(achievement.description)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                        .lineLimit(2)
+                }
+
+                Spacer()
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: "#8B5CF6"), Color(hex: "#6366F1")],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: Color(hex: "#8B5CF6").opacity(0.5), radius: 15, x: 0, y: 10)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.yellow.opacity(0.3), lineWidth: 2)
+            )
+            .padding(.horizontal, 20)
+
+            Spacer()
+        }
+        .offset(y: offset)
+        .opacity(isVisible ? 1 : 0)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                isVisible = true
+                offset = 100
+            }
+
+            // Auto-dismiss after 3 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    offset = -200
+                    isVisible = false
+                }
+            }
+        }
+    }
+}
+
+// Achievement notification modifier
+struct AchievementNotificationModifier: ViewModifier {
+    @Binding var achievements: [Achievement]
+    @State private var currentAchievement: Achievement?
+    @State private var showNotification = false
+
+    func body(content: Content) -> some View {
+        ZStack {
+            content
+
+            if showNotification, let achievement = currentAchievement {
+                AchievementNotification(achievement: achievement)
+                    .zIndex(999)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .onChange(of: achievements) { oldValue, newValue in
+            // Show notification for new achievements
+            if let newAchievement = newValue.first, !showNotification {
+                currentAchievement = newAchievement
+                showNotification = true
+
+                // Remove from queue and show next after delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                    showNotification = false
+                    if achievements.count > 0 {
+                        achievements.removeFirst()
+                    }
+
+                    // Show next achievement if any
+                    if !achievements.isEmpty {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            currentAchievement = achievements.first
+                            showNotification = true
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+extension View {
+    func achievementNotifications(_ achievements: Binding<[Achievement]>) -> some View {
+        modifier(AchievementNotificationModifier(achievements: achievements))
     }
 }
 

@@ -23,7 +23,12 @@ class PersistenceService {
     private let settingsKey = "gameSettings"
     private let statisticsKey = "gameStatistics"
     private let resultsKey = "gameResults"
+    private let dailyChallengeStatsKey = "dailyChallengeStats"
+    private let dailyChallengeLeaderboardKey = "dailyChallengeLeaderboard"
+    private let todayChallengeResultKey = "todayChallengeResult"
+    private let achievementProgressKey = "achievementProgress"
     private let maxStoredResults = 100
+    private let maxLeaderboardEntries = 50
     
     private init() {}
     
@@ -98,12 +103,15 @@ class PersistenceService {
                 let encoded = try JSONEncoder().encode(results)
                 defaults.set(encoded, forKey: resultsKey)
                 defaults.synchronize()
-                
+
                 // Update statistics
                 try updateStatisticsInternal(with: result)
+
+                // Check achievements
+                checkAchievementsInternal(for: result)
                 return
             }
-            
+
             var results: [GameResult]
             do {
                 results = try JSONDecoder().decode([GameResult].self, from: data)
@@ -113,14 +121,14 @@ class PersistenceService {
                 // If decode fails, start fresh
                 results = []
             }
-            
+
             results.insert(result, at: 0)
-            
+
             // Keep only the most recent results
             if results.count > maxStoredResults {
                 results = Array(results.prefix(maxStoredResults))
             }
-            
+
             do {
                 let encoded = try JSONEncoder().encode(results)
                 defaults.set(encoded, forKey: resultsKey)
@@ -128,9 +136,25 @@ class PersistenceService {
             } catch {
                 throw AppError.persistenceError("Failed to save result: \(error.localizedDescription)")
             }
-            
+
             // Update statistics
             try updateStatisticsInternal(with: result)
+
+            // Check achievements
+            checkAchievementsInternal(for: result)
+        }
+    }
+
+    private func checkAchievementsInternal(for result: GameResult) {
+        // This is called from within queue.sync, get latest statistics
+        guard let data = defaults.data(forKey: statisticsKey),
+              let statistics = try? JSONDecoder().decode(GameStatistics.self, from: data) else {
+            return
+        }
+
+        // Run achievement check asynchronously
+        DispatchQueue.global(qos: .background).async {
+            let _ = AchievementTracker.shared.checkAchievements(after: result, with: statistics)
         }
     }
     
@@ -252,17 +276,143 @@ class PersistenceService {
         try queue.sync {
             do {
                 let backup = try JSONDecoder().decode(BackupData.self, from: data)
-                
+
                 // Save imported data
                 let encodedResults = try JSONEncoder().encode(backup.results)
                 defaults.set(encodedResults, forKey: resultsKey)
-                
+
                 try saveStatistics(backup.statistics)
                 try saveSettings(backup.settings)
-                
+
                 defaults.synchronize()
             } catch {
                 throw AppError.persistenceError("Failed to import data: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // MARK: - Daily Challenge
+
+    func saveDailyChallengeStats(_ stats: DailyChallengeStats) {
+        queue.async {
+            do {
+                let encoded = try JSONEncoder().encode(stats)
+                self.defaults.set(encoded, forKey: self.dailyChallengeStatsKey)
+                self.defaults.synchronize()
+            } catch {
+                print("⚠️ Failed to save daily challenge stats: \(error)")
+            }
+        }
+    }
+
+    func loadDailyChallengeStats() -> DailyChallengeStats {
+        return queue.sync {
+            guard let data = defaults.data(forKey: dailyChallengeStatsKey) else {
+                return DailyChallengeStats()
+            }
+
+            do {
+                return try JSONDecoder().decode(DailyChallengeStats.self, from: data)
+            } catch {
+                print("⚠️ Failed to decode daily challenge stats: \(error)")
+                return DailyChallengeStats()
+            }
+        }
+    }
+
+    func saveDailyChallengeLeaderboard(_ results: [DailyChallengeResult]) {
+        queue.async {
+            // Keep only the most recent entries
+            let limitedResults = Array(results.prefix(self.maxLeaderboardEntries))
+
+            do {
+                let encoded = try JSONEncoder().encode(limitedResults)
+                self.defaults.set(encoded, forKey: self.dailyChallengeLeaderboardKey)
+                self.defaults.synchronize()
+            } catch {
+                print("⚠️ Failed to save daily challenge leaderboard: \(error)")
+            }
+        }
+    }
+
+    func loadDailyChallengeLeaderboard() -> [DailyChallengeResult] {
+        return queue.sync {
+            guard let data = defaults.data(forKey: dailyChallengeLeaderboardKey) else {
+                return []
+            }
+
+            do {
+                return try JSONDecoder().decode([DailyChallengeResult].self, from: data)
+            } catch {
+                print("⚠️ Failed to decode daily challenge leaderboard: \(error)")
+                return []
+            }
+        }
+    }
+
+    func saveTodayChallengeResult(_ result: DailyChallengeResult) {
+        queue.async {
+            do {
+                let encoded = try JSONEncoder().encode(result)
+                self.defaults.set(encoded, forKey: self.todayChallengeResultKey)
+                self.defaults.synchronize()
+            } catch {
+                print("⚠️ Failed to save today's challenge result: \(error)")
+            }
+        }
+    }
+
+    func loadTodayChallengeResult() -> DailyChallengeResult? {
+        return queue.sync {
+            guard let data = defaults.data(forKey: todayChallengeResultKey) else {
+                return nil
+            }
+
+            do {
+                let result = try JSONDecoder().decode(DailyChallengeResult.self, from: data)
+
+                // Check if it's still today's result
+                let calendar = Calendar.current
+                if calendar.isDateInToday(result.challengeDate) {
+                    return result
+                } else {
+                    // Clear old result
+                    defaults.removeObject(forKey: todayChallengeResultKey)
+                    defaults.synchronize()
+                    return nil
+                }
+            } catch {
+                print("⚠️ Failed to decode today's challenge result: \(error)")
+                return nil
+            }
+        }
+    }
+
+    // MARK: - Achievements
+
+    func saveAchievementProgress(_ progress: AchievementProgress) {
+        queue.async {
+            do {
+                let encoded = try JSONEncoder().encode(progress)
+                self.defaults.set(encoded, forKey: self.achievementProgressKey)
+                self.defaults.synchronize()
+            } catch {
+                print("⚠️ Failed to save achievement progress: \(error)")
+            }
+        }
+    }
+
+    func loadAchievementProgress() -> AchievementProgress {
+        return queue.sync {
+            guard let data = defaults.data(forKey: achievementProgressKey) else {
+                return AchievementProgress()
+            }
+
+            do {
+                return try JSONDecoder().decode(AchievementProgress.self, from: data)
+            } catch {
+                print("⚠️ Failed to decode achievement progress: \(error)")
+                return AchievementProgress()
             }
         }
     }

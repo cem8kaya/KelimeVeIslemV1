@@ -45,11 +45,27 @@ class LetterGameViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
-    
+
     init(settings: GameSettings = PersistenceService.shared.loadSettings()) {
         self.settings = settings
         // Initialize published properties from settings
         self.letterCount = settings.letterCount
+    }
+
+    // Custom initializer for daily challenges with pre-generated letters
+    init(customGame: LetterGame) {
+        self.settings = PersistenceService.shared.loadSettings()
+        self.letterCount = customGame.letters.count
+        self.game = customGame
+        self.timeRemaining = settings.letterTimerDuration
+        self.gameState = .playing
+        self.currentWord = ""
+        self.validationMessage = ""
+        self.suggestedWords = []
+        self.comboCount = 0
+
+        audioService.playSound(.gameStart)
+        startTimer()
     }
     
     // MARK: - Game States
@@ -277,17 +293,20 @@ class LetterGameViewModel: ObservableObject {
     
     private func saveResult() {
         guard let game = game else { return }
-        
+
         let timeTaken = settings.letterTimerDuration - timeRemaining
         let details = GameResult.ResultDetails.letters(
             word: game.playerWord,
             letters: game.letters.map { String($0) },
             isValid: game.isValid ?? false
         )
-        
+
+        // Apply combo multiplier to final score
+        let finalScore = score
+
         let result = GameResult(
             mode: .letters,
-            score: game.score,
+            score: finalScore,
             duration: timeTaken,
             details: details
         )
@@ -307,10 +326,24 @@ class LetterGameViewModel: ObservableObject {
     }
     
     // MARK: - Helpers
-    
+
     func getAvailableLettersString() -> String {
         guard let game = game else { return "" }
         return game.letters.map { String($0) }.joined(separator: " ")
+    }
+
+    // MARK: - Combo System
+
+    var comboMultiplier: Int {
+        if comboCount >= 10 { return 5 }
+        if comboCount >= 5 { return 3 }
+        if comboCount >= 3 { return 2 }
+        return 1
+    }
+
+    var score: Int {
+        guard let game = game else { return 0 }
+        return game.score * comboMultiplier
     }
     
     deinit {
