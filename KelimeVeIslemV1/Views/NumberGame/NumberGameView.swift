@@ -52,31 +52,39 @@ struct NumberGameView: View {
     }
     
     // MARK: - Main Content
-    
+
     private var mainContent: some View {
         ZStack {
             backgroundGradient
-            
+
             VStack(spacing: 20) {
                 headerView
-                
+
                 Spacer()
-                
+
                 gameContentView
-                
+
                 Spacer()
             }
+
             if viewModel.isLoading {
                 LoadingOverlay(message: "Çözüm hesaplanıyor...")
             }
+
+            // Confetti animation overlay
+            ConfettiView(trigger: viewModel.showConfetti)
         }
+        .scorePopup(score: Binding(
+            get: { viewModel.game?.score ?? 0 },
+            set: { _ in }
+        ))
     }
     
     // MARK: - Background
     
     private var backgroundGradient: some View {
         LinearGradient(
-            colors: [Color(hex: "#F97316").opacity(0.8), Color(hex: "#EC4899").opacity(0.8)], // Orange to Pink
+            colors: [Color(hex: "#FB923C").opacity(0.8), Color(hex: "#F472B6").opacity(0.8)], // Orange to Pink
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -86,20 +94,26 @@ struct NumberGameView: View {
     // MARK: - Header
     
     private var headerView: some View {
-        HStack {
-            // Use the centralized TimerView
-            TimerView(timeRemaining: viewModel.timeRemaining, mode: .numbers)
-                .frame(width: 80, height: 80)
-            
-            Spacer()
-            
-            if let game = viewModel.game {
-                // Use the centralized ScoreView
-                ScoreView(score: game.score)
+        VStack(spacing: 8) {
+            HStack {
+                // Use the centralized TimerView
+                TimerView(timeRemaining: viewModel.timeRemaining, mode: .numbers)
+                    .frame(width: 80, height: 80)
+
+                Spacer()
+
+                if let game = viewModel.game {
+                    // Use the centralized ScoreView
+                    ScoreView(score: game.score)
+                }
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+
+            // Combo counter
+            ComboView(comboCount: viewModel.comboCount)
+                .padding(.horizontal)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
     }
     
     // MARK: - Game Content

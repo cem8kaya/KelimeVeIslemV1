@@ -28,6 +28,8 @@ class NumberGameViewModel: ObservableObject {
     @Published var hintSolution: [Operation]?
     @Published var isLoading: Bool = false
     @Published var error: AppError?
+    @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
+    @Published var showConfetti: Bool = false // Trigger for confetti animation
     
     // MARK: - Dependencies
     
@@ -78,7 +80,8 @@ class NumberGameViewModel: ObservableObject {
         hintSolution = nil
         error = nil
         isLoading = false
-        
+        comboCount = 0 // Reset combo counter
+
         audioService.playSound(.gameStart)
         startTimer()
     }
@@ -100,23 +103,32 @@ class NumberGameViewModel: ObservableObject {
             
             if let result = game.playerResult {
                 let difference = abs(game.targetNumber - result)
-                
+
                 if difference == 0 {
+                    comboCount += 1 // Increment combo on perfect match
+                    // Trigger confetti for perfect score (100 points)
+                    showConfetti = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.showConfetti = false
+                    }
                     resultMessage = NSLocalizedString("success.perfect_match",
                         comment: "Perfect match!")
                     audioService.playSound(.success)
                     audioService.playSuccessHaptic()
                 } else if difference <= 5 {
+                    comboCount += 1 // Increment combo on close match
                     resultMessage = String(format: NSLocalizedString("success.close_match",
                         comment: "Close! Off by %d"), difference)
                     audioService.playSound(.success)
                     audioService.playHaptic(style: .medium)
                 } else {
+                    comboCount = 0 // Reset combo on far miss
                     resultMessage = String(format: NSLocalizedString("info.result",
                         comment: "Result: %d (target: %d)"), result, game.targetNumber)
                     audioService.playSound(.buttonTap)
                 }
             } else {
+                comboCount = 0 // Reset combo on invalid expression
                 resultMessage = NSLocalizedString("error.invalid_expression",
                     comment: "Invalid expression")
                 audioService.playSound(.failure)
@@ -207,6 +219,8 @@ class NumberGameViewModel: ObservableObject {
         hintSolution = nil
         error = nil
         isLoading = false
+        comboCount = 0
+        showConfetti = false
     }
     
     // MARK: - Timer Management (DispatchSource)

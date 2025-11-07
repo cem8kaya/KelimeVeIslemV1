@@ -52,28 +52,35 @@ struct LetterGameView: View {
     }
     
     // MARK: - Main Content
-    
+
     private var mainContent: some View {
         ZStack {
             backgroundGradient
-            
+
             VStack(spacing: 20) {
                 headerView
-                
+
                 Spacer()
-                
+
                 gameContentView
-                
+
                 Spacer()
             }
+
+            // Confetti animation overlay
+            ConfettiView(trigger: viewModel.showConfetti)
         }
+        .scorePopup(score: Binding(
+            get: { viewModel.game?.score ?? 0 },
+            set: { _ in }
+        ))
     }
     
     // MARK: - Background
     
     private var backgroundGradient: some View {
         LinearGradient(
-            colors: [Color(hex: "#2563EB").opacity(0.8), Color(hex: "#06B6D4").opacity(0.8)], // Blue to Cyan
+            colors: [Color(hex: "#8B5CF6").opacity(0.8), Color(hex: "#06B6D4").opacity(0.8)], // Purple to Cyan
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -83,20 +90,26 @@ struct LetterGameView: View {
     // MARK: - Header
     
     private var headerView: some View {
-        HStack {
-            // FIX 1: Add missing 'mode' argument
-            TimerView(timeRemaining: viewModel.timeRemaining, mode: .letters)
-                .accessibilityLabel("Time remaining: \(viewModel.timeRemaining) seconds")
-            
-            Spacer()
-            
-            if let game = viewModel.game {
-                ScoreView(score: game.score)
-                    .accessibilityLabel("Current score: \(game.score) points")
+        VStack(spacing: 8) {
+            HStack {
+                // FIX 1: Add missing 'mode' argument
+                TimerView(timeRemaining: viewModel.timeRemaining, mode: .letters)
+                    .accessibilityLabel("Time remaining: \(viewModel.timeRemaining) seconds")
+
+                Spacer()
+
+                if let game = viewModel.game {
+                    ScoreView(score: game.score)
+                        .accessibilityLabel("Current score: \(game.score) points")
+                }
             }
+            .padding(.horizontal)
+            .padding(.top, 10)
+
+            // Combo counter
+            ComboView(comboCount: viewModel.comboCount)
+                .padding(.horizontal)
         }
-        .padding(.horizontal)
-        .padding(.top, 10)
     }
     
     // MARK: - Game Content
@@ -219,7 +232,8 @@ struct LetterGameView: View {
 struct PlayingView: View {
     let letters: [Character]
     @State private var usedLetterIndices: [Int] = []
-    
+    @State private var shuffleRotation: Double = 0
+
     let currentWord: String
     var isTextFieldFocused: FocusState<Bool>.Binding
     let viewModel: LetterGameViewModel
@@ -346,6 +360,10 @@ struct PlayingView: View {
 
                 // Shuffle Letters button
                 Button(action: {
+                    // Trigger rotation animation
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                        shuffleRotation += 360
+                    }
                     viewModel.shuffleLetters()
                     // Also clear selected letters when shuffling
                     usedLetterIndices = []
@@ -353,6 +371,7 @@ struct PlayingView: View {
                 }) {
                     HStack {
                         Image(systemName: "shuffle")
+                            .rotationEffect(.degrees(shuffleRotation))
                         Text("Harfleri Karıştır")
                     }
                     .font(.subheadline.bold())

@@ -24,7 +24,7 @@ struct HomeView: View {
             ZStack {
                 // Background gradient
                 LinearGradient(
-                    colors: [Color(hex: "#6D28D9").opacity(0.9), Color(hex: "#EC4899").opacity(0.8)], // Deep Violet to Pink
+                    colors: [Color(hex: "#6366F1").opacity(0.9), Color(hex: "#A855F7").opacity(0.8)], // Indigo to Purple
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
