@@ -7,12 +7,14 @@ import SwiftUI
 import UIKit // Needed for Haptics
 
 struct NumberGameView: View {
-    
+
     @StateObject private var viewModel = NumberGameViewModel()
+    @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showResult = false
     @State private var showExitConfirmation = false
-    
+    @State private var showParticles = false
+
     // Track which numbers were used in the current solution, by their index in the 'numbers' array
     @State private var usedNumberIndices: [Int] = []
     
@@ -74,17 +76,32 @@ struct NumberGameView: View {
             // Confetti animation overlay
             ConfettiView(trigger: viewModel.showConfetti)
         }
-        .scorePopup(score: Binding(
-            get: { viewModel.game?.score ?? 0 },
-            set: { _ in }
-        ))
+        .enhancedScorePopup(
+            score: Binding(
+                get: { viewModel.game?.score ?? 0 },
+                set: { _ in }
+            ),
+            comboCount: viewModel.comboCount
+        )
+        .particleEffect(trigger: $showParticles)
+        .onChange(of: viewModel.resultMessage) { oldValue, newValue in
+            if newValue.contains("Mükemmel") || newValue.contains("Harika") {
+                showParticles = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    showParticles = false
+                }
+            }
+        }
     }
     
     // MARK: - Background
     
     private var backgroundGradient: some View {
         LinearGradient(
-            colors: [Color(hex: "#FB923C").opacity(0.8), Color(hex: "#F472B6").opacity(0.8)], // Orange to Pink
+            colors: [
+                themeManager.colors.numberGameGradientStart.opacity(0.8),
+                themeManager.colors.numberGameGradientEnd.opacity(0.8)
+            ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -96,14 +113,17 @@ struct NumberGameView: View {
     private var headerView: some View {
         VStack(spacing: 8) {
             HStack {
-                // Use the centralized TimerView
-                TimerView(timeRemaining: viewModel.timeRemaining, mode: .numbers)
-                    .frame(width: 80, height: 80)
+                let settings = PersistenceService.shared.loadSettings()
+                EnhancedTimerView(
+                    timeRemaining: viewModel.timeRemaining,
+                    totalDuration: settings.numberTimerDuration,
+                    theme: themeManager.colors
+                )
+                .frame(width: 80, height: 80)
 
                 Spacer()
 
                 if let game = viewModel.game {
-                    // Use the centralized ScoreView
                     ScoreView(score: game.score)
                 }
             }
@@ -141,6 +161,7 @@ struct NumberGameView: View {
                     game: viewModel.game,
                     currentSolution: $viewModel.currentSolution,
                     usedNumberIndices: $usedNumberIndices,
+                    theme: themeManager.colors,
                     onNumberTap: handleNumberTap,
                     onOperatorTap: handleOperatorTap,
                     onDelete: handleDelete,
@@ -301,39 +322,53 @@ struct NumberPlayingView: View {
     let game: NumberGame?
     @Binding var currentSolution: String
     @Binding var usedNumberIndices: [Int]
-    
+    let theme: ThemeColors
+
     let onNumberTap: (Int, Int) -> Void
     let onOperatorTap: (String) -> Void
     let onDelete: () -> Void
     let onClear: () -> Void
     let onSubmit: () -> Void
     let onHint: () -> Void
-    let onGiveUp: () -> Void  // NEW: Give up callback
+    let onGiveUp: () -> Void
+
+    private var currentResult: Int? {
+        guard let game = game, !currentSolution.isEmpty else { return nil }
+        return game.evaluateExpression(currentSolution)
+    }
     
     var body: some View {
-        VStack(spacing: 25) {
+        VStack(spacing: 20) {
             // Target number
             if let game = game {
                 VStack(spacing: 8) {
                     Text("Hedef")
                         .font(.headline)
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(theme.primaryText.opacity(0.9))
 
                     Text("\(game.targetNumber)")
                         .font(.system(size: 48, weight: .black, design: .rounded))
-                        .foregroundColor(Color(hex: "#FACC15")) // Amber Yellow
+                        .foregroundColor(theme.accentText)
                         .frame(width: 150, height: 80)
                         .background(
                             RoundedRectangle(cornerRadius: 20)
-                                .fill(Color.white.opacity(0.2))
+                                .fill(theme.primaryText.opacity(0.2))
                                 .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 5)
                         )
                 }
+
+                // Proximity Indicator
+                NumberProximityIndicator(
+                    targetNumber: game.targetNumber,
+                    currentResult: currentResult,
+                    theme: theme
+                )
                 
                 // Available numbers
                 NumberTilesView(
                     numbers: game.numbers,
                     usedIndices: usedNumberIndices,
+                    theme: theme,
                     onTap: onNumberTap
                 )
                 
@@ -341,25 +376,34 @@ struct NumberPlayingView: View {
                 VStack(spacing: 8) {
                     Text("Çözümünüz")
                         .font(.headline)
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(theme.primaryText.opacity(0.9))
 
                     ScrollView(.horizontal, showsIndicators: false) {
                         Text(currentSolution.isEmpty ? "İfadenizi oluşturun..." : currentSolution)
                             .font(.title2.bold())
-                            .foregroundColor(.white)
+                            .foregroundColor(theme.primaryText)
                             .padding()
                             .frame(minWidth: 300)
-                            .background(Color.black.opacity(0.3))
+                            .background(theme.numberTileBackground.opacity(0.2))
                             .cornerRadius(15)
                     }
                     .padding(.horizontal)
+
+                    // Show current result if valid
+                    if let result = currentResult {
+                        Text("= \(result)")
+                            .font(.title3.bold())
+                            .foregroundColor(result == game.targetNumber ? theme.successColor : theme.secondaryText)
+                            .transition(.scale.combined(with: .opacity))
+                    }
                 }
                 
                 // Operators and Actions
                 VStack(spacing: 10) {
-                    OperatorButtonsView(onOperatorTap: onOperatorTap)
-                    
+                    OperatorButtonsView(theme: theme, onOperatorTap: onOperatorTap)
+
                     ActionButtonsView(
+                        theme: theme,
                         onDelete: onDelete,
                         onClear: onClear,
                         onHint: onHint
@@ -370,7 +414,7 @@ struct NumberPlayingView: View {
                 PrimaryGameButton(
                     title: "Çözümü Gönder",
                     icon: "play.circle.fill",
-                    color: currentSolution.isEmpty ? .gray : Color(hex: "#22C55E"), // Lime Green
+                    color: currentSolution.isEmpty ? .gray : theme.successColor,
                     action: onSubmit
                 )
                 .disabled(currentSolution.isEmpty)
@@ -383,10 +427,10 @@ struct NumberPlayingView: View {
                         Text("Pes Et")
                     }
                     .font(.subheadline.bold())
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(theme.primaryText.opacity(0.9))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.red.opacity(0.6))
+                    .background(theme.errorColor.opacity(0.6))
                     .cornerRadius(10)
                 }
                 .padding(.horizontal, 20)
@@ -401,29 +445,45 @@ struct NumberPlayingView: View {
 struct NumberTilesView: View {
     let numbers: [Int]
     let usedIndices: [Int]
+    let theme: ThemeColors
     let onTap: (Int, Int) -> Void
-    
+
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 3), spacing: 15) {
             ForEach(Array(numbers.enumerated()), id: \.offset) { index, number in
+                let isUsed = usedIndices.contains(index)
+                let isLarge = number >= 25
+
                 Button(action: { onTap(number, index) }) {
-                    Text("\(number)")
-                        .font(.system(size: 30, weight: .heavy, design: .rounded))
-                        .foregroundColor(usedIndices.contains(index) ? .gray : .white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 70)
-                        .background(
-                            RoundedRectangle(cornerRadius: 15)
-                                .fill(usedIndices.contains(index) ? Color.white.opacity(0.1) : Color.white.opacity(0.3))
-                                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 3)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 15)
-                                .stroke(usedIndices.contains(index) ? Color.white.opacity(0.2) : Color.white.opacity(0.7), lineWidth: usedIndices.contains(index) ? 0 : 1.5)
-                        )
+                    VStack(spacing: 4) {
+                        Text("\(number)")
+                            .font(.system(size: 30, weight: .heavy, design: .rounded))
+                            .foregroundColor(isUsed ? theme.secondaryText.opacity(0.5) : theme.numberTileText)
+
+                        if isLarge && !isUsed {
+                            Text("Büyük")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(theme.warningColor)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 70)
+                    .background(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(isUsed ? theme.numberTileBackground.opacity(0.2) : theme.numberTileBackground)
+                            .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 3)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(
+                                isLarge && !isUsed ? theme.warningColor : theme.numberTileText.opacity(0.3),
+                                lineWidth: isLarge && !isUsed ? 2 : 1
+                            )
+                    )
+                    .opacity(isUsed ? 0.5 : 1.0)
                 }
-                .disabled(usedIndices.contains(index))
-                .buttonStyle(GrowingButton())
+                .disabled(isUsed)
+                .buttonStyle(SpringTileButtonStyle(isSelected: false, theme: theme))
             }
         }
         .padding(.horizontal, 30)
@@ -433,20 +493,21 @@ struct NumberTilesView: View {
 // MARK: - Operator Buttons (Refined)
 
 struct OperatorButtonsView: View {
+    let theme: ThemeColors
     let onOperatorTap: (String) -> Void
-    
-    let operators = ["+", "-", "*", "/", "(", ")"]  // Use clean ASCII operators
-    
+
+    let operators = ["+", "-", "*", "/", "(", ")"]
+
     var body: some View {
         HStack(spacing: 10) {
             ForEach(operators, id: \.self) { op in
                 Button(action: { onOperatorTap(op) }) {
                     Text(op)
                         .font(.title2.bold())
-                        .foregroundColor(.white)
+                        .foregroundColor(theme.primaryText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
-                        .background(Color.white.opacity(0.2))
+                        .background(theme.primaryText.opacity(0.2))
                         .cornerRadius(10)
                 }
                 .buttonStyle(GrowingButton())
@@ -459,10 +520,11 @@ struct OperatorButtonsView: View {
 // MARK: - Action Buttons
 
 struct ActionButtonsView: View {
+    let theme: ThemeColors
     let onDelete: () -> Void
     let onClear: () -> Void
     let onHint: () -> Void
-    
+
     var body: some View {
         HStack(spacing: 10) {
             Button(action: onClear) {
@@ -471,10 +533,10 @@ struct ActionButtonsView: View {
                     Text("Temizle")
                 }
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(theme.primaryText)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color(hex: "#EF4444")) // Red
+                .background(theme.errorColor)
                 .cornerRadius(10)
             }
             .buttonStyle(GrowingButton())
@@ -485,10 +547,10 @@ struct ActionButtonsView: View {
                     Text("İpucu")
                 }
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(theme.primaryText)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color(hex: "#FBBF24")) // Yellow
+                .background(theme.warningColor)
                 .cornerRadius(10)
             }
             .buttonStyle(GrowingButton())

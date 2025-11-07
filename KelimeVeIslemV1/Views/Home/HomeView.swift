@@ -13,8 +13,9 @@
 import SwiftUI
 
 struct HomeView: View {
-    
+
     @StateObject private var statisticsViewModel = StatisticsViewModel()
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var selectedMode: GameMode?
     @State private var showSettings = false
     @State private var showStatistics = false
@@ -26,7 +27,10 @@ struct HomeView: View {
             ZStack {
                 // Background gradient
                 LinearGradient(
-                    colors: [Color(hex: "#6366F1").opacity(0.9), Color(hex: "#A855F7").opacity(0.8)], // Indigo to Purple
+                    colors: [
+                        themeManager.colors.backgroundGradientStart.opacity(0.9),
+                        themeManager.colors.backgroundGradientEnd.opacity(0.8)
+                    ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -54,19 +58,22 @@ struct HomeView: View {
                         // Letters Button
                         GameModeButton(
                             mode: .letters,
-                            color: Color(hex: "#06B6D4"), // Cyan
+                            color: themeManager.colors.primaryButton,
                             action: { selectedMode = .letters }
                         )
 
                         // Numbers Button
                         GameModeButton(
                             mode: .numbers,
-                            color: Color(hex: "#F97316"), // Orange
+                            color: themeManager.colors.secondaryButton,
                             action: { selectedMode = .numbers }
                         )
 
                         // Daily Challenge Button
-                        DailyChallengeButton(action: { showDailyChallenge = true })
+                        DailyChallengeButton(
+                            theme: themeManager.colors,
+                            action: { showDailyChallenge = true }
+                        )
                     }
                     .padding(.horizontal, 40)
                     
@@ -252,6 +259,7 @@ struct BottomBarButton: View {
 // MARK: - Daily Challenge Button
 
 struct DailyChallengeButton: View {
+    let theme: ThemeColors
     let action: () -> Void
 
     var body: some View {
@@ -289,17 +297,17 @@ struct DailyChallengeButton: View {
                 Image(systemName: "arrow.right.circle.fill")
                     .font(.system(size: 25))
             }
-            .foregroundColor(.white)
+            .foregroundColor(theme.primaryText)
             .padding(20)
             .background(
                 LinearGradient(
-                    colors: [Color(hex: "#8B5CF6"), Color(hex: "#EC4899")],
+                    colors: [theme.achievementBackground, Color(hex: "#EC4899")],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .cornerRadius(20)
-            .shadow(color: Color(hex: "#8B5CF6").opacity(0.6), radius: 10, x: 0, y: 8)
+            .shadow(color: theme.achievementBackground.opacity(0.6), radius: 10, x: 0, y: 8)
         }
         .buttonStyle(GrowingButton())
     }
