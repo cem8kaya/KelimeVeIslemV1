@@ -42,7 +42,7 @@ class NumberGameViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
-    
+
     init(settings: GameSettings? = nil) {
         // Load settings synchronously from a nonisolated context-safe way
         if let providedSettings = settings {
@@ -55,6 +55,22 @@ class NumberGameViewModel: ObservableObject {
                 self.settings = PersistenceService.shared.loadSettings()
             }
         }
+    }
+
+    // Custom initializer for daily challenges with pre-generated numbers
+    init(customGame: NumberGame) {
+        self.settings = PersistenceService.shared.loadSettings()
+        self.game = customGame
+        self.timeRemaining = settings.numberTimerDuration
+        self.gameState = .playing
+        self.currentSolution = ""
+        self.resultMessage = ""
+        self.showHint = false
+        self.hintSolution = nil
+        self.comboCount = 0
+
+        audioService.playSound(.gameStart)
+        startTimer()
     }
     
     // MARK: - Game States
@@ -270,7 +286,7 @@ class NumberGameViewModel: ObservableObject {
     
     private func saveResult() {
         guard let game = game else { return }
-        
+
         let timeTaken = settings.numberTimerDuration - timeRemaining
         let details = GameResult.ResultDetails.numbers(
             target: game.targetNumber,
@@ -278,10 +294,13 @@ class NumberGameViewModel: ObservableObject {
             solution: game.playerSolution,
             numbers: game.numbers
         )
-        
+
+        // Apply combo multiplier to final score
+        let finalScore = score
+
         let result = GameResult(
             mode: .numbers,
-            score: game.score,
+            score: finalScore,
             duration: timeTaken,
             details: details
         )
@@ -301,12 +320,26 @@ class NumberGameViewModel: ObservableObject {
     }
     
     // MARK: - Helpers
-    
+
     func getAvailableNumbersString() -> String {
         guard let game = game else { return "" }
         return game.numbers.map { String($0) }.joined(separator: " ")
     }
-    
+
+    // MARK: - Combo System
+
+    var comboMultiplier: Int {
+        if comboCount >= 10 { return 5 }
+        if comboCount >= 5 { return 3 }
+        if comboCount >= 3 { return 2 }
+        return 1
+    }
+
+    var score: Int {
+        guard let game = game else { return 0 }
+        return game.score * comboMultiplier
+    }
+
     deinit {
         // Clean up timer
         timer?.cancel()
