@@ -26,10 +26,12 @@ class LetterGameViewModel: ObservableObject {
     @Published var validationMessage: String = ""
     @Published var isLoading: Bool = false
     @Published var error: AppError?
-    
+
     // NEW: Expose letter count and suggested words for the View
     @Published var letterCount: Int // Expose for GameReadyView
     @Published var suggestedWords: [String] = [] // NEW: For displaying results
+    @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
+    @Published var showConfetti: Bool = false // Trigger for confetti animation
     
     // MARK: - Dependencies
     
@@ -75,7 +77,8 @@ class LetterGameViewModel: ObservableObject {
             validationMessage = ""
             error = nil
             suggestedWords = [] // Reset suggestions
-            
+            comboCount = 0 // Reset combo counter
+
             audioService.playSound(.gameStart)
             startTimer()
         } catch {
@@ -126,18 +129,27 @@ class LetterGameViewModel: ObservableObject {
             
             game.validateAndScore(isValid: isValid)
             self.game = game
-            
+
             if isValid {
+                comboCount += 1 // Increment combo on valid submission
+                // Trigger confetti for 7+ letter words
+                if currentWord.count >= 7 {
+                    showConfetti = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.showConfetti = false
+                    }
+                }
                 validationMessage = NSLocalizedString("success.valid_word",
                     comment: "Valid word!")
                 audioService.playSound(.success)
                 audioService.playSuccessHaptic()
             } else {
+                comboCount = 0 // Reset combo on invalid submission
                 validationMessage = NSLocalizedString("error.not_in_dictionary",
                     comment: "Word not found in dictionary. Keep trying!")
                 audioService.playSound(.failure)
                 audioService.playErrorHaptic()
-                
+
                 // NEW: Find suggestions if the word is invalid
                 await findSuggestedWords()
             }
@@ -174,6 +186,8 @@ class LetterGameViewModel: ObservableObject {
         error = nil
         isLoading = false
         suggestedWords = []
+        comboCount = 0
+        showConfetti = false
     }
     
     func shuffleLetters() {

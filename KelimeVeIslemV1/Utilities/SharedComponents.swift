@@ -232,4 +232,188 @@ struct GameReadyView: View {
     }
 }
 
+// MARK: - Score Popup Animation
+
+struct ScorePopup: View {
+    let points: Int
+    @State private var opacity: Double = 1.0
+    @State private var offset: CGFloat = 0
+
+    var body: some View {
+        Text("+\(points)")
+            .font(.system(size: 28, weight: .bold))
+            .foregroundColor(.yellow)
+            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 2)
+            .opacity(opacity)
+            .offset(y: offset)
+            .onAppear {
+                withAnimation(.easeOut(duration: 1.0)) {
+                    opacity = 0
+                    offset = -50
+                }
+            }
+    }
+}
+
+struct ScorePopupModifier: ViewModifier {
+    @Binding var score: Int
+    @State private var previousScore: Int = 0
+    @State private var showPopup: Bool = false
+    @State private var popupPoints: Int = 0
+
+    func body(content: Content) -> some View {
+        ZStack {
+            content
+
+            if showPopup {
+                VStack {
+                    ScorePopup(points: popupPoints)
+                        .transition(.scale.combined(with: .opacity))
+                    Spacer()
+                }
+                .padding(.top, 60)
+            }
+        }
+        .onChange(of: score) { oldValue, newValue in
+            let difference = newValue - oldValue
+            if difference > 0 {
+                popupPoints = difference
+                showPopup = true
+
+                // Hide popup after animation
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    showPopup = false
+                }
+            }
+        }
+    }
+}
+
+extension View {
+    func scorePopup(score: Binding<Int>) -> some View {
+        modifier(ScorePopupModifier(score: score))
+    }
+}
+
+// MARK: - Combo Counter View
+
+struct ComboView: View {
+    let comboCount: Int
+    @State private var scale: CGFloat = 1.0
+
+    var body: some View {
+        if comboCount >= 2 {
+            HStack(spacing: 5) {
+                Text("🔥")
+                    .font(.title2)
+                Text("\(comboCount) Combo!")
+                    .font(.headline.bold())
+                    .foregroundColor(.orange)
+            }
+            .padding(.horizontal, 15)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.orange.opacity(0.2))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.orange, lineWidth: 2)
+                    )
+            )
+            .scaleEffect(scale)
+            .onChange(of: comboCount) { oldValue, newValue in
+                // Animate when combo increases
+                if newValue > oldValue {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                        scale = 1.2
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                            scale = 1.0
+                        }
+                    }
+                }
+            }
+            .transition(.scale.combined(with: .opacity))
+        }
+    }
+}
+
+// MARK: - Confetti Animation
+
+struct ConfettiView: View {
+    @State private var confettiIsActive = false
+    let trigger: Bool
+
+    var body: some View {
+        ZStack {
+            if confettiIsActive {
+                ConfettiLayer()
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+        }
+        .onChange(of: trigger) { oldValue, newValue in
+            if newValue && !oldValue {
+                confettiIsActive = true
+                // Stop confetti after animation
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    confettiIsActive = false
+                }
+            }
+        }
+    }
+}
+
+struct ConfettiLayer: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.backgroundColor = .clear
+
+        let emitterLayer = CAEmitterLayer()
+        emitterLayer.emitterPosition = CGPoint(x: UIScreen.main.bounds.width / 2, y: -50)
+        emitterLayer.emitterShape = .line
+        emitterLayer.emitterSize = CGSize(width: UIScreen.main.bounds.width, height: 1)
+
+        let colors: [UIColor] = [
+            .systemRed, .systemBlue, .systemGreen,
+            .systemYellow, .systemOrange, .systemPurple,
+            .systemPink, .systemTeal
+        ]
+
+        var cells: [CAEmitterCell] = []
+        for color in colors {
+            let cell = CAEmitterCell()
+            cell.birthRate = 6
+            cell.lifetime = 10.0
+            cell.velocity = 150
+            cell.velocityRange = 100
+            cell.emissionLongitude = .pi
+            cell.emissionRange = .pi / 4
+            cell.spin = 3.5
+            cell.spinRange = 4
+            cell.scale = 0.15
+            cell.scaleRange = 0.1
+            cell.contents = createConfettiImage(color: color).cgImage
+            cells.append(cell)
+        }
+
+        emitterLayer.emitterCells = cells
+        view.layer.addSublayer(emitterLayer)
+
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+
+    private func createConfettiImage(color: UIColor) -> UIImage {
+        let size = CGSize(width: 10, height: 10)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { ctx in
+            color.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+        }
+    }
+}
+
 // NOTE: GameMode and PersistenceService are assumed to be imported or available in the app scope.
