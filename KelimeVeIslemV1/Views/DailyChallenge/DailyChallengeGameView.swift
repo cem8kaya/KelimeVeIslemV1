@@ -160,7 +160,7 @@ struct DailyChallengeLetterGameView: View {
                     .frame(height: 60)
 
                 // Letter tiles
-                LetterTilesView(
+                DailyChallengeLetterTilesView(
                     letters: viewModel.game.letters.map { String($0) },
                     usedIndices: viewModel.usedIndices,
                     onLetterTap: { index in
@@ -585,9 +585,9 @@ struct DailyChallengeResultSheet: View {
     }
 }
 
-// MARK: - Letter Tiles View
+// MARK: - Daily Challenge Letter Tiles View
 
-struct LetterTilesView: View {
+struct DailyChallengeLetterTilesView: View {
     let letters: [String]
     let usedIndices: Set<Int>
     let onLetterTap: (Int) -> Void
