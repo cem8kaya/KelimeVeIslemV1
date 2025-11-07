@@ -206,14 +206,14 @@ class PersistenceService {
     }
     
     func clearResults() throws {
-        try queue.sync {
+        queue.sync {
             defaults.removeObject(forKey: resultsKey)
             defaults.synchronize()
         }
     }
-    
+
     func clearAllData() throws {
-        try queue.sync {
+        queue.sync {
             defaults.removeObject(forKey: settingsKey)
             defaults.removeObject(forKey: statisticsKey)
             defaults.removeObject(forKey: resultsKey)

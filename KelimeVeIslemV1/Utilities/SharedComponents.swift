@@ -440,10 +440,19 @@ struct ConfettiLayer: UIViewRepresentable {
         let view = UIView(frame: .zero)
         view.backgroundColor = .clear
 
+        // Get screen bounds from the view's window scene
+        let screenWidth: CGFloat
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            screenWidth = windowScene.screen.bounds.width
+        } else {
+            // Fallback to a reasonable default if window scene is not available
+            screenWidth = 393 // iPhone 14 Pro width as default
+        }
+
         let emitterLayer = CAEmitterLayer()
-        emitterLayer.emitterPosition = CGPoint(x: UIScreen.main.bounds.width / 2, y: -50)
+        emitterLayer.emitterPosition = CGPoint(x: screenWidth / 2, y: -50)
         emitterLayer.emitterShape = .line
-        emitterLayer.emitterSize = CGSize(width: UIScreen.main.bounds.width, height: 1)
+        emitterLayer.emitterSize = CGSize(width: screenWidth, height: 1)
 
         let colors: [UIColor] = [
             .systemRed, .systemBlue, .systemGreen,

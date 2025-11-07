@@ -12,7 +12,7 @@
 
 import Foundation
 
-class NumberGenerator {
+final class NumberGenerator: @unchecked Sendable {
     
     private let smallNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     private let largeNumbers = [25, 50, 75, 100]
