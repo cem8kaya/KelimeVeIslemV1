@@ -13,12 +13,13 @@
 import SwiftUI
 
 struct SettingsView: View {
-    
+
     @Environment(\.dismiss) private var dismiss
     @StateObject private var audioService = AudioService.shared
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var settings: GameSettings
     @State private var showResetAlert = false
-    
+
     init() {
         _settings = State(initialValue: PersistenceService.shared.loadSettings())
     }
@@ -73,6 +74,42 @@ struct SettingsView: View {
                     } footer: {
                         // FIX: Use localized description from GameSettings
                         Text(GameSettings.DifficultyLevel.allCases.map { $0.description }.joined(separator: " • "))
+                    }
+
+                    // Theme Settings
+                    Section {
+                        ForEach(AppTheme.allCases, id: \.self) { theme in
+                            Button {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                    themeManager.currentTheme = theme
+                                    settings.selectedTheme = theme.rawValue
+                                }
+                            } label: {
+                                HStack {
+                                    Image(systemName: theme.icon)
+                                        .font(.title3)
+                                        .foregroundColor(themePreviewColor(for: theme))
+                                        .frame(width: 30)
+
+                                    Text(theme.displayName)
+                                        .foregroundColor(.primary)
+
+                                    Spacer()
+
+                                    if themeManager.currentTheme == theme {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.blue)
+                                            .transition(.scale.combined(with: .opacity))
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } header: {
+                        Text("Tema")
+                    } footer: {
+                        Text("Oyun ara yüzü için renk temasını seçin")
                     }
 
                     // Audio Settings
@@ -153,7 +190,21 @@ struct SettingsView: View {
     private func resetAllData() {
         PersistenceService.shared.forceResetAllData()
         settings = .default
+        themeManager.currentTheme = .classic
         print("✅ All data has been reset")
+    }
+
+    private func themePreviewColor(for theme: AppTheme) -> Color {
+        switch theme {
+        case .classic:
+            return Color(hex: "#8B5CF6")
+        case .dark:
+            return Color(hex: "#818CF8")
+        case .ocean:
+            return Color(hex: "#22D3EE")
+        case .sunset:
+            return Color(hex: "#FB923C")
+        }
     }
 }
 
