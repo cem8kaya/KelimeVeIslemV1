@@ -69,6 +69,7 @@ struct DailyChallengeLetterGameView: View {
     @State private var showResult = false
     @State private var finalScore = 0
     @State private var finalDuration = 0
+    @State private var usedLetterIndices: Set<Int> = []
 
     init(letters: [String], startTime: Date, onComplete: @escaping (Int, Int) -> Void, onDismiss: @escaping () -> Void) {
         self.letters = letters
@@ -78,7 +79,7 @@ struct DailyChallengeLetterGameView: View {
 
         // Create a custom letter game with the provided letters
         let game = LetterGame(letters: letters.map { Character($0) })
-        _viewModel = StateObject(wrappedValue: LetterGameViewModel(customGame: game))
+        _viewModel = StateObject(wrappedValue: LetterGameViewModel(customGame: game, settings: GameSettings.default))
     }
 
     var body: some View {
@@ -160,18 +161,27 @@ struct DailyChallengeLetterGameView: View {
                     .frame(height: 60)
 
                 // Letter tiles
-                DailyChallengeLetterTilesView(
-                    letters: viewModel.game.letters.map { String($0) },
-                    usedIndices: viewModel.usedIndices,
-                    onLetterTap: { index in
-                        viewModel.selectLetter(at: index)
-                    }
-                )
-                .padding(.horizontal)
+                if let game = viewModel.game {
+                    DailyChallengeLetterTilesView(
+                        letters: game.letters.map { String($0) },
+                        usedIndices: usedLetterIndices,
+                        onLetterTap: { index in
+                            guard let currentGame = viewModel.game else { return }
+                            usedLetterIndices.insert(index)
+                            let letter = currentGame.letters[index]
+                            let newWord = viewModel.currentWord + String(letter)
+                            viewModel.updateWord(newWord)
+                        }
+                    )
+                    .padding(.horizontal)
+                }
 
                 // Action buttons
                 HStack(spacing: 15) {
-                    Button(action: viewModel.clearWord) {
+                    Button(action: {
+                        viewModel.updateWord("")
+                        usedLetterIndices.removeAll()
+                    }) {
                         Label("Temizle", systemImage: "arrow.uturn.backward")
                             .font(.headline)
                             .foregroundColor(.white)
@@ -182,7 +192,10 @@ struct DailyChallengeLetterGameView: View {
                     }
                     .buttonStyle(GrowingButton())
 
-                    Button(action: viewModel.shuffleLetters) {
+                    Button(action: {
+                        viewModel.shuffleLetters()
+                        usedLetterIndices.removeAll()
+                    }) {
                         Label("Karıştır", systemImage: "arrow.triangle.2.circlepath")
                             .font(.headline)
                             .foregroundColor(.white)
@@ -221,7 +234,7 @@ struct DailyChallengeLetterGameView: View {
             .padding(.top, 20)
 
             // Loading overlay
-            if viewModel.isValidating {
+            if viewModel.isLoading {
                 LoadingOverlay(message: "Kelime kontrol ediliyor...")
             }
 
@@ -272,7 +285,7 @@ struct DailyChallengeNumberGameView: View {
 
         // Create a custom number game with the provided numbers and target
         let game = NumberGame(numbers: numbers, targetNumber: target)
-        _viewModel = StateObject(wrappedValue: NumberGameViewModel(customGame: game))
+        _viewModel = StateObject(wrappedValue: NumberGameViewModel(customGame: game, settings: GameSettings.default))
     }
 
     var body: some View {
@@ -365,7 +378,7 @@ struct DailyChallengeNumberGameView: View {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                     ForEach(Array(numbers.enumerated()), id: \.offset) { index, number in
                         Button(action: {
-                            viewModel.appendToSolution("\(number)")
+                            viewModel.addToSolution("\(number)")
                         }) {
                             Text("\(number)")
                                 .font(.title2.bold())
@@ -380,7 +393,7 @@ struct DailyChallengeNumberGameView: View {
                 .padding(.horizontal)
 
                 // Solution input
-                Text(viewModel.solution.isEmpty ? "Çözümünüzü girin" : viewModel.solution)
+                Text(viewModel.currentSolution.isEmpty ? "Çözümünüzü girin" : viewModel.currentSolution)
                     .font(.title3)
                     .foregroundColor(.white)
                     .frame(height: 40)
@@ -390,7 +403,7 @@ struct DailyChallengeNumberGameView: View {
                     ForEach(["+", "-", "×", "÷"], id: \.self) { op in
                         Button(action: {
                             let actualOp = op == "×" ? "*" : op == "÷" ? "/" : op
-                            viewModel.appendToSolution(actualOp)
+                            viewModel.addToSolution(actualOp)
                         }) {
                             Text(op)
                                 .font(.title2.bold())
@@ -432,7 +445,7 @@ struct DailyChallengeNumberGameView: View {
                             .cornerRadius(15)
                     }
                     .buttonStyle(GrowingButton())
-                    .disabled(viewModel.solution.isEmpty)
+                    .disabled(viewModel.currentSolution.isEmpty)
                 }
                 .padding(.horizontal)
 
