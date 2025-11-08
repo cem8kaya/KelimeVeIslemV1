@@ -17,6 +17,7 @@ struct GameSettings: Codable {
     var useOnlineDictionary: Bool
     var difficultyLevel: DifficultyLevel
     var selectedTheme: String  // Store theme as string for compatibility
+    var practiceMode: Bool
 
     static let `default` = GameSettings(
         language: .turkish,
@@ -26,7 +27,8 @@ struct GameSettings: Codable {
         soundEnabled: true,
         useOnlineDictionary: false,
         difficultyLevel: .medium,
-        selectedTheme: "classic"
+        selectedTheme: "classic",
+        practiceMode: false
     )
     
     enum DifficultyLevel: String, Codable, CaseIterable {

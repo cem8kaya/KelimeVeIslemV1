@@ -21,6 +21,8 @@ struct HomeView: View {
     @State private var showStatistics = false
     @State private var showDailyChallenge = false
     @State private var showAchievements = false
+    @State private var savedGameState: SavedGameState?
+    @State private var resumeGame = false
     
     var body: some View {
         NavigationView {
@@ -50,9 +52,23 @@ struct HomeView: View {
                             .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 2)
                     }
                     .padding(.top, 50)
-                    
+
+                    // Resume Game button (if saved game exists)
+                    if let savedState = savedGameState {
+                        ResumeGameButton(
+                            gameType: savedState.gameType,
+                            theme: themeManager.colors,
+                            action: {
+                                resumeGame = true
+                                selectedMode = savedState.gameType
+                            }
+                        )
+                        .padding(.horizontal, 40)
+                        .padding(.top, 20)
+                    }
+
                     Spacer()
-                    
+
                     // Game mode buttons
                     VStack(spacing: 25) {
                         // Letters Button
@@ -122,11 +138,20 @@ struct HomeView: View {
                 AchievementsView()
             }
             .fullScreenCover(item: $selectedMode) { mode in
-                GameContainerView(mode: mode)
+                GameContainerView(
+                    mode: mode,
+                    savedGameState: resumeGame ? savedGameState : nil,
+                    onDismiss: {
+                        // Refresh saved game state when returning from game
+                        savedGameState = PersistenceService.shared.loadGameState()
+                        resumeGame = false
+                    }
+                )
             }
         }
         .onAppear {
             statisticsViewModel.refresh()
+            savedGameState = PersistenceService.shared.loadGameState()
         }
     }
 }
@@ -313,22 +338,69 @@ struct DailyChallengeButton: View {
     }
 }
 
+// MARK: - Resume Game Button
+
+struct ResumeGameButton: View {
+    let gameType: GameMode
+    let theme: ThemeColors
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: "play.circle.fill")
+                    .font(.system(size: 28))
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Oyuna Devam Et")
+                        .font(.system(size: 20, weight: .heavy))
+                    Text(gameType == .letters ? "Harfler Oyunu" : "Sayılar Oyunu")
+                        .font(.caption)
+                }
+
+                Spacer()
+
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 25))
+            }
+            .foregroundColor(.white)
+            .padding(20)
+            .background(
+                LinearGradient(
+                    colors: [Color.green, Color.teal],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .opacity(0.9)
+            )
+            .cornerRadius(20)
+            .shadow(color: Color.green.opacity(0.6), radius: 10, x: 0, y: 8)
+        }
+        .buttonStyle(GrowingButton())
+    }
+}
+
 // MARK: - Game Container View
 
 struct GameContainerView: View {
     let mode: GameMode
+    let savedGameState: SavedGameState?
+    let onDismiss: () -> Void
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
         // Use ZStack or a standard view structure here;
         // the dismiss button is now inside the sub-views' toolbars.
         Group {
             switch mode {
             case .letters:
-                LetterGameView()
+                LetterGameView(savedGameState: savedGameState)
             case .numbers:
-                NumberGameView()
+                NumberGameView(savedGameState: savedGameState)
             }
+        }
+        .onDisappear {
+            onDismiss()
         }
         // Removed unnecessary toolbar items here as they should be defined in the game views
     }

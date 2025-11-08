@@ -128,6 +128,15 @@ struct SettingsView: View {
                         Text("Kelimeleri çevrimiçi sözlük API'si ile doğrulamak için etkinleştirin (internet bağlantısı gerektirir)")
                     }
 
+                    // Practice Mode Settings
+                    Section {
+                        Toggle("Alıştırma Modu", isOn: $settings.practiceMode)
+                    } header: {
+                        Text("Oyun Modu")
+                    } footer: {
+                        Text("Alıştırma modunda zamanlayıcı devre dışı bırakılır, ipuçları ceza olmadan gösterilir ve skorlar kaydedilmez")
+                    }
+
                     // App Info
                     Section {
                         HStack {

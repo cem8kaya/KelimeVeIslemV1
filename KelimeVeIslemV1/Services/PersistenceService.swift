@@ -27,6 +27,7 @@ class PersistenceService {
     private let dailyChallengeLeaderboardKey = "dailyChallengeLeaderboard"
     private let todayChallengeResultKey = "todayChallengeResult"
     private let achievementProgressKey = "achievementProgress"
+    private let savedGameStateKey = "savedGameState"
     private let maxStoredResults = 100
     private let maxLeaderboardEntries = 50
     
@@ -55,7 +56,42 @@ class PersistenceService {
             return settings
         }
     }
-    
+
+    // MARK: - Saved Game State
+
+    func saveGameState(_ gameState: SavedGameState) throws {
+        try queue.sync {
+            do {
+                let encoded = try JSONEncoder().encode(gameState)
+                defaults.set(encoded, forKey: savedGameStateKey)
+                defaults.synchronize()
+            } catch {
+                throw AppError.persistenceError("Failed to save game state: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func loadGameState() -> SavedGameState? {
+        return queue.sync {
+            guard let data = defaults.data(forKey: savedGameStateKey),
+                  let gameState = try? JSONDecoder().decode(SavedGameState.self, from: data),
+                  gameState.isValid() else {
+                // Remove invalid or expired game state
+                defaults.removeObject(forKey: savedGameStateKey)
+                defaults.synchronize()
+                return nil
+            }
+            return gameState
+        }
+    }
+
+    func clearGameState() {
+        queue.sync {
+            defaults.removeObject(forKey: savedGameStateKey)
+            defaults.synchronize()
+        }
+    }
+
     // MARK: - Statistics
     
     func saveStatistics(_ statistics: GameStatistics) throws {
