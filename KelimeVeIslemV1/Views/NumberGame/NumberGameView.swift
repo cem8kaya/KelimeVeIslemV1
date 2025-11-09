@@ -8,6 +8,8 @@ import UIKit // Needed for Haptics
 
 struct NumberGameView: View {
 
+    let savedGameState: SavedGameState?
+
     @StateObject private var viewModel = NumberGameViewModel()
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.dismiss) private var dismiss
@@ -17,6 +19,10 @@ struct NumberGameView: View {
 
     // Track which numbers were used in the current solution, by their index in the 'numbers' array
     @State private var usedNumberIndices: [Int] = []
+
+    init(savedGameState: SavedGameState? = nil) {
+        self.savedGameState = savedGameState
+    }
     
     var body: some View {
         mainContent
@@ -49,6 +55,18 @@ struct NumberGameView: View {
             .onChange(of: viewModel.gameState) { oldValue, newValue in
                 if newValue == .playing {
                     usedNumberIndices = []
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                // Save game state when app goes to background
+                if viewModel.gameState == .playing {
+                    viewModel.saveGameState()
+                }
+            }
+            .onAppear {
+                // Restore saved game state if available
+                if let savedState = savedGameState {
+                    viewModel.restoreGameState(savedState)
                 }
             }
     }
@@ -162,10 +180,13 @@ struct NumberGameView: View {
                     currentSolution: $viewModel.currentSolution,
                     usedNumberIndices: $usedNumberIndices,
                     theme: themeManager.colors,
+                    viewModel: viewModel,
                     onNumberTap: handleNumberTap,
                     onOperatorTap: handleOperatorTap,
                     onDelete: handleDelete,
                     onClear: handleClear,
+                    onUndo: handleUndo,
+                    onRedo: handleRedo,
                     onSubmit: {
                         viewModel.submitSolution()
                     },
@@ -185,37 +206,37 @@ struct NumberGameView: View {
     private func handleNumberTap(number: Int, index: Int) {
         let currentSolution = viewModel.currentSolution
         let lastChar = currentSolution.last
-        
+
         // Prevent tapping numbers if the last character was a number or an index is already used
         if lastChar?.isNumber == true {
             AudioService.shared.playErrorHaptic()
             return
         }
-        
+
         // Use an array of used indices to enforce single use of each starting number
         if !usedNumberIndices.contains(index) {
-            viewModel.addToSolution("\(number)")
+            viewModel.selectNumber(number)
             usedNumberIndices.append(index)
         } else {
             AudioService.shared.playErrorHaptic()
         }
     }
-    
+
     private func handleOperatorTap(op: String) {
         let currentSolution = viewModel.currentSolution
         let lastChar = currentSolution.last
-        
-        // General rule: operators (+-xÃ·) must follow a number or closing parenthesis.
+
+        // General rule: operators (+-x÷) must follow a number or closing parenthesis.
         // Parentheses (open) must follow an operator or be the first character.
         // Parentheses (close) must follow a number or another closing parenthesis.
-        
-        if "+âˆ’Ã—Ã·".contains(op) {
+
+        if "+-*/".contains(op) {
             guard lastChar?.isNumber == true || lastChar == ")" else {
                 AudioService.shared.playErrorHaptic()
                 return
             }
         } else if op == "(" {
-            guard "+âˆ’Ã—Ã·".contains(lastChar ?? " ") || currentSolution.isEmpty else {
+            guard "+-*/".contains(lastChar ?? " ") || currentSolution.isEmpty else {
                 AudioService.shared.playErrorHaptic()
                 return
             }
@@ -225,8 +246,8 @@ struct NumberGameView: View {
                 return
             }
         }
-        
-        viewModel.addToSolution(op)
+
+        viewModel.selectOperator(op)
     }
     
     private func handleDelete() {
@@ -244,7 +265,39 @@ struct NumberGameView: View {
     
     private func handleClear() {
         usedNumberIndices = []
-        viewModel.clearSolution()
+        viewModel.clearSolutionWithCommand()
+    }
+
+    private func handleUndo() {
+        guard !viewModel.currentSolution.isEmpty else { return }
+
+        // Check if the last character was a number to update usedNumberIndices
+        let lastChar = viewModel.currentSolution.last!
+        if lastChar.isNumber {
+            _ = usedNumberIndices.popLast()
+        }
+
+        viewModel.performUndo()
+    }
+
+    private func handleRedo() {
+        let previousLength = viewModel.currentSolution.count
+        viewModel.performRedo()
+
+        // If a number was added, update usedNumberIndices
+        if viewModel.currentSolution.count > previousLength {
+            if let lastChar = viewModel.currentSolution.last, lastChar.isNumber {
+                // Find the corresponding number and add its index
+                if let game = viewModel.game {
+                    let numberString = String(lastChar)
+                    if let number = Int(numberString) {
+                        if let index = game.numbers.firstIndex(where: { $0 == number && !usedNumberIndices.contains(game.numbers.firstIndex(of: $0) ?? -1) }) {
+                            usedNumberIndices.append(index)
+                        }
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - Toolbar
@@ -323,11 +376,14 @@ struct NumberPlayingView: View {
     @Binding var currentSolution: String
     @Binding var usedNumberIndices: [Int]
     let theme: ThemeColors
+    @ObservedObject var viewModel: NumberGameViewModel
 
     let onNumberTap: (Int, Int) -> Void
     let onOperatorTap: (String) -> Void
     let onDelete: () -> Void
     let onClear: () -> Void
+    let onUndo: () -> Void
+    let onRedo: () -> Void
     let onSubmit: () -> Void
     let onHint: () -> Void
     let onGiveUp: () -> Void
@@ -401,6 +457,38 @@ struct NumberPlayingView: View {
                 // Operators and Actions
                 VStack(spacing: 10) {
                     OperatorButtonsView(theme: theme, onOperatorTap: onOperatorTap)
+
+                    // Undo/Redo buttons
+                    HStack(spacing: 10) {
+                        Button(action: onUndo) {
+                            HStack {
+                                Image(systemName: "arrow.uturn.backward")
+                                Text("Geri")
+                            }
+                            .font(.subheadline.bold())
+                            .foregroundColor(viewModel.commandHistory.canUndo ? theme.primaryText : theme.primaryText.opacity(0.5))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(viewModel.commandHistory.canUndo ? theme.primaryText.opacity(0.15) : theme.primaryText.opacity(0.05))
+                            .cornerRadius(10)
+                        }
+                        .disabled(!viewModel.commandHistory.canUndo)
+
+                        Button(action: onRedo) {
+                            HStack {
+                                Image(systemName: "arrow.uturn.forward")
+                                Text("İleri")
+                            }
+                            .font(.subheadline.bold())
+                            .foregroundColor(viewModel.commandHistory.canRedo ? theme.primaryText : theme.primaryText.opacity(0.5))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(viewModel.commandHistory.canRedo ? theme.primaryText.opacity(0.15) : theme.primaryText.opacity(0.05))
+                            .cornerRadius(10)
+                        }
+                        .disabled(!viewModel.commandHistory.canRedo)
+                    }
+                    .padding(.horizontal, 20)
 
                     ActionButtonsView(
                         theme: theme,

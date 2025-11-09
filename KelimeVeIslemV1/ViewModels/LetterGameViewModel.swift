@@ -32,6 +32,9 @@ class LetterGameViewModel: ObservableObject {
     @Published var suggestedWords: [String] = [] // NEW: For displaying results
     @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
     @Published var showConfetti: Bool = false // Trigger for confetti animation
+
+    // MARK: - Undo/Redo System
+    @Published var commandHistory = CommandHistory()
     
     // MARK: - Dependencies
     
@@ -101,7 +104,8 @@ class LetterGameViewModel: ObservableObject {
 
         game = LetterGame(letters: letters, language: settings.language)
         currentWord = ""
-        timeRemaining = settings.letterTimerDuration
+        // In practice mode, set timer to a very high value (effectively infinite)
+        timeRemaining = settings.practiceMode ? 999999 : settings.letterTimerDuration
         gameState = .playing
         validationMessage = ""
         error = nil
@@ -109,7 +113,10 @@ class LetterGameViewModel: ObservableObject {
         comboCount = 0 // Reset combo counter
 
         audioService.playSound(.gameStart)
-        startTimer()
+        // Only start timer if not in practice mode
+        if !settings.practiceMode {
+            startTimer()
+        }
     }
     
     func updateWord(_ word: String) {
@@ -213,6 +220,60 @@ class LetterGameViewModel: ObservableObject {
         suggestedWords = []
         comboCount = 0
         showConfetti = false
+        commandHistory.clear()
+    }
+
+    // MARK: - Undo/Redo Support Methods
+
+    func addLetterToWord(_ letter: Character) {
+        currentWord.append(letter)
+        game?.updateWord(currentWord)
+        validationMessage = ""
+    }
+
+    func removeLastLetter() {
+        if !currentWord.isEmpty {
+            currentWord.removeLast()
+            game?.updateWord(currentWord)
+            validationMessage = ""
+        }
+    }
+
+    func clearWord() {
+        currentWord = ""
+        game?.updateWord(currentWord)
+        validationMessage = ""
+    }
+
+    func restoreWord(_ word: String) {
+        currentWord = word
+        game?.updateWord(currentWord)
+        validationMessage = ""
+    }
+
+    func selectLetter(_ letter: Character) {
+        let command = LetterSelectionCommand(letter: letter, viewModel: self)
+        commandHistory.executeCommand(command)
+        audioService.playSound(.buttonTap)
+        audioService.playHaptic(style: .light)
+    }
+
+    func clearWordWithCommand() {
+        let command = ClearWordCommand(previousWord: currentWord, viewModel: self)
+        commandHistory.executeCommand(command)
+        audioService.playSound(.buttonTap)
+    }
+
+    func performUndo() {
+        commandHistory.undo()
+        audioService.playSound(.buttonTap)
+        audioService.playHaptic(style: .light)
+    }
+
+    func performRedo() {
+        commandHistory.redo()
+        audioService.playSound(.buttonTap)
+        audioService.playHaptic(style: .light)
     }
     
     func shuffleLetters() {
@@ -298,10 +359,59 @@ class LetterGameViewModel: ObservableObject {
         timer = nil
     }
     
+    // MARK: - Game State Persistence
+
+    func saveGameState() {
+        guard let game = game, gameState == .playing else { return }
+
+        let savedState = SavedGameState(
+            letterGame: game,
+            currentWord: currentWord,
+            timeRemaining: timeRemaining,
+            score: game.score,
+            comboCount: comboCount
+        )
+
+        do {
+            try persistenceService.saveGameState(savedState)
+            print("✅ Game state saved successfully")
+        } catch {
+            print("⚠️ Failed to save game state: \(error)")
+        }
+    }
+
+    func restoreGameState(_ savedState: SavedGameState) {
+        guard savedState.gameType == .letters,
+              let restoredGame = savedState.restoreLetterGame() else {
+            return
+        }
+
+        self.game = restoredGame
+        self.currentWord = savedState.currentWord ?? ""
+        self.timeRemaining = savedState.timeRemaining
+        self.comboCount = savedState.comboCount
+        self.gameState = .playing
+        self.validationMessage = ""
+        self.error = nil
+        self.suggestedWords = []
+
+        startTimer()
+    }
+
+    func clearSavedGameState() {
+        persistenceService.clearGameState()
+    }
+
     // MARK: - Persistence
-    
+
     private func saveResult() {
         guard let game = game else { return }
+
+        // Don't save results in practice mode
+        if settings.practiceMode {
+            print("Practice mode: result not saved")
+            return
+        }
 
         let timeTaken = settings.letterTimerDuration - timeRemaining
         let details = GameResult.ResultDetails.letters(

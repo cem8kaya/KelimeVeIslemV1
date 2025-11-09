@@ -7,6 +7,8 @@ import SwiftUI
 
 struct LetterGameView: View {
 
+    let savedGameState: SavedGameState?
+
     @StateObject private var viewModel = LetterGameViewModel()
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.dismiss) private var dismiss
@@ -15,6 +17,10 @@ struct LetterGameView: View {
     @State private var showExitConfirmation = false
     @State private var showParticles = false
     @FocusState private var isTextFieldFocused: Bool
+
+    init(savedGameState: SavedGameState? = nil) {
+        self.savedGameState = savedGameState
+    }
     
     var body: some View {
         mainContent
@@ -50,6 +56,18 @@ struct LetterGameView: View {
             }
             .onChange(of: viewModel.error != nil) { oldValue, hasError in
                 showError = hasError
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                // Save game state when app goes to background
+                if viewModel.gameState == .playing {
+                    viewModel.saveGameState()
+                }
+            }
+            .onAppear {
+                // Restore saved game state if available
+                if let savedState = savedGameState {
+                    viewModel.restoreGameState(savedState)
+                }
             }
     }
     
@@ -295,10 +313,9 @@ struct PlayingView: View {
                 usedIndices: usedLetterIndices,
                 theme: theme
             ) { letter, index in
-                // Add letter and update state
+                // Add letter using command pattern
                 usedLetterIndices.append(index)
-                let newWord = currentWord + String(letter)
-                onWordChange(newWord)
+                viewModel.selectLetter(letter)
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Available letters: \(letters.map { String($0) }.joined(separator: ", "))")
@@ -315,9 +332,9 @@ struct PlayingView: View {
 
                     if !currentWord.isEmpty {
                         Button {
-                            // Clear word
+                            // Clear word using command pattern
                             usedLetterIndices = []
-                            onWordChange("")
+                            viewModel.clearWordWithCommand()
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.title2)
@@ -343,8 +360,56 @@ struct PlayingView: View {
                         )
                 }
                 .padding(.horizontal, 40)
+
+                // Undo/Redo buttons
+                HStack(spacing: 12) {
+                    Button {
+                        viewModel.performUndo()
+                        if !currentWord.isEmpty {
+                            usedLetterIndices.removeLast()
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.uturn.backward")
+                            Text("Geri Al")
+                        }
+                        .font(.subheadline.bold())
+                        .foregroundColor(viewModel.commandHistory.canUndo ? theme.primaryText : theme.primaryText.opacity(0.5))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(viewModel.commandHistory.canUndo ? theme.primaryText.opacity(0.15) : theme.primaryText.opacity(0.05))
+                        .cornerRadius(10)
+                    }
+                    .disabled(!viewModel.commandHistory.canUndo)
+                    .accessibilityLabel("Geri al")
+
+                    Button {
+                        let previousLength = currentWord.count
+                        viewModel.performRedo()
+                        if currentWord.count > previousLength, let lastChar = currentWord.last {
+                            // Find the first available index for this letter
+                            if let index = letters.firstIndex(where: { $0 == lastChar && !usedLetterIndices.contains(letters.firstIndex(of: $0) ?? -1) }) {
+                                usedLetterIndices.append(index)
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.uturn.forward")
+                            Text("İleri Al")
+                        }
+                        .font(.subheadline.bold())
+                        .foregroundColor(viewModel.commandHistory.canRedo ? theme.primaryText : theme.primaryText.opacity(0.5))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(viewModel.commandHistory.canRedo ? theme.primaryText.opacity(0.15) : theme.primaryText.opacity(0.05))
+                        .cornerRadius(10)
+                    }
+                    .disabled(!viewModel.commandHistory.canRedo)
+                    .accessibilityLabel("İleri al")
+                }
+                .padding(.horizontal, 40)
             }
-            
+
             // Submit button
             Button(action: onSubmit) {
                 Text("Kelimeyi Gönder")

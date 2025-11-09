@@ -30,7 +30,10 @@ class NumberGameViewModel: ObservableObject {
     @Published var error: AppError?
     @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
     @Published var showConfetti: Bool = false // Trigger for confetti animation
-    
+
+    // MARK: - Undo/Redo System
+    @Published var commandHistory = CommandHistory()
+
     // MARK: - Dependencies
     
     private let numberGenerator = NumberGenerator()
@@ -89,10 +92,11 @@ class NumberGameViewModel: ObservableObject {
     
     func startNewGame() {
         let (numbers, target) = numberGenerator.generateGame(difficulty: settings.difficultyLevel)
-        
+
         game = NumberGame(numbers: numbers, targetNumber: target)
         currentSolution = ""
-        timeRemaining = settings.numberTimerDuration
+        // In practice mode, set timer to a very high value (effectively infinite)
+        timeRemaining = settings.practiceMode ? 999999 : settings.numberTimerDuration
         gameState = .playing
         resultMessage = ""
         showHint = false
@@ -102,7 +106,10 @@ class NumberGameViewModel: ObservableObject {
         comboCount = 0 // Reset combo counter
 
         audioService.playSound(.gameStart)
-        startTimer()
+        // Only start timer if not in practice mode
+        if !settings.practiceMode {
+            startTimer()
+        }
     }
     
     func updateSolution(_ solution: String) {
@@ -240,6 +247,63 @@ class NumberGameViewModel: ObservableObject {
         isLoading = false
         comboCount = 0
         showConfetti = false
+        commandHistory.clear()
+    }
+
+    // MARK: - Undo/Redo Support Methods
+
+    func addNumberToSolution(_ number: Int) {
+        currentSolution += String(number)
+        updateSolution(currentSolution)
+    }
+
+    func addOperatorToSolution(_ operation: String) {
+        currentSolution += operation
+        updateSolution(currentSolution)
+    }
+
+    func removeLastFromSolution() {
+        if !currentSolution.isEmpty {
+            currentSolution.removeLast()
+            updateSolution(currentSolution)
+        }
+    }
+
+    func restoreSolution(_ solution: String) {
+        currentSolution = solution
+        updateSolution(currentSolution)
+    }
+
+    func selectNumber(_ number: Int) {
+        let command = NumberSelectionCommand(number: number, viewModel: self)
+        commandHistory.executeCommand(command)
+        audioService.playSound(.buttonTap)
+        audioService.playHaptic(style: .light)
+    }
+
+    func selectOperator(_ operation: String) {
+        let command = OperatorSelectionCommand(operation: operation, viewModel: self)
+        commandHistory.executeCommand(command)
+        audioService.playSound(.buttonTap)
+        audioService.playHaptic(style: .light)
+    }
+
+    func clearSolutionWithCommand() {
+        let command = ClearSolutionCommand(previousSolution: currentSolution, viewModel: self)
+        commandHistory.executeCommand(command)
+        audioService.playSound(.buttonTap)
+    }
+
+    func performUndo() {
+        commandHistory.undo()
+        audioService.playSound(.buttonTap)
+        audioService.playHaptic(style: .light)
+    }
+
+    func performRedo() {
+        commandHistory.redo()
+        audioService.playSound(.buttonTap)
+        audioService.playHaptic(style: .light)
     }
     
     // MARK: - Timer Management (DispatchSource)
@@ -285,10 +349,60 @@ class NumberGameViewModel: ObservableObject {
         timer = nil
     }
     
+    // MARK: - Game State Persistence
+
+    func saveGameState() {
+        guard let game = game, gameState == .playing else { return }
+
+        let savedState = SavedGameState(
+            numberGame: game,
+            currentSolution: currentSolution,
+            timeRemaining: timeRemaining,
+            score: game.score,
+            comboCount: comboCount
+        )
+
+        do {
+            try persistenceService.saveGameState(savedState)
+            print("✅ Game state saved successfully")
+        } catch {
+            print("⚠️ Failed to save game state: \(error)")
+        }
+    }
+
+    func restoreGameState(_ savedState: SavedGameState) {
+        guard savedState.gameType == .numbers,
+              let restoredGame = savedState.restoreNumberGame() else {
+            return
+        }
+
+        self.game = restoredGame
+        self.currentSolution = savedState.currentSolution ?? ""
+        self.timeRemaining = savedState.timeRemaining
+        self.comboCount = savedState.comboCount
+        self.gameState = .playing
+        self.resultMessage = ""
+        self.showHint = false
+        self.hintSolution = nil
+        self.error = nil
+
+        startTimer()
+    }
+
+    func clearSavedGameState() {
+        persistenceService.clearGameState()
+    }
+
     // MARK: - Persistence
-    
+
     private func saveResult() {
         guard let game = game else { return }
+
+        // Don't save results in practice mode
+        if settings.practiceMode {
+            print("Practice mode: result not saved")
+            return
+        }
 
         let timeTaken = settings.numberTimerDuration - timeRemaining
         let details = GameResult.ResultDetails.numbers(
