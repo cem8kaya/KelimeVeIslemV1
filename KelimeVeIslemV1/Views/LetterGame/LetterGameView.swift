@@ -156,45 +156,43 @@ struct LetterGameView: View {
     @ViewBuilder
     private var gameContentView: some View {
         ZStack {
-            Group {
-                if viewModel.gameState == .ready {
-                    GameReadyView(
-                        title: "Oynamaya Hazır mısınız?",
-                        subtitle: "\(viewModel.letterCount) harf alacaksınız.\nYapabileceğiniz en uzun kelimeyi oluşturun!",
-                        actionTitle: "Oyunu Başlat",
-                        color: Color(hex: "#10B981"), // Emerald Green
-                        onStart: { viewModel.startNewGame() }
-                    )
-                } else if viewModel.gameState == .finished {
-                    Color.clear
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                showResult = true
-                            }
+            if viewModel.gameState == .ready {
+                GameReadyView(
+                    title: "Oynamaya Hazır mısınız?",
+                    subtitle: "\(viewModel.letterCount) harf alacaksınız.\nYapabileceğiniz en uzun kelimeyi oluşturun!",
+                    actionTitle: "Oyunu Başlat",
+                    color: Color(hex: "#10B981"), // Emerald Green
+                    onStart: { viewModel.startNewGame() }
+                )
+            } else if viewModel.gameState == .finished {
+                Color.clear
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            showResult = true
                         }
-                } else {
-                    PlayingView(
-                        letters: viewModel.game?.letters ?? [],
-                        currentWord: viewModel.currentWord,
-                        isTextFieldFocused: $isTextFieldFocused,
-                        viewModel: viewModel,
-                        theme: themeManager.colors,
-                        onWordChange: { word in
-                            viewModel.updateWord(word)
-                        },
-                        onSubmit: {
-                            isTextFieldFocused = false
-                            Task {
-                                await viewModel.submitWord()
-                            }
-                        },
-                        onGiveUp: {
-                            showExitConfirmation = true
+                    }
+            } else {
+                PlayingView(
+                    letters: viewModel.game?.letters ?? [],
+                    currentWord: viewModel.currentWord,
+                    isTextFieldFocused: $isTextFieldFocused,
+                    viewModel: viewModel,
+                    theme: themeManager.colors,
+                    onWordChange: { word in
+                        viewModel.updateWord(word)
+                    },
+                    onSubmit: {
+                        isTextFieldFocused = false
+                        Task {
+                            await viewModel.submitWord()
                         }
-                    )
-                }
+                    },
+                    onGiveUp: {
+                        showExitConfirmation = true
+                    }
+                )
             }
-            
+
             if viewModel.isLoading {
                 LoadingOverlay(message: "Kelime doğrulanıyor...")
             }
@@ -506,7 +504,8 @@ struct LetterTilesView: View {
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 5), spacing: 10) {
-            ForEach(Array(letters.enumerated()), id: \.offset) { index, letter in
+            ForEach(letters.indices, id: \.self) { index in
+                let letter = letters[index]
                 let isUsed = usedIndices.contains(index)
                 let isRare = LetterFrequencyIndicator.isRareLetter(letter)
 

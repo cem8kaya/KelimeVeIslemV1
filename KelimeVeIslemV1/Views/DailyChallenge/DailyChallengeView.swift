@@ -354,7 +354,8 @@ struct LeaderboardView: View {
                         Spacer()
                     } else {
                         List {
-                            ForEach(Array(results.enumerated()), id: \.element.id) { index, result in
+                            ForEach(results.indices, id: \.self) { index in
+                                let result = results[index]
                                 LeaderboardRow(rank: index + 1, result: result)
                                     .listRowBackground(Color.white.opacity(0.1))
                             }

@@ -155,49 +155,48 @@ struct NumberGameView: View {
     }
     
     // MARK: - Game Content
-    
+
+    @ViewBuilder
     private var gameContentView: some View {
-        Group {
-            if viewModel.gameState == .ready {
-                // Using the new shared GameReadyView
-                GameReadyView(
-                    title: "Sayılara Hazır mısınız?",
-                    subtitle: "Hedef sayıya\nverilen sayıları kullanarak ulaşın!",
-                    actionTitle: "Oyunu Başlat",
-                    color: Color(hex: "#10B981"), // Emerald Green
-                    onStart: { viewModel.startNewGame() }
-                )
-            } else if viewModel.gameState == .finished {
-                Color.clear
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            showResult = true
-                        }
+        if viewModel.gameState == .ready {
+            // Using the new shared GameReadyView
+            GameReadyView(
+                title: "Sayılara Hazır mısınız?",
+                subtitle: "Hedef sayıya\nverilen sayıları kullanarak ulaşın!",
+                actionTitle: "Oyunu Başlat",
+                color: Color(hex: "#10B981"), // Emerald Green
+                onStart: { viewModel.startNewGame() }
+            )
+        } else if viewModel.gameState == .finished {
+            Color.clear
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        showResult = true
                     }
-            } else {
-                NumberPlayingView(
-                    game: viewModel.game,
-                    currentSolution: $viewModel.currentSolution,
-                    usedNumberIndices: $usedNumberIndices,
-                    theme: themeManager.colors,
-                    viewModel: viewModel,
-                    onNumberTap: handleNumberTap,
-                    onOperatorTap: handleOperatorTap,
-                    onDelete: handleDelete,
-                    onClear: handleClear,
-                    onUndo: handleUndo,
-                    onRedo: handleRedo,
-                    onSubmit: {
-                        viewModel.submitSolution()
-                    },
-                    onHint: {
-                        viewModel.requestHint()
-                    },
-                    onGiveUp: {
-                        showExitConfirmation = true
-                    }
-                )
-            }
+                }
+        } else {
+            NumberPlayingView(
+                game: viewModel.game,
+                currentSolution: $viewModel.currentSolution,
+                usedNumberIndices: $usedNumberIndices,
+                theme: themeManager.colors,
+                viewModel: viewModel,
+                onNumberTap: handleNumberTap,
+                onOperatorTap: handleOperatorTap,
+                onDelete: handleDelete,
+                onClear: handleClear,
+                onUndo: handleUndo,
+                onRedo: handleRedo,
+                onSubmit: {
+                    viewModel.submitSolution()
+                },
+                onHint: {
+                    viewModel.requestHint()
+                },
+                onGiveUp: {
+                    showExitConfirmation = true
+                }
+            )
         }
     }
     
@@ -538,7 +537,8 @@ struct NumberTilesView: View {
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 3), spacing: 15) {
-            ForEach(Array(numbers.enumerated()), id: \.offset) { index, number in
+            ForEach(numbers.indices, id: \.self) { index in
+                let number = numbers[index]
                 let isUsed = usedIndices.contains(index)
                 let isLarge = number >= 25
 
@@ -667,7 +667,8 @@ struct HintView: View {
 
                     ScrollView {
                         VStack(alignment: .leading, spacing: 15) {
-                            ForEach(Array(operations.enumerated()), id: \.offset) { index, op in
+                            ForEach(operations.indices, id: \.self) { index in
+                                let op = operations[index]
                                 HStack {
                                     Text("\(index + 1).")
                                         .font(.headline)
