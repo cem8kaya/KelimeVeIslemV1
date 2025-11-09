@@ -376,7 +376,7 @@ struct DailyChallengeNumberGameView: View {
 
                 // Available numbers
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                    ForEach(Array(numbers.enumerated()), id: \.offset) { index, number in
+                    ForEach(numbers, id: \.self) { number in
                         Button(action: {
                             viewModel.addToSolution("\(number)")
                         }) {
@@ -607,7 +607,8 @@ struct DailyChallengeLetterTilesView: View {
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-            ForEach(Array(letters.enumerated()), id: \.offset) { index, letter in
+            ForEach(letters.indices, id: \.self) { index in
+                let letter = letters[index]
                 Button(action: {
                     onLetterTap(index)
                 }) {
