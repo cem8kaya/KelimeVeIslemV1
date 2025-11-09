@@ -376,7 +376,7 @@ struct NumberPlayingView: View {
     @Binding var currentSolution: String
     @Binding var usedNumberIndices: [Int]
     let theme: ThemeColors
-    @ObservedObject var viewModel: NumberGameViewModel
+    let viewModel: NumberGameViewModel
 
     let onNumberTap: (Int, Int) -> Void
     let onOperatorTap: (String) -> Void
