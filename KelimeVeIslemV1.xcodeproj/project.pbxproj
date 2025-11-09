@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BB001BB22EC3600000000001 /* Achievement.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB12EC3600000000001 /* Achievement.swift */; };
+		BB001BB42EC3600000000002 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB32EC3600000000002 /* DailyChallenge.swift */; };
+		BB001BB62EC3600000000003 /* DailyChallengeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB52EC3600000000003 /* DailyChallengeViewModel.swift */; };
+		BB001BB82EC3600000000004 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB72EC3600000000004 /* AchievementsView.swift */; };
+		BB001BBA2EC3600000000005 /* DailyChallengeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB92EC3600000000005 /* DailyChallengeView.swift */; };
+		BB001BBC2EC3600000000006 /* DailyChallengeGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BBB2EC3600000000006 /* DailyChallengeGameView.swift */; };
 		87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E172EB2453900B16425 /* Assets.xcassets */; };
 		87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */; };
 		87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E192EB2453900B16425 /* Persistence.swift */; };
@@ -45,6 +51,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BB001BB12EC3600000000001 /* Achievement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievement.swift; sourceTree = "<group>"; };
+		BB001BB32EC3600000000002 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
+		BB001BB52EC3600000000003 /* DailyChallengeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeViewModel.swift; sourceTree = "<group>"; };
+		BB001BB72EC3600000000004 /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
+		BB001BB92EC3600000000005 /* DailyChallengeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeView.swift; sourceTree = "<group>"; };
+		BB001BBB2EC3600000000006 /* DailyChallengeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeGameView.swift; sourceTree = "<group>"; };
 		87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KelimeVeIslemV1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		87D71E172EB2453900B16425 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		87D71E192EB2453900B16425 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
@@ -131,7 +143,10 @@
 			isa = PBXGroup;
 			children = (
 				87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */,
-			);
+							BB001BB12EC3600000000001 /* Achievement.swift */,
+				BB001BB32EC3600000000002 /* DailyChallenge.swift */,
+				BB001BB52EC3600000000003 /* DailyChallengeViewModel.swift */,
+);
 			path = App;
 			sourceTree = "<group>";
 		};
@@ -324,6 +339,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB001BB22EC3600000000001 /* Achievement.swift in Sources */,
+				BB001BB42EC3600000000002 /* DailyChallenge.swift in Sources */,
+				BB001BB62EC3600000000003 /* DailyChallengeViewModel.swift in Sources */,
+				BB001BB82EC3600000000004 /* AchievementsView.swift in Sources */,
+				BB001BBA2EC3600000000005 /* DailyChallengeView.swift in Sources */,
+				BB001BBC2EC3600000000006 /* DailyChallengeGameView.swift in Sources */,
 				87D71E292EB245F600B16425 /* GameMode.swift in Sources */,
 				87D71E632EB2482000B16425 /* StatisticsView.swift in Sources */,
 				87D71E272EB245D000B16425 /* KelimeVeIslemApp.swift in Sources */,
