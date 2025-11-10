@@ -130,8 +130,8 @@ class PersistenceService {
     
     // MARK: - Game Results
     
-    func saveResult(_ result: GameResult) throws {
-        try queue.sync {
+    func saveResult(_ result: GameResult) throws -> Level? {
+        return try queue.sync {
             // Load results internally (we're already on the queue)
             guard let data = defaults.data(forKey: resultsKey) else {
                 // No existing results, create new array
@@ -140,12 +140,12 @@ class PersistenceService {
                 defaults.set(encoded, forKey: resultsKey)
                 defaults.synchronize()
 
-                // Update statistics
-                try updateStatisticsInternal(with: result)
+                // Update statistics and get level-up info
+                let levelUp = try updateStatisticsInternal(with: result)
 
                 // Check achievements
                 checkAchievementsInternal(for: result)
-                return
+                return levelUp
             }
 
             var results: [GameResult]
@@ -173,11 +173,13 @@ class PersistenceService {
                 throw AppError.persistenceError("Failed to save result: \(error.localizedDescription)")
             }
 
-            // Update statistics
-            try updateStatisticsInternal(with: result)
+            // Update statistics and get level-up info
+            let levelUp = try updateStatisticsInternal(with: result)
 
             // Check achievements
             checkAchievementsInternal(for: result)
+
+            return levelUp
         }
     }
 
@@ -194,17 +196,17 @@ class PersistenceService {
         }
     }
     
-    private func updateStatisticsInternal(with result: GameResult) throws {
+    private func updateStatisticsInternal(with result: GameResult) throws -> Level? {
         // This is called from within queue.sync, so don't use queue again
         guard let data = defaults.data(forKey: statisticsKey) else {
             var newStats = GameStatistics()
-            newStats.update(with: result)
+            let levelUp = newStats.update(with: result)
             let encoded = try JSONEncoder().encode(newStats)
             defaults.set(encoded, forKey: statisticsKey)
             defaults.synchronize()
-            return
+            return levelUp
         }
-        
+
         var stats: GameStatistics
         do {
             stats = try JSONDecoder().decode(GameStatistics.self, from: data)
@@ -212,11 +214,18 @@ class PersistenceService {
             print("⚠️ Failed to decode statistics: \(error)")
             stats = GameStatistics()
         }
-        
-        stats.update(with: result)
+
+        let levelUp = stats.update(with: result)
         let encoded = try JSONEncoder().encode(stats)
         defaults.set(encoded, forKey: statisticsKey)
         defaults.synchronize()
+
+        // Log level up if it occurred
+        if let newLevel = levelUp {
+            print("🎉 LEVEL UP! Reached level \(newLevel.levelNumber)")
+        }
+
+        return levelUp
     }
     
     func loadResults() -> [GameResult] {

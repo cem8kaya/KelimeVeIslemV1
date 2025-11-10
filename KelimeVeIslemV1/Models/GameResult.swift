@@ -15,14 +15,25 @@ struct GameResult: Codable, Identifiable {
     let date: Date
     let duration: Int // seconds taken
     let details: ResultDetails
-    
-    init(mode: GameMode, score: Int, duration: Int, details: ResultDetails) {
+    let combo: Int // Combo multiplier at end of game
+    let xpEarned: Int // XP earned from this game
+
+    init(mode: GameMode, score: Int, duration: Int, details: ResultDetails, combo: Int = 1, isDailyChallenge: Bool = false) {
         self.id = UUID()
         self.mode = mode
         self.score = score
         self.date = Date()
         self.duration = duration
         self.details = details
+        self.combo = combo
+
+        // Calculate XP using LevelSystem
+        self.xpEarned = LevelSystem.shared.calculateXP(
+            score: score,
+            combo: combo,
+            gameMode: mode,
+            isDailyChallenge: isDailyChallenge
+        )
     }
     
     enum ResultDetails: Codable {
@@ -52,17 +63,42 @@ struct GameStatistics: Codable {
     var longestWord: String = ""
     var perfectNumberMatches: Int = 0
     var lastPlayedDate: Date?
-    
+
+    // Level progression
+    var totalXP: Int = 0
+    var currentLevel: Int = 1
+
     var averageScore: Double {
         guard totalGamesPlayed > 0 else { return 0 }
         return Double(totalScore) / Double(totalGamesPlayed)
     }
-    
-    mutating func update(with result: GameResult) {
+
+    var level: Level {
+        return LevelSystem.shared.getLevel(for: totalXP)
+    }
+
+    var xpForNextLevel: Int {
+        return LevelSystem.shared.xpForNextLevel(currentXP: totalXP, currentLevel: level)
+    }
+
+    var progressToNextLevel: Double {
+        return LevelSystem.shared.progressToNextLevel(currentXP: totalXP, currentLevel: level)
+    }
+
+    mutating func update(with result: GameResult) -> Level? {
+        let oldXP = totalXP
+
         totalGamesPlayed += 1
         totalScore += result.score
         lastPlayedDate = result.date
-        
+
+        // Add XP from result
+        totalXP += result.xpEarned
+
+        // Update current level
+        let newLevel = LevelSystem.shared.getLevel(for: totalXP)
+        currentLevel = newLevel.id
+
         switch result.details {
         case .letters(let word, _, let isValid):
             letterGamesPlayed += 1
@@ -72,7 +108,7 @@ struct GameStatistics: Codable {
             if word.count > longestWord.count {
                 longestWord = word
             }
-            
+
         case .numbers(let target, let playerResult, _, _):
             numberGamesPlayed += 1
             if result.score > bestNumberScore {
@@ -82,8 +118,11 @@ struct GameStatistics: Codable {
                 perfectNumberMatches += 1
             }
         }
+
+        // Check if player leveled up
+        return LevelSystem.shared.checkLevelUp(oldXP: oldXP, newXP: totalXP)
     }
-    
+
     func reset() -> GameStatistics {
         return GameStatistics()
     }

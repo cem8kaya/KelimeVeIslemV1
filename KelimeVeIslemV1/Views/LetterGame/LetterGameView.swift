@@ -89,6 +89,14 @@ struct LetterGameView: View {
 
             // Confetti animation overlay
             ConfettiView(trigger: viewModel.showConfetti)
+
+            // Level-up overlay
+            if viewModel.showLevelUp, let newLevel = viewModel.levelUpInfo {
+                LevelUpView(newLevel: newLevel) {
+                    viewModel.showLevelUp = false
+                    viewModel.levelUpInfo = nil
+                }
+            }
         }
         .enhancedScorePopup(
             score: Binding(
