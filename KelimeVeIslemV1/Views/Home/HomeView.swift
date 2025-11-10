@@ -38,25 +38,25 @@ struct HomeView: View {
                 )
                 .ignoresSafeArea()
                 
-                VStack(spacing: 30) {
+                VStack(spacing: 15) {
                     // Title
-                    VStack(spacing: 5) {
+                    VStack(spacing: 2) {
                         Text("1 KELIME")
-                            .font(.system(size: 48, weight: .black, design: .serif))
+                            .font(.system(size: 36, weight: .black, design: .serif))
                             .foregroundColor(.white)
                             .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 2)
-                        
+
                         Text("& 1 ISLEM")
-                            .font(.system(size: 48, weight: .black, design: .serif))
+                            .font(.system(size: 36, weight: .black, design: .serif))
                             .foregroundColor(.yellow)
                             .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 2)
                     }
-                    .padding(.top, 50)
+                    .padding(.top, 20)
 
                     // Level Progress
                     LevelProgressView(statistics: statisticsViewModel.statistics)
                         .padding(.horizontal, 40)
-                        .padding(.top, 10)
+                        .padding(.top, 5)
 
                     // Resume Game button (if saved game exists)
                     if let savedState = savedGameState {
@@ -69,13 +69,13 @@ struct HomeView: View {
                             }
                         )
                         .padding(.horizontal, 40)
-                        .padding(.top, 20)
+                        .padding(.top, 5)
                     }
 
                     Spacer()
 
                     // Game mode buttons
-                    VStack(spacing: 25) {
+                    VStack(spacing: 12) {
                         // Letters Button
                         GameModeButton(
                             mode: .letters,
@@ -105,9 +105,9 @@ struct HomeView: View {
                         QuickStatsView(statistics: statisticsViewModel.statistics)
                             .padding(.horizontal)
                     }
-                    
+
                     // Bottom buttons
-                    HStack(spacing: 15) {
+                    HStack(spacing: 12) {
                         BottomBarButton(
                             title: "Başarımlar",
                             icon: "trophy.fill",
@@ -126,7 +126,7 @@ struct HomeView: View {
                             action: { showSettings = true }
                         )
                     }
-                    .padding(.bottom, 30)
+                    .padding(.bottom, 20)
                 }
             }
             .navigationBarHidden(true)
@@ -169,30 +169,30 @@ struct GameModeButton: View {
     let mode: GameMode
     let color: Color
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack {
                 Image(systemName: mode.icon)
-                    .font(.system(size: 30))
-                
-                VStack(alignment: .leading, spacing: 5) {
+                    .font(.system(size: 24))
+
+                VStack(alignment: .leading, spacing: 3) {
                     Text(mode.displayName)
-                        .font(.system(size: 24, weight: .heavy))
+                        .font(.system(size: 20, weight: .heavy))
                     Text(mode.description)
-                        .font(.caption)
+                        .font(.caption2)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "arrow.right.circle.fill")
-                    .font(.system(size: 25))
+                    .font(.system(size: 22))
             }
             .foregroundColor(.white)
-            .padding(25)
+            .padding(18)
             .background(color.opacity(0.8))
-            .cornerRadius(25)
-            .shadow(color: color.opacity(0.6), radius: 10, x: 0, y: 8)
+            .cornerRadius(20)
+            .shadow(color: color.opacity(0.6), radius: 8, x: 0, y: 6)
         }
         .buttonStyle(GrowingButton()) // Use shared button style
     }
@@ -273,16 +273,16 @@ struct BottomBarButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack {
+            VStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.title2)
+                    .font(.title3)
                 Text(title)
-                    .font(.caption.bold())
+                    .font(.caption2.bold())
             }
             .foregroundColor(.white)
-            .padding(15)
+            .padding(12)
             .background(Color.white.opacity(0.2))
-            .cornerRadius(15)
+            .cornerRadius(12)
         }
         .buttonStyle(GrowingButton())
     }
@@ -298,39 +298,39 @@ struct DailyChallengeButton: View {
         Button(action: action) {
             HStack {
                 Image(systemName: "calendar.badge.clock")
-                    .font(.system(size: 28))
+                    .font(.system(size: 24))
 
-                VStack(alignment: .leading, spacing: 5) {
-                    HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
                         Text("Günlük Meydan Okuma")
-                            .font(.system(size: 20, weight: .heavy))
+                            .font(.system(size: 18, weight: .heavy))
 
-                        HStack(spacing: 3) {
+                        HStack(spacing: 2) {
                             Image(systemName: "flame.fill")
-                                .font(.caption)
+                                .font(.caption2)
                             Text("2x")
-                                .font(.caption.bold())
+                                .font(.caption2.bold())
                         }
                         .foregroundColor(.orange)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
                         .background(
-                            RoundedRectangle(cornerRadius: 8)
+                            RoundedRectangle(cornerRadius: 6)
                                 .fill(Color.orange.opacity(0.2))
                         )
                     }
 
                     Text("Her gün yeni bir zorluk")
-                        .font(.caption)
+                        .font(.caption2)
                 }
 
                 Spacer()
 
                 Image(systemName: "arrow.right.circle.fill")
-                    .font(.system(size: 25))
+                    .font(.system(size: 22))
             }
             .foregroundColor(theme.primaryText)
-            .padding(20)
+            .padding(16)
             .background(
                 LinearGradient(
                     colors: [theme.achievementBackground, Color(hex: "#EC4899")],
@@ -338,8 +338,8 @@ struct DailyChallengeButton: View {
                     endPoint: .trailing
                 )
             )
-            .cornerRadius(20)
-            .shadow(color: theme.achievementBackground.opacity(0.6), radius: 10, x: 0, y: 8)
+            .cornerRadius(18)
+            .shadow(color: theme.achievementBackground.opacity(0.6), radius: 8, x: 0, y: 6)
         }
         .buttonStyle(GrowingButton())
     }
@@ -356,22 +356,22 @@ struct ResumeGameButton: View {
         Button(action: action) {
             HStack {
                 Image(systemName: "play.circle.fill")
-                    .font(.system(size: 28))
+                    .font(.system(size: 24))
 
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text("Oyuna Devam Et")
-                        .font(.system(size: 20, weight: .heavy))
+                        .font(.system(size: 18, weight: .heavy))
                     Text(gameType == .letters ? "Harfler Oyunu" : "Sayılar Oyunu")
-                        .font(.caption)
+                        .font(.caption2)
                 }
 
                 Spacer()
 
                 Image(systemName: "arrow.right.circle.fill")
-                    .font(.system(size: 25))
+                    .font(.system(size: 22))
             }
             .foregroundColor(.white)
-            .padding(20)
+            .padding(16)
             .background(
                 LinearGradient(
                     colors: [Color.green, Color.teal],
@@ -380,8 +380,8 @@ struct ResumeGameButton: View {
                 )
                 .opacity(0.9)
             )
-            .cornerRadius(20)
-            .shadow(color: Color.green.opacity(0.6), radius: 10, x: 0, y: 8)
+            .cornerRadius(18)
+            .shadow(color: Color.green.opacity(0.6), radius: 8, x: 0, y: 6)
         }
         .buttonStyle(GrowingButton())
     }

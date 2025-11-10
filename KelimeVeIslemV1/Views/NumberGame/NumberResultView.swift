@@ -27,159 +27,162 @@ struct NumberResultView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            LinearGradient(
-                colors: [
-                    isPerfect ? Color.green.opacity(0.6) : Color.orange.opacity(0.6),
-                    Color.purple.opacity(0.6)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                // Top navigation bar with close button
-                HStack {
-                    Spacer()
-
-                    Button(action: {
-                        dismiss()
-                        onExit()
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 32))
-                            .foregroundColor(.white)
-                            .shadow(color: .black.opacity(0.3), radius: 2)
-                    }
+            // Semi-transparent background to allow seeing game view behind
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    // Allow dismissing by tapping background
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
 
-                VStack(spacing: 30) {
-                    Spacer()
+            // Compact result card
+            VStack(spacing: 0) {
+                // Compact card with all result info
+                VStack(spacing: 16) {
+                    // Close button at top right
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            dismiss()
+                            onExit()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(.white)
+                                .shadow(color: .black.opacity(0.3), radius: 2)
+                        }
+                    }
 
                     // Result icon
-                Image(systemName: isPerfect ? "star.fill" : "target")
-                    .font(.system(size: 80))
-                    .foregroundColor(.white)
-                
-                // Message
-                Text(message)
-                    .font(.title.bold())
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                // Target and Result
-                HStack(spacing: 40) {
-                    VStack(spacing: 8) {
-                        Text("Hedef")
-                            .font(.headline)
-                            .foregroundColor(.white.opacity(0.9))
+                    Image(systemName: isPerfect ? "star.fill" : "target")
+                        .font(.system(size: 60))
+                        .foregroundColor(.white)
 
-                        Text("\(game.targetNumber)")
-                            .font(.system(size: 40, weight: .bold))
-                            .foregroundColor(.yellow)
-                    }
+                    // Message - Using helper to ensure translation
+                    Text(getLocalizedMessage())
+                        .font(.title2.bold())
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
 
-                    if let result = game.playerResult {
-                        VStack(spacing: 8) {
-                            Text("Sonucunuz")
-                                .font(.headline)
-                                .foregroundColor(.white.opacity(0.9))
+                    // Target, Result, and Score in compact layout
+                    HStack(spacing: 15) {
+                        VStack(spacing: 4) {
+                            Text("Hedef")
+                                .font(.caption.bold())
+                                .foregroundColor(.white.opacity(0.8))
+                            Text("\(game.targetNumber)")
+                                .font(.title3.bold())
+                                .foregroundColor(.yellow)
+                        }
 
-                            Text("\(result)")
-                                .font(.system(size: 40, weight: .bold))
-                                .foregroundColor(.white)
+                        Divider()
+                            .background(Color.white.opacity(0.5))
+                            .frame(height: 30)
+
+                        if let result = game.playerResult {
+                            VStack(spacing: 4) {
+                                Text("Sonuç")
+                                    .font(.caption.bold())
+                                    .foregroundColor(.white.opacity(0.8))
+                                Text("\(result)")
+                                    .font(.title3.bold())
+                                    .foregroundColor(.white)
+                            }
+
+                            Divider()
+                                .background(Color.white.opacity(0.5))
+                                .frame(height: 30)
+                        }
+
+                        VStack(spacing: 4) {
+                            Text("Skor")
+                                .font(.caption.bold())
+                                .foregroundColor(.white.opacity(0.8))
+                            Text("\(game.score)")
+                                .font(.title3.bold())
+                                .foregroundColor(.yellow)
                         }
                     }
-                }
-                
-                // Difference
-                if let result = game.playerResult {
-                    let diff = abs(game.targetNumber - result)
-                    if diff > 0 {
-                        Text("Fark: \(diff)")
-                            .font(.title3)
-                            .foregroundColor(.white.opacity(0.9))
-                    }
-                }
+                    .padding(.vertical, 8)
 
-                // Score
-                VStack(spacing: 10) {
-                    Text("Skor")
-                        .font(.headline)
-                        .foregroundColor(.white.opacity(0.9))
-
-                    Text("\(game.score)")
-                        .font(.system(size: 50, weight: .bold))
-                        .foregroundColor(.yellow)
-                }
-                
-                // Solution
-                if !game.playerSolution.isEmpty {
-                    VStack(spacing: 10) {
-                        Text("Çözümünüz")
-                            .font(.headline)
-                            .foregroundColor(.white.opacity(0.9))
-
-                        ScrollView(.horizontal, showsIndicators: false) {
+                    // Compact solution display
+                    if !game.playerSolution.isEmpty {
+                        VStack(spacing: 4) {
+                            Text("Çözüm:")
+                                .font(.caption.bold())
+                                .foregroundColor(.white.opacity(0.9))
                             Text(game.playerSolution)
-                                .font(.title3)
-                                .foregroundColor(.white.opacity(0.9))
-                                .padding(.horizontal)
+                                .font(.caption.monospaced())
+                                .foregroundColor(.white)
+                                .lineLimit(2)
                         }
                     }
-                }
 
-                // Available numbers (for reference)
-                VStack(spacing: 10) {
-                    Text("Mevcut Sayılar")
-                        .font(.headline)
-                        .foregroundColor(.white.opacity(0.9))
-
-                    Text(game.numbers.map { String($0) }.joined(separator: ", "))
-                        .font(.title3)
-                        .foregroundColor(.white.opacity(0.9))
-                }
-
-                    Spacer()
-
-                    // Action buttons
-                    VStack(spacing: 15) {
+                    // Action buttons - more compact
+                    HStack(spacing: 12) {
                         Button(action: {
                             dismiss()
                             onPlayAgain()
                         }) {
                             Text("Tekrar Oyna")
-                                .font(.title3.bold())
+                                .font(.subheadline.bold())
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding()
+                                .padding(.vertical, 12)
                                 .background(Color.green)
-                                .cornerRadius(15)
+                                .cornerRadius(12)
                         }
 
                         Button(action: {
                             dismiss()
                             onExit()
                         }) {
-                            Text("Ana Menüye Dön")
-                                .font(.title3)
+                            Text("Ana Menü")
+                                .font(.subheadline.bold())
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.white.opacity(0.25))
-                                .cornerRadius(15)
+                                .padding(.vertical, 12)
+                                .background(Color.white.opacity(0.3))
+                                .cornerRadius(12)
                         }
                     }
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 30)
                 }
+                .padding(24)
+                .background(
+                    LinearGradient(
+                        colors: [
+                            isPerfect ? Color.green.opacity(0.95) : Color.orange.opacity(0.95),
+                            Color.purple.opacity(0.95)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .cornerRadius(24)
+                .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
+                .padding(.horizontal, 30)
             }
         }
         .interactiveDismissDisabled()
+    }
+
+    // Helper to get localized message
+    private func getLocalizedMessage() -> String {
+        if isPerfect {
+            return NSLocalizedString("success.perfect_match", comment: "Perfect match!")
+        } else if message.contains("success.close_match") || message.contains("Yakın") {
+            if let result = game.playerResult {
+                let diff = abs(game.targetNumber - result)
+                return String(format: NSLocalizedString("success.close_match", comment: "Close match"), diff)
+            }
+        } else if message.contains("error.invalid_expression") || message.contains("Geçersiz") {
+            return NSLocalizedString("error.invalid_expression", comment: "Invalid expression")
+        } else if message.contains("info.result") {
+            if let result = game.playerResult {
+                return String(format: NSLocalizedString("info.result", comment: "Result"), result, game.targetNumber)
+            }
+        }
+        return message
     }
 }
 
