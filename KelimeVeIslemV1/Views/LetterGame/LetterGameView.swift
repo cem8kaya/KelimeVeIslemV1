@@ -438,18 +438,25 @@ struct PlayingView: View {
             .disabled(currentWord.isEmpty)
             .padding(.horizontal, 40)
 
-            // Give Up button
+            // Give Up and Return to Menu button
             Button(action: onGiveUp) {
                 HStack {
-                    Image(systemName: "xmark.circle")
-                    Text("Pes Et")
+                    Image(systemName: "house.circle.fill")
+                    Text("Ana Menüye Dön")
                 }
                 .font(.subheadline.bold())
-                .foregroundColor(theme.primaryText.opacity(0.9))
+                .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(theme.errorColor.opacity(0.6))
-                .cornerRadius(10)
+                .background(
+                    LinearGradient(
+                        colors: [Color(hex: "#EF4444"), Color(hex: "#DC2626")],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(12)
+                .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
             }
             .padding(.horizontal, 40)
             .padding(.top, 5)

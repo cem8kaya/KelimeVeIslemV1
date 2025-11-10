@@ -229,6 +229,29 @@ struct DailyChallengeLetterGameView: View {
                 .disabled(viewModel.currentWord.count < 2)
                 .padding(.horizontal)
 
+                // Return to Menu button
+                Button(action: onDismiss) {
+                    HStack {
+                        Image(systemName: "house.circle.fill")
+                        Text("Ana Menüye Dön")
+                    }
+                    .font(.subheadline.bold())
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        LinearGradient(
+                            colors: [Color(hex: "#EF4444"), Color(hex: "#DC2626")],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(12)
+                    .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
+                }
+                .padding(.horizontal)
+                .padding(.top, 5)
+
                 Spacer()
             }
             .padding(.top, 20)
@@ -448,6 +471,29 @@ struct DailyChallengeNumberGameView: View {
                     .disabled(viewModel.currentSolution.isEmpty)
                 }
                 .padding(.horizontal)
+
+                // Return to Menu button
+                Button(action: onDismiss) {
+                    HStack {
+                        Image(systemName: "house.circle.fill")
+                        Text("Ana Menüye Dön")
+                    }
+                    .font(.subheadline.bold())
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        LinearGradient(
+                            colors: [Color(hex: "#EF4444"), Color(hex: "#DC2626")],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(12)
+                    .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
+                }
+                .padding(.horizontal)
+                .padding(.top, 5)
 
                 Spacer()
             }

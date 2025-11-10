@@ -56,16 +56,30 @@ class LetterGameViewModel: ObservableObject {
             self.settings = settings
             self.letterCount = settings.letterCount
         } else {
-            // Use default settings initially, load from persistence after init
-            self.settings = GameSettings.default
-            self.letterCount = GameSettings.default.letterCount
+            // Load from persistence immediately
+            self.settings = PersistenceService.shared.loadSettings()
+            self.letterCount = self.settings.letterCount
+        }
+
+        // Validate letterCount is in valid range (6-12)
+        if self.letterCount < 6 || self.letterCount > 12 {
+            print("⚠️ Invalid letterCount (\(self.letterCount)), resetting to default (9)")
+            self.letterCount = 9
+            self.settings.letterCount = 9
         }
     }
 
-    // Load settings after initialization
+    // Load settings after initialization (kept for backwards compatibility)
     func loadPersistedSettings() {
         self.settings = persistenceService.loadSettings()
         self.letterCount = settings.letterCount
+
+        // Validate letterCount is in valid range (6-12)
+        if self.letterCount < 6 || self.letterCount > 12 {
+            print("⚠️ Invalid letterCount (\(self.letterCount)), resetting to default (9)")
+            self.letterCount = 9
+            self.settings.letterCount = 9
+        }
     }
 
     // Custom initializer for daily challenges with pre-generated letters
@@ -105,15 +119,29 @@ class LetterGameViewModel: ObservableObject {
         let difficulty = currentLevel.difficulty
 
         // Apply level-based difficulty for letter count
-        let letterCount = settings.practiceMode ? settings.letterCount :
+        var letterCount = settings.practiceMode ? settings.letterCount :
             Int.random(in: difficulty.minLetterCount...difficulty.maxLetterCount)
+
+        // Validate letterCount is in valid range (6-12)
+        if letterCount < 6 || letterCount > 12 {
+            print("⚠️ Invalid letterCount (\(letterCount)), using default (9)")
+            letterCount = 9
+        }
 
         let letters = letterGenerator.generateLetters(
             count: letterCount,
             language: settings.language
         )
 
-        game = LetterGame(letters: letters, language: settings.language)
+        // Safety check: ensure letters are not empty
+        if letters.isEmpty {
+            print("❌ ERROR: LetterGenerator returned empty array! Regenerating with count=9")
+            let fallbackLetters = letterGenerator.generateLetters(count: 9, language: settings.language)
+            game = LetterGame(letters: fallbackLetters, language: settings.language)
+        } else {
+            game = LetterGame(letters: letters, language: settings.language)
+        }
+
         currentWord = ""
 
         // Apply level-based timer duration
