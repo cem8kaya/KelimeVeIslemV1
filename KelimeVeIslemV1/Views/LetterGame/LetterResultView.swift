@@ -56,8 +56,8 @@ struct LetterResultView: View {
                         .scaleEffect(game.isValid == true ? 1.0 : 0.9)
                         .animation(.spring, value: game.isValid)
 
-                    // Message - Using NSLocalizedString directly to ensure translation
-                    Text(getLocalizedMessage())
+                    // Message - Already localized from ViewModel
+                    Text(message)
                         .font(.title2.bold())
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
@@ -156,18 +156,6 @@ struct LetterResultView: View {
             }
         }
         .interactiveDismissDisabled()
-    }
-
-    // Helper to get localized message
-    private func getLocalizedMessage() -> String {
-        if game.isValid == true {
-            return NSLocalizedString("success.valid_word", comment: "Valid word!")
-        } else if message.contains("error.not_in_dictionary") || message.contains("sözlük") {
-            return NSLocalizedString("error.not_in_dictionary", comment: "Word not found")
-        } else if message.contains("error.invalid_letters") || message.contains("Geçersiz") {
-            return NSLocalizedString("error.invalid_letters", comment: "Invalid letters")
-        }
-        return message
     }
 }
 

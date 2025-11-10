@@ -518,7 +518,7 @@ struct LetterTilesView: View {
     var onLetterTap: ((Character, Int) -> Void)? = nil
 
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 5), spacing: 10) {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
             ForEach(letters.indices, id: \.self) { index in
                 let letter = letters[index]
                 let isUsed = usedIndices.contains(index)
@@ -532,17 +532,17 @@ struct LetterTilesView: View {
                 } label: {
                     VStack(spacing: 2) {
                         Text(String(letter).uppercased())
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.system(size: 32, weight: .bold))
                             .foregroundColor(theme.letterTileText)
 
                         // Rare letter indicator
                         if isRare && !isUsed {
                             Image(systemName: "star.fill")
-                                .font(.system(size: 8))
+                                .font(.system(size: 10))
                                 .foregroundColor(theme.rareLetterHighlight)
                         }
                     }
-                    .frame(width: 60, height: 60)
+                    .frame(width: 80, height: 80)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(isUsed ? theme.letterTileBackground.opacity(0.3) : theme.letterTileBackground)
@@ -563,7 +563,7 @@ struct LetterTilesView: View {
                 .accessibilityHint(isUsed ? "Letter already used" : "Add letter to word")
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal)
     }
 }
 
