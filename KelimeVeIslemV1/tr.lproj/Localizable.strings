@@ -142,3 +142,16 @@
 "common.close" = "Kapat";
 "common.delete" = "Sil";
 "common.error" = "Hata";
+
+// MARK: - Success Messages
+"success.valid_word" = "Geçerli kelime! Harika!";
+"success.perfect_match" = "Mükemmel! Tam hedef!";
+"success.close_match" = "Yakın! %d fark ile";
+
+// MARK: - Error Messages
+"error.invalid_letters" = "Geçersiz harfler kullanıldı";
+"error.not_in_dictionary" = "Kelime sözlükte bulunamadı. Denemeye devam et!";
+"error.invalid_expression" = "Geçersiz ifade";
+
+// MARK: - Info Messages
+"info.result" = "Sonuç: %d (hedef: %d)";
