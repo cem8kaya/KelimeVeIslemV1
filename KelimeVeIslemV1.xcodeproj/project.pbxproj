@@ -7,12 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BB001BB22EC3600000000001 /* Achievement.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB12EC3600000000001 /* Achievement.swift */; };
-		BB001BB42EC3600000000002 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB32EC3600000000002 /* DailyChallenge.swift */; };
-		BB001BB62EC3600000000003 /* DailyChallengeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB52EC3600000000003 /* DailyChallengeViewModel.swift */; };
-		BB001BB82EC3600000000004 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB72EC3600000000004 /* AchievementsView.swift */; };
-		BB001BBA2EC3600000000005 /* DailyChallengeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BB92EC3600000000005 /* DailyChallengeView.swift */; };
-		BB001BBC2EC3600000000006 /* DailyChallengeGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001BBB2EC3600000000006 /* DailyChallengeGameView.swift */; };
+		870030542EBE8C4600A6E0DA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 870030522EBE8C4600A6E0DA /* Localizable.strings */; };
+		870030572EBE8C5B00A6E0DA /* Achievement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870030552EBE8C5B00A6E0DA /* Achievement.swift */; };
+		870030582EBE8C5B00A6E0DA /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870030562EBE8C5B00A6E0DA /* DailyChallenge.swift */; };
+		8700305A2EBE8C7F00A6E0DA /* DailyChallengeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870030592EBE8C7F00A6E0DA /* DailyChallengeViewModel.swift */; };
+		8774FF7B2EC1B56500D720B3 /* DailyChallengeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8774FF7A2EC1B56500D720B3 /* DailyChallengeView.swift */; };
+		8774FF7D2EC1B57900D720B3 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8774FF7C2EC1B57900D720B3 /* AchievementsView.swift */; };
+		8774FF7F2EC1B68800D720B3 /* DailyChallengeGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8774FF7E2EC1B68800D720B3 /* DailyChallengeGameView.swift */; };
 		87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E172EB2453900B16425 /* Assets.xcassets */; };
 		87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */; };
 		87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E192EB2453900B16425 /* Persistence.swift */; };
@@ -43,20 +44,21 @@
 		87D71E5D2EB247EC00B16425 /* NumberResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E5C2EB247EB00B16425 /* NumberResultView.swift */; };
 		87D71E602EB2480700B16425 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E5F2EB2480700B16425 /* SettingsView.swift */; };
 		87D71E632EB2482000B16425 /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E622EB2481F00B16425 /* StatisticsView.swift */; };
-		AA001AA12EC3500000000001 /* SavedGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA001AA02EC3500000000001 /* SavedGameState.swift */; };
-		AA001AA32EC3500000000002 /* GameCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA001AA22EC3500000000002 /* GameCommand.swift */; };
-		AA001AA52EC3500000000003 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA001AA42EC3500000000003 /* ThemeManager.swift */; };
-		AA001AA72EC3500000000004 /* AnimationModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA001AA62EC3500000000004 /* AnimationModifiers.swift */; };
-		AA001AA92EC3500000000005 /* VisualFeedbackComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA001AA82EC3500000000005 /* VisualFeedbackComponents.swift */; };
+		87EF52F72EC11CE500B4F222 /* SavedGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52F62EC11CE500B4F222 /* SavedGameState.swift */; };
+		87EF52FC2EC11D0000B4F222 /* GameCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52F92EC11D0000B4F222 /* GameCommand.swift */; };
+		87EF52FD2EC11D0000B4F222 /* VisualFeedbackComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52FB2EC11D0000B4F222 /* VisualFeedbackComponents.swift */; };
+		87EF52FE2EC11D0000B4F222 /* AnimationModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52F82EC11D0000B4F222 /* AnimationModifiers.swift */; };
+		87EF52FF2EC11D0000B4F222 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52FA2EC11D0000B4F222 /* ThemeManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		BB001BB12EC3600000000001 /* Achievement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievement.swift; sourceTree = "<group>"; };
-		BB001BB32EC3600000000002 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
-		BB001BB52EC3600000000003 /* DailyChallengeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeViewModel.swift; sourceTree = "<group>"; };
-		BB001BB72EC3600000000004 /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
-		BB001BB92EC3600000000005 /* DailyChallengeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeView.swift; sourceTree = "<group>"; };
-		BB001BBB2EC3600000000006 /* DailyChallengeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeGameView.swift; sourceTree = "<group>"; };
+		870030512EBE8C4600A6E0DA /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = Localizable.strings; sourceTree = "<group>"; };
+		870030552EBE8C5B00A6E0DA /* Achievement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievement.swift; sourceTree = "<group>"; };
+		870030562EBE8C5B00A6E0DA /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
+		870030592EBE8C7F00A6E0DA /* DailyChallengeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeViewModel.swift; sourceTree = "<group>"; };
+		8774FF7A2EC1B56500D720B3 /* DailyChallengeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeView.swift; sourceTree = "<group>"; };
+		8774FF7C2EC1B57900D720B3 /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
+		8774FF7E2EC1B68800D720B3 /* DailyChallengeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeGameView.swift; sourceTree = "<group>"; };
 		87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KelimeVeIslemV1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		87D71E172EB2453900B16425 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		87D71E192EB2453900B16425 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
@@ -88,11 +90,11 @@
 		87D71E5C2EB247EB00B16425 /* NumberResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberResultView.swift; sourceTree = "<group>"; };
 		87D71E5F2EB2480700B16425 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		87D71E622EB2481F00B16425 /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
-		AA001AA02EC3500000000001 /* SavedGameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedGameState.swift; sourceTree = "<group>"; };
-		AA001AA22EC3500000000002 /* GameCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCommand.swift; sourceTree = "<group>"; };
-		AA001AA42EC3500000000003 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
-		AA001AA62EC3500000000004 /* AnimationModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationModifiers.swift; sourceTree = "<group>"; };
-		AA001AA82EC3500000000005 /* VisualFeedbackComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualFeedbackComponents.swift; sourceTree = "<group>"; };
+		87EF52F62EC11CE500B4F222 /* SavedGameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedGameState.swift; sourceTree = "<group>"; };
+		87EF52F82EC11D0000B4F222 /* AnimationModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationModifiers.swift; sourceTree = "<group>"; };
+		87EF52F92EC11D0000B4F222 /* GameCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCommand.swift; sourceTree = "<group>"; };
+		87EF52FA2EC11D0000B4F222 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		87EF52FB2EC11D0000B4F222 /* VisualFeedbackComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualFeedbackComponents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		870030532EBE8C4600A6E0DA /* tr.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				870030522EBE8C4600A6E0DA /* Localizable.strings */,
+			);
+			path = tr.lproj;
+			sourceTree = "<group>";
+		};
+		8700305C2EBE8C8E00A6E0DA /* Achievements */ = {
+			isa = PBXGroup;
+			children = (
+				8774FF7C2EC1B57900D720B3 /* AchievementsView.swift */,
+			);
+			path = Achievements;
+			sourceTree = "<group>";
+		};
+		8700305F2EBE8C8E00A6E0DA /* DailyChallenge */ = {
+			isa = PBXGroup;
+			children = (
+				8774FF7E2EC1B68800D720B3 /* DailyChallengeGameView.swift */,
+				8774FF7A2EC1B56500D720B3 /* DailyChallengeView.swift */,
+			);
+			path = DailyChallenge;
+			sourceTree = "<group>";
+		};
 		87D71DFB2EB2452200B16425 = {
 			isa = PBXGroup;
 			children = (
@@ -125,6 +152,7 @@
 		87D71E1A2EB2453900B16425 /* KelimeVeIslemV1 */ = {
 			isa = PBXGroup;
 			children = (
+				870030532EBE8C4600A6E0DA /* tr.lproj */,
 				87D71E192EB2453900B16425 /* Persistence.swift */,
 				87D71E172EB2453900B16425 /* Assets.xcassets */,
 				87D71E1F2EB2457800B16425 /* App */,
@@ -143,16 +171,15 @@
 			isa = PBXGroup;
 			children = (
 				87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */,
-							BB001BB12EC3600000000001 /* Achievement.swift */,
-				BB001BB32EC3600000000002 /* DailyChallenge.swift */,
-				BB001BB52EC3600000000003 /* DailyChallengeViewModel.swift */,
-);
+			);
 			path = App;
 			sourceTree = "<group>";
 		};
 		87D71E202EB2458500B16425 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				8700305C2EBE8C8E00A6E0DA /* Achievements */,
+				8700305F2EBE8C8E00A6E0DA /* DailyChallenge */,
 				87D71E612EB2481600B16425 /* Statistics */,
 				87D71E5E2EB247FD00B16425 /* Settings */,
 				87D71E592EB247D200B16425 /* NumberGame */,
@@ -165,12 +192,14 @@
 		87D71E212EB2459500B16425 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				87EF52F62EC11CE500B4F222 /* SavedGameState.swift */,
+				870030552EBE8C5B00A6E0DA /* Achievement.swift */,
+				870030562EBE8C5B00A6E0DA /* DailyChallenge.swift */,
 				87D71E2C2EB2462000B16425 /* GameSettings.swift */,
 				87D71E2A2EB2460F00B16425 /* GameResult.swift */,
 				87D71E2E2EB2463000B16425 /* LetterGame.swift */,
 				87D71E302EB2464000B16425 /* NumberGame.swift */,
 				87D71E282EB245F600B16425 /* GameMode.swift */,
-				AA001AA02EC3500000000001 /* SavedGameState.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -201,12 +230,12 @@
 		87D71E242EB245B100B16425 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				87EF52F82EC11D0000B4F222 /* AnimationModifiers.swift */,
+				87EF52F92EC11D0000B4F222 /* GameCommand.swift */,
+				87EF52FA2EC11D0000B4F222 /* ThemeManager.swift */,
+				87EF52FB2EC11D0000B4F222 /* VisualFeedbackComponents.swift */,
 				87D71E472EB2473A00B16425 /* ErrorHandling.swift */,
 				87D71E492EB2474700B16425 /* SharedComponents.swift */,
-				AA001AA22EC3500000000002 /* GameCommand.swift */,
-				AA001AA42EC3500000000003 /* ThemeManager.swift */,
-				AA001AA62EC3500000000004 /* AnimationModifiers.swift */,
-				AA001AA82EC3500000000005 /* VisualFeedbackComponents.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -214,6 +243,7 @@
 		87D71E252EB245BB00B16425 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				870030592EBE8C7F00A6E0DA /* DailyChallengeViewModel.swift */,
 				87D71E4B2EB2475C00B16425 /* LetterGameViewModel.swift */,
 				87D71E4D2EB2476D00B16425 /* NumberGameViewModel.swift */,
 				87D71E4F2EB2477B00B16425 /* StatisticsViewModel.swift */,
@@ -306,6 +336,7 @@
 			knownRegions = (
 				en,
 				Base,
+				tr,
 			);
 			mainGroup = 87D71DFB2EB2452200B16425;
 			minimizedProjectReferenceProxies = 1;
@@ -325,6 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				87D71E372EB2468300B16425 /* Localizable.strings.tr in Resources */,
+				870030542EBE8C4600A6E0DA /* Localizable.strings in Resources */,
 				87D71E392EB2469D00B16425 /* turkish_words.txt in Resources */,
 				87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */,
 				87D71E332EB2466200B16425 /* english_words.txt in Resources */,
@@ -339,18 +371,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB001BB22EC3600000000001 /* Achievement.swift in Sources */,
-				BB001BB42EC3600000000002 /* DailyChallenge.swift in Sources */,
-				BB001BB62EC3600000000003 /* DailyChallengeViewModel.swift in Sources */,
-				BB001BB82EC3600000000004 /* AchievementsView.swift in Sources */,
-				BB001BBA2EC3600000000005 /* DailyChallengeView.swift in Sources */,
-				BB001BBC2EC3600000000006 /* DailyChallengeGameView.swift in Sources */,
 				87D71E292EB245F600B16425 /* GameMode.swift in Sources */,
 				87D71E632EB2482000B16425 /* StatisticsView.swift in Sources */,
 				87D71E272EB245D000B16425 /* KelimeVeIslemApp.swift in Sources */,
 				87D71E2D2EB2462000B16425 /* GameSettings.swift in Sources */,
 				87D71E4E2EB2476E00B16425 /* NumberGameViewModel.swift in Sources */,
 				87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */,
+				87EF52F72EC11CE500B4F222 /* SavedGameState.swift in Sources */,
+				87EF52FC2EC11D0000B4F222 /* GameCommand.swift in Sources */,
+				87EF52FD2EC11D0000B4F222 /* VisualFeedbackComponents.swift in Sources */,
+				87EF52FE2EC11D0000B4F222 /* AnimationModifiers.swift in Sources */,
+				8774FF7F2EC1B68800D720B3 /* DailyChallengeGameView.swift in Sources */,
+				87EF52FF2EC11D0000B4F222 /* ThemeManager.swift in Sources */,
 				87D71E442EB2471A00B16425 /* NumberGenerator.swift in Sources */,
 				87D71E462EB2472600B16425 /* PersistenceService.swift in Sources */,
 				87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */,
@@ -359,26 +391,37 @@
 				87D71E5B2EB247DC00B16425 /* NumberGameView.swift in Sources */,
 				87D71E3C2EB246D500B16425 /* AudioService.swift in Sources */,
 				87D71E2B2EB2460F00B16425 /* GameResult.swift in Sources */,
+				870030572EBE8C5B00A6E0DA /* Achievement.swift in Sources */,
+				870030582EBE8C5B00A6E0DA /* DailyChallenge.swift in Sources */,
 				87D71E4A2EB2474800B16425 /* SharedComponents.swift in Sources */,
 				87D71E4C2EB2475D00B16425 /* LetterGameViewModel.swift in Sources */,
 				87D71E482EB2473B00B16425 /* ErrorHandling.swift in Sources */,
 				87D71E402EB2470000B16425 /* DictionaryService.swift in Sources */,
 				87D71E312EB2464000B16425 /* NumberGame.swift in Sources */,
 				87D71E582EB247C300B16425 /* LetterResultView.swift in Sources */,
+				8700305A2EBE8C7F00A6E0DA /* DailyChallengeViewModel.swift in Sources */,
+				8774FF7D2EC1B57900D720B3 /* AchievementsView.swift in Sources */,
 				87D71E2F2EB2463000B16425 /* LetterGame.swift in Sources */,
 				87D71E422EB2470D00B16425 /* LetterGenerator.swift in Sources */,
+				8774FF7B2EC1B56500D720B3 /* DailyChallengeView.swift in Sources */,
 				87D71E5D2EB247EC00B16425 /* NumberResultView.swift in Sources */,
 				87D71E502EB2477C00B16425 /* StatisticsViewModel.swift in Sources */,
 				87D71E532EB2479900B16425 /* HomeView.swift in Sources */,
-				AA001AA12EC3500000000001 /* SavedGameState.swift in Sources */,
-				AA001AA32EC3500000000002 /* GameCommand.swift in Sources */,
-				AA001AA52EC3500000000003 /* ThemeManager.swift in Sources */,
-				AA001AA72EC3500000000004 /* AnimationModifiers.swift in Sources */,
-				AA001AA92EC3500000000005 /* VisualFeedbackComponents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		870030522EBE8C4600A6E0DA /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				870030512EBE8C4600A6E0DA /* tr */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		87D71E122EB2452300B16425 /* Debug */ = {
@@ -518,6 +561,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -551,6 +595,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
