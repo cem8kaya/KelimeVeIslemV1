@@ -30,7 +30,7 @@ struct LevelUpView: View {
                 }
 
             // Confetti
-            ConfettiView(counter: $confettiCounter)
+            LevelUpConfettiView(counter: $confettiCounter)
 
             // Main content
             VStack(spacing: 30) {
@@ -193,9 +193,9 @@ struct RewardRow: View {
     }
 }
 
-// MARK: - Confetti View
+// MARK: - Level Up Confetti View
 
-struct ConfettiView: View {
+struct LevelUpConfettiView: View {
     @Binding var counter: Int
     @State private var particles: [ConfettiParticle] = []
 

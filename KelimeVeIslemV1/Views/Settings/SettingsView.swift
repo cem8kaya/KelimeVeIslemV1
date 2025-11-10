@@ -169,14 +169,14 @@ struct SettingsView: View {
             }
             .navigationTitle("Ayarlar")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Tamam") {
                         saveSettings()
                         dismiss()
                     }
                 }
-            }
+            })
             .alert("Tüm Veriler Sıfırlansın mı?", isPresented: $showResetAlert) {
                 Button("İptal", role: .cancel) {}
                 Button("Sıfırla", role: .destructive) {

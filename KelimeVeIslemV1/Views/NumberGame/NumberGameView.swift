@@ -698,14 +698,14 @@ struct HintView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Kapat") {
                         dismiss()
                     }
                     .foregroundColor(.white)
                 }
-            }
+            })
         }
     }
 }
