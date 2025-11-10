@@ -34,12 +34,30 @@ struct LetterResultView: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 30) {
+
+            VStack(spacing: 0) {
+                // Top navigation bar with close button
+                HStack {
                     Spacer()
-                    
-                    // Result icon
+
+                    Button(action: {
+                        dismiss()
+                        onExit()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 32))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.3), radius: 2)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+                ScrollView {
+                    VStack(spacing: 30) {
+                        Spacer()
+
+                        // Result icon
                     Image(systemName: game.isValid == true ? "checkmark.circle.fill" : "xmark.circle.fill")
                         .font(.system(size: 80))
                         .foregroundColor(.white)
@@ -107,39 +125,40 @@ struct LetterResultView: View {
                     .padding(.top, 20)
 
                     
-                    // Action buttons
-                    VStack(spacing: 15) {
-                        Button(action: {
-                            dismiss()
-                            onPlayAgain()
-                        }) {
-                            Text("Tekrar Oyna")
-                                .font(.title3.bold())
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color(hex: "#10B981"))
-                                .cornerRadius(15)
-                                .buttonStyle(GrowingButton())
-                        }
+                        // Action buttons
+                        VStack(spacing: 15) {
+                            Button(action: {
+                                dismiss()
+                                onPlayAgain()
+                            }) {
+                                Text("Tekrar Oyna")
+                                    .font(.title3.bold())
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color(hex: "#10B981"))
+                                    .cornerRadius(15)
+                                    .buttonStyle(GrowingButton())
+                            }
 
-                        Button(action: {
-                            dismiss()
-                            onExit()
-                        }) {
-                            Text("Ana Menüye Dön")
-                                .font(.title3)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.white.opacity(0.25))
-                                .cornerRadius(15)
-                                .buttonStyle(GrowingButton())
+                            Button(action: {
+                                dismiss()
+                                onExit()
+                            }) {
+                                Text("Ana Menüye Dön")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.white.opacity(0.25))
+                                    .cornerRadius(15)
+                                    .buttonStyle(GrowingButton())
+                            }
                         }
+                        .padding(.horizontal, 40)
+                        .padding(.top, 40)
+                        .padding(.bottom, 30)
                     }
-                    .padding(.horizontal, 40)
-                    .padding(.top, 40)
-                    .padding(.bottom, 30)
                 }
             }
         }

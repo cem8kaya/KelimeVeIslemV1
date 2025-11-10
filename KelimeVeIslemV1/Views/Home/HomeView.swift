@@ -150,6 +150,8 @@ struct HomeView: View {
                         // Refresh saved game state when returning from game
                         savedGameState = PersistenceService.shared.loadGameState()
                         resumeGame = false
+                        // Refresh statistics to update level display
+                        statisticsViewModel.refresh()
                     }
                 )
             }

@@ -37,11 +37,29 @@ struct NumberResultView: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            
-            VStack(spacing: 30) {
-                Spacer()
-                
-                // Result icon
+
+            VStack(spacing: 0) {
+                // Top navigation bar with close button
+                HStack {
+                    Spacer()
+
+                    Button(action: {
+                        dismiss()
+                        onExit()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 32))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.3), radius: 2)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+                VStack(spacing: 30) {
+                    Spacer()
+
+                    // Result icon
                 Image(systemName: isPerfect ? "star.fill" : "target")
                     .font(.system(size: 80))
                     .foregroundColor(.white)
@@ -125,39 +143,40 @@ struct NumberResultView: View {
                         .font(.title3)
                         .foregroundColor(.white.opacity(0.9))
                 }
-                
-                Spacer()
-                
-                // Action buttons
-                VStack(spacing: 15) {
-                    Button(action: {
-                        dismiss()
-                        onPlayAgain()
-                    }) {
-                        Text("Tekrar Oyna")
-                            .font(.title3.bold())
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .cornerRadius(15)
-                    }
 
-                    Button(action: {
-                        dismiss()
-                        onExit()
-                    }) {
-                        Text("Ana Menüye Dön")
-                            .font(.title3)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.white.opacity(0.25))
-                            .cornerRadius(15)
+                    Spacer()
+
+                    // Action buttons
+                    VStack(spacing: 15) {
+                        Button(action: {
+                            dismiss()
+                            onPlayAgain()
+                        }) {
+                            Text("Tekrar Oyna")
+                                .font(.title3.bold())
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.green)
+                                .cornerRadius(15)
+                        }
+
+                        Button(action: {
+                            dismiss()
+                            onExit()
+                        }) {
+                            Text("Ana Menüye Dön")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.white.opacity(0.25))
+                                .cornerRadius(15)
+                        }
                     }
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 30)
                 }
-                .padding(.horizontal, 40)
-                .padding(.bottom, 30)
             }
         }
         .interactiveDismissDisabled()

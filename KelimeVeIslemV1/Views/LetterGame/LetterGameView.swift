@@ -310,8 +310,15 @@ struct PlayingView: View {
 
             // Available letters
             Text("Mevcut Harfler")
-                .font(.headline)
-                .foregroundColor(theme.primaryText.opacity(0.9))
+                .font(.headline.bold())
+                .foregroundColor(.white)
+                .padding(.horizontal, 40)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(theme.primaryButton.opacity(0.6))
+                )
+                .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
                 .accessibilityAddTraits(.isHeader)
 
             LetterTilesView(
