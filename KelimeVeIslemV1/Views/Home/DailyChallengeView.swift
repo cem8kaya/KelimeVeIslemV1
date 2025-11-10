@@ -47,7 +47,7 @@ struct DailyChallengeView: View {
                 .padding(.top, 30)
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         dismiss()
@@ -62,7 +62,7 @@ struct DailyChallengeView: View {
                         .foregroundColor(.white)
                         .font(.headline)
                 }
-            }
+            })
         }
     }
 }

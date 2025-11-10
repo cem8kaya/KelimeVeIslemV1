@@ -87,13 +87,13 @@ struct StatisticsView: View {
             }
             .navigationTitle("İstatistikler")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Tamam") {
                         dismiss()
                     }
                 }
-            }
+            })
             .alert("İstatistikler Temizlensin mi?", isPresented: $showClearAlert) {
                 Button("İptal", role: .cancel) {}
                 Button("Temizle", role: .destructive) {

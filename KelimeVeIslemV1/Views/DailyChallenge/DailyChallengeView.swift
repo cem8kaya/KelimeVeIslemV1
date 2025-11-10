@@ -150,7 +150,7 @@ struct DailyChallengeView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
@@ -158,7 +158,7 @@ struct DailyChallengeView: View {
                             .foregroundColor(.white)
                     }
                 }
-            }
+            })
             .sheet(isPresented: $showLeaderboard) {
                 LeaderboardView(results: viewModel.leaderboard, stats: viewModel.stats)
             }
@@ -367,14 +367,14 @@ struct LeaderboardView: View {
             }
             .navigationTitle("Lider Tablosu")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.white)
                     }
                 }
-            }
+            })
         }
     }
 }

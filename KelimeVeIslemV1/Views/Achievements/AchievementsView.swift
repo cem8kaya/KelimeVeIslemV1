@@ -65,14 +65,14 @@ struct AchievementsView: View {
             }
             .navigationTitle("Başarımlar")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.white)
                     }
                 }
-            }
+            })
         }
     }
 
