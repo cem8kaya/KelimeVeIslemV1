@@ -30,6 +30,8 @@ class NumberGameViewModel: ObservableObject {
     @Published var error: AppError?
     @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
     @Published var showConfetti: Bool = false // Trigger for confetti animation
+    @Published var levelUpInfo: Level? = nil // Level-up notification
+    @Published var showLevelUp: Bool = false // Trigger for level-up screen
 
     // MARK: - Undo/Redo System
     @Published var commandHistory = CommandHistory()
@@ -91,12 +93,25 @@ class NumberGameViewModel: ObservableObject {
     // MARK: - Game Actions
     
     func startNewGame() {
-        let (numbers, target) = numberGenerator.generateGame(difficulty: settings.difficultyLevel)
+        // Get current level from statistics
+        let statistics = persistenceService.loadStatistics()
+        let currentLevel = statistics.level
+        let difficulty = currentLevel.difficulty
+
+        // Apply level-based difficulty for target number
+        let targetRange = settings.practiceMode ? 10...100 : difficulty.targetNumberRange
+        let target = Int.random(in: targetRange)
+
+        let (numbers, _) = numberGenerator.generateGame(difficulty: settings.difficultyLevel)
 
         game = NumberGame(numbers: numbers, targetNumber: target)
         currentSolution = ""
-        // In practice mode, set timer to a very high value (effectively infinite)
-        timeRemaining = settings.practiceMode ? 999999 : settings.numberTimerDuration
+
+        // Apply level-based timer duration
+        let timerDuration = settings.practiceMode ? 999999 :
+            (settings.numberTimerDuration > 0 ? settings.numberTimerDuration : difficulty.numberTimeSeconds)
+
+        timeRemaining = timerDuration
         gameState = .playing
         resultMessage = ""
         showHint = false
@@ -419,14 +434,24 @@ class NumberGameViewModel: ObservableObject {
             mode: .numbers,
             score: finalScore,
             duration: timeTaken,
-            details: details
+            details: details,
+            combo: comboCount,
+            isDailyChallenge: false
         )
         
         // Save on background thread to avoid blocking UI
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
-                try self?.persistenceService.saveResult(result)
+                let levelUp = try self?.persistenceService.saveResult(result)
                 print("âœ… Result saved successfully")
+
+                // Handle level-up on main thread
+                if let newLevel = levelUp {
+                    DispatchQueue.main.async {
+                        self?.levelUpInfo = newLevel
+                        self?.showLevelUp = true
+                    }
+                }
             } catch {
                 DispatchQueue.main.async {
                     self?.error = .persistenceError("Failed to save result")

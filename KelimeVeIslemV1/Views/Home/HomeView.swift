@@ -53,6 +53,11 @@ struct HomeView: View {
                     }
                     .padding(.top, 50)
 
+                    // Level Progress
+                    LevelProgressView(statistics: statisticsViewModel.statistics)
+                        .padding(.horizontal, 40)
+                        .padding(.top, 10)
+
                     // Resume Game button (if saved game exists)
                     if let savedState = savedGameState {
                         ResumeGameButton(
