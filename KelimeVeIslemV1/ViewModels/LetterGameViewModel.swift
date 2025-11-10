@@ -157,7 +157,7 @@ class LetterGameViewModel: ObservableObject {
                 comment: "Uses unavailable letters")
             game.validateAndScore(isValid: false)
             self.game = game
-            audioService.playSound(.failure)
+            audioService.playSound(.invalidWord)
             audioService.playErrorHaptic()
             saveResult()
             // No dictionary check needed if letters are invalid
@@ -179,6 +179,21 @@ class LetterGameViewModel: ObservableObject {
 
             if isValid {
                 comboCount += 1 // Increment combo on valid submission
+
+                // Play appropriate success sound based on word length
+                if currentWord.count >= 10 {
+                    audioService.playSound(.perfectScore)
+                } else {
+                    audioService.playSound(.validWord(length: currentWord.count))
+                }
+
+                // Play combo milestone sound at specific thresholds
+                if comboCount == 3 || comboCount == 5 || comboCount == 10 {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        self.audioService.playSound(.comboMilestone(level: self.comboCount))
+                    }
+                }
+
                 // Trigger confetti for 7+ letter words
                 if currentWord.count >= 7 {
                     showConfetti = true
@@ -188,13 +203,12 @@ class LetterGameViewModel: ObservableObject {
                 }
                 validationMessage = NSLocalizedString("success.valid_word",
                     comment: "Valid word!")
-                audioService.playSound(.success)
                 audioService.playSuccessHaptic()
             } else {
                 comboCount = 0 // Reset combo on invalid submission
                 validationMessage = NSLocalizedString("error.not_in_dictionary",
                     comment: "Word not found in dictionary. Keep trying!")
-                audioService.playSound(.failure)
+                audioService.playSound(.invalidWord)
                 audioService.playErrorHaptic()
 
                 // NEW: Find suggestions if the word is invalid
@@ -269,7 +283,9 @@ class LetterGameViewModel: ObservableObject {
     func selectLetter(_ letter: Character) {
         let command = LetterSelectionCommand(letter: letter, viewModel: self)
         commandHistory.executeCommand(command)
-        audioService.playSound(.buttonTap)
+        // Play letter selection sound with pitch variation based on letter
+        let pitch = Int(letter.asciiValue ?? 0) % 10
+        audioService.playSound(.letterSelect(pitch: pitch))
         audioService.playHaptic(style: .light)
     }
 
@@ -458,6 +474,7 @@ class LetterGameViewModel: ObservableObject {
                     DispatchQueue.main.async {
                         self?.levelUpInfo = newLevel
                         self?.showLevelUp = true
+                        self?.audioService.playSound(.levelUp)
                     }
                 }
             } catch {

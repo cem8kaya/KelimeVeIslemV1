@@ -115,8 +115,34 @@ struct SettingsView: View {
                     // Audio Settings
                     Section {
                         Toggle("Ses Efektleri", isOn: $audioService.isSoundEnabled)
+
+                        if audioService.isSoundEnabled {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Ses Efekti Seviyesi: \(Int(audioService.soundVolume * 100))%")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                Slider(value: $audioService.soundVolume, in: 0...1, step: 0.1)
+                                    .tint(.blue)
+                            }
+                        }
+
+                        Toggle("Müzik", isOn: $audioService.isMusicEnabled)
+
+                        if audioService.isMusicEnabled {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Müzik Seviyesi: \(Int(audioService.musicVolume * 100))%")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                Slider(value: $audioService.musicVolume, in: 0...1, step: 0.1)
+                                    .tint(.purple)
+                            }
+                        }
                     } header: {
                         Text("Ses")
+                    } footer: {
+                        Text("Oyun sırasında çalan ses efektlerini ve müziği kontrol edin")
                     }
 
                     // Dictionary Settings

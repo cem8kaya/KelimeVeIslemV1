@@ -606,16 +606,16 @@ struct DailyChallengeLetterTilesView: View {
     let onLetterTap: (Int) -> Void
 
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
             ForEach(letters.indices, id: \.self) { index in
                 let letter = letters[index]
                 Button(action: {
                     onLetterTap(index)
                 }) {
                     Text(letter)
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: 36, weight: .bold))
                         .foregroundColor(.white)
-                        .frame(width: 80, height: 80)
+                        .frame(width: 90, height: 90)
                         .background(
                             usedIndices.contains(index) ?
                             Color.gray.opacity(0.5) : Color.cyan.opacity(0.7)
