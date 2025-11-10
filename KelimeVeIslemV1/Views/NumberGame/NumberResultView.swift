@@ -57,8 +57,8 @@ struct NumberResultView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.white)
 
-                    // Message - Using helper to ensure translation
-                    Text(getLocalizedMessage())
+                    // Message - Already localized from ViewModel
+                    Text(message)
                         .font(.title2.bold())
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
@@ -164,25 +164,6 @@ struct NumberResultView: View {
             }
         }
         .interactiveDismissDisabled()
-    }
-
-    // Helper to get localized message
-    private func getLocalizedMessage() -> String {
-        if isPerfect {
-            return NSLocalizedString("success.perfect_match", comment: "Perfect match!")
-        } else if message.contains("success.close_match") || message.contains("Yakın") {
-            if let result = game.playerResult {
-                let diff = abs(game.targetNumber - result)
-                return String(format: NSLocalizedString("success.close_match", comment: "Close match"), diff)
-            }
-        } else if message.contains("error.invalid_expression") || message.contains("Geçersiz") {
-            return NSLocalizedString("error.invalid_expression", comment: "Invalid expression")
-        } else if message.contains("info.result") {
-            if let result = game.playerResult {
-                return String(format: NSLocalizedString("info.result", comment: "Result"), result, game.targetNumber)
-            }
-        }
-        return message
     }
 }
 
