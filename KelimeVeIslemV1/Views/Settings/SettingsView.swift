@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import os
 
 struct SettingsView: View {
 

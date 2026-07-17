@@ -258,6 +258,19 @@ struct XPGainView: View {
 // MARK: - Helper for Hex Colors
 // Note: Color(hex:) extension is defined in SharedComponents.swift
 
+// GameStatistics defines custom initializers (tolerant Codable), so the
+// synthesized memberwise init is gone — build preview data via mutation.
+private extension GameStatistics {
+    static var preview: GameStatistics {
+        var stats = GameStatistics()
+        stats.totalGamesPlayed = 25
+        stats.totalScore = 2500
+        stats.totalXP = 850
+        stats.currentLevel = 5
+        return stats
+    }
+}
+
 #Preview {
     ZStack {
         LinearGradient(
@@ -268,13 +281,8 @@ struct XPGainView: View {
         .ignoresSafeArea()
 
         VStack(spacing: 20) {
-            LevelProgressView(statistics: GameStatistics(
-                totalGamesPlayed: 25,
-                totalScore: 2500,
-                totalXP: 850,
-                currentLevel: 5
-            ))
-            .padding()
+            LevelProgressView(statistics: .preview)
+                .padding()
 
             XPGainView(xpGained: 125, currentCombo: 3)
         }
