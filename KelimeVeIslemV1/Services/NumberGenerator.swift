@@ -17,25 +17,33 @@ final class NumberGenerator: @unchecked Sendable {
     private let smallNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     private let largeNumbers = [25, 50, 75, 100]
     
-    func generateNumbers(smallCount: Int = 4, largeCount: Int = 2) -> [Int] {
+    /// - Parameter largePool: which "large" numbers may be drawn. Low levels
+    ///   pass a restricted pool (e.g. [25, 50]) so the single large tile is
+    ///   actually usable against small targets instead of being dead weight.
+    ///   Falls back to the full pool if it can't supply `largeCount` distinct
+    ///   values.
+    func generateNumbers(smallCount: Int = 4, largeCount: Int = 2, largePool: [Int]? = nil) -> [Int] {
         var numbers: [Int] = []
-        
+
         // Add small numbers (with possible repetition)
         for _ in 0..<smallCount {
             if let number = smallNumbers.randomElement() {
                 numbers.append(number)
             }
         }
-        
-        // Add large numbers (no repetition)
-        var availableLarge = largeNumbers
+
+        // Large numbers are drawn without repetition; guarantee the pool can
+        // supply the requested count, otherwise use the full set.
+        let requestedPool = largePool ?? largeNumbers
+        let effectivePool = requestedPool.count >= largeCount ? requestedPool : largeNumbers
+        var availableLarge = effectivePool
         for _ in 0..<largeCount {
             if let number = availableLarge.randomElement() {
                 numbers.append(number)
                 availableLarge.removeAll { $0 == number }
             }
         }
-        
+
         return numbers.shuffled()
     }
     

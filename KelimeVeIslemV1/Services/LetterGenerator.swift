@@ -40,46 +40,54 @@ class LetterGenerator {
         ("Z", 1)
     ]
     
-    func generateLetters(count: Int, language: GameLanguage) -> [Character] {
+    /// - Parameter harderCombos: when true (higher levels), the letter set is
+    ///   made harder to build words from: fewer vowels and a flatter consonant
+    ///   distribution so rarer, harder-to-place consonants appear more often.
+    func generateLetters(count: Int, language: GameLanguage, harderCombos: Bool = false) -> [Character] {
         guard count >= 6 && count <= 12 else {
             return []
         }
-        
+
         let vowels = language == .turkish ? turkishVowels : englishVowels
         let consonants = language == .turkish ? turkishConsonants : englishConsonants
-        
-        // Ensure good vowel/consonant distribution
-        // Aim for ~30-40% vowels
-        let vowelCount = max(2, Int(Double(count) * 0.35))
+
+        // Normal: ~35% vowels. Harder: ~28% vowels (fewer vowels = harder).
+        let vowelRatio = harderCombos ? 0.28 : 0.35
+        let vowelCount = max(2, Int(Double(count) * vowelRatio))
         let consonantCount = count - vowelCount
-        
+
         var letters: [Character] = []
-        
+
         // Generate vowels
         for _ in 0..<vowelCount {
             letters.append(weightedRandomLetter(from: vowels))
         }
-        
-        // Generate consonants
+
+        // Generate consonants (flattened weighting when harder)
         for _ in 0..<consonantCount {
-            letters.append(weightedRandomLetter(from: consonants))
+            letters.append(weightedRandomLetter(from: consonants, flatten: harderCombos))
         }
-        
+
         // Shuffle the result
         return letters.shuffled()
     }
-    
-    private func weightedRandomLetter(from letters: [(letter: Character, weight: Int)]) -> Character {
-        let totalWeight = letters.reduce(0) { $0 + $1.weight }
+
+    private func weightedRandomLetter(from letters: [(letter: Character, weight: Int)], flatten: Bool = false) -> Character {
+        // Flattening adds a constant to every weight, pulling the distribution
+        // toward uniform so rare (harder) letters become relatively more likely.
+        let flattenBonus = flatten ? 3 : 0
+        let totalWeight = letters.reduce(0) { $0 + $1.weight + flattenBonus }
+        guard totalWeight > 0 else { return letters.last!.letter }
         var random = Int.random(in: 0..<totalWeight)
-        
+
         for (letter, weight) in letters {
-            if random < weight {
+            let effectiveWeight = weight + flattenBonus
+            if random < effectiveWeight {
                 return letter
             }
-            random -= weight
+            random -= effectiveWeight
         }
-        
+
         return letters.last!.letter
     }
     

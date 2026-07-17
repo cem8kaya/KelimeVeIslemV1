@@ -18,10 +18,13 @@ struct GameSettings: Codable {
     var selectedTheme: String  // Store theme as string for compatibility
     var practiceMode: Bool
 
-    /// False until the player manually changes a timer in Settings. While
-    /// false, the level system's time budget applies; once true, the player's
-    /// explicit choice always wins.
+    /// These flags follow the same pattern: while false, the level system's
+    /// value applies (auto-scaling difficulty); once the player edits the
+    /// corresponding control in Settings, their explicit choice wins in normal
+    /// play too — so the controls are never inert.
     var usesCustomTimers: Bool
+    var usesCustomLetterCount: Bool
+    var usesCustomDifficulty: Bool
 
     // NOTE: Sound on/off lives in AudioService (single source of truth for the
     // audio pipeline); it is intentionally not duplicated here anymore.
@@ -35,7 +38,9 @@ struct GameSettings: Codable {
         difficultyLevel: .medium,
         selectedTheme: "classic",
         practiceMode: false,
-        usesCustomTimers: false
+        usesCustomTimers: false,
+        usesCustomLetterCount: false,
+        usesCustomDifficulty: false
     )
 
     init(
@@ -47,7 +52,9 @@ struct GameSettings: Codable {
         difficultyLevel: DifficultyLevel,
         selectedTheme: String,
         practiceMode: Bool,
-        usesCustomTimers: Bool = false
+        usesCustomTimers: Bool = false,
+        usesCustomLetterCount: Bool = false,
+        usesCustomDifficulty: Bool = false
     ) {
         self.language = language
         self.letterCount = letterCount
@@ -58,6 +65,8 @@ struct GameSettings: Codable {
         self.selectedTheme = selectedTheme
         self.practiceMode = practiceMode
         self.usesCustomTimers = usesCustomTimers
+        self.usesCustomLetterCount = usesCustomLetterCount
+        self.usesCustomDifficulty = usesCustomDifficulty
     }
 
     // Tolerant decoding: missing keys fall back to defaults so adding fields
@@ -77,12 +86,19 @@ struct GameSettings: Codable {
         // were always explicit — preserve that behaviour on migration.
         usesCustomTimers = try container.decodeIfPresent(Bool.self, forKey: .usesCustomTimers)
             ?? (container.contains(.letterTimerDuration) || container.contains(.numberTimerDuration))
+        // Existing installs configured these controls under the old UI where
+        // they were always active, so migrate them as "custom" to preserve
+        // the behaviour those players already set up.
+        usesCustomLetterCount = try container.decodeIfPresent(Bool.self, forKey: .usesCustomLetterCount)
+            ?? container.contains(.letterCount)
+        usesCustomDifficulty = try container.decodeIfPresent(Bool.self, forKey: .usesCustomDifficulty)
+            ?? container.contains(.difficultyLevel)
     }
 
     private enum CodingKeys: String, CodingKey {
         case language, letterCount, letterTimerDuration, numberTimerDuration
         case useOnlineDictionary, difficultyLevel, selectedTheme, practiceMode
-        case usesCustomTimers
+        case usesCustomTimers, usesCustomLetterCount, usesCustomDifficulty
     }
 
     enum DifficultyLevel: String, Codable, CaseIterable {

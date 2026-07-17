@@ -58,6 +58,8 @@ struct SettingsView: View {
                         Stepper("Süre: \(settings.letterTimerDuration)s", value: $settings.letterTimerDuration, in: 30...120, step: 10)
                     } header: {
                         Text("Harfler Oyunu")
+                    } footer: {
+                        Text("Bu değerleri değiştirmezseniz zorluk seviyenizle otomatik ayarlanır. Değiştirdiğinizde seçiminiz her oyunda geçerli olur.")
                     }
 
                     // Numbers Game Settings
@@ -73,8 +75,7 @@ struct SettingsView: View {
                     } header: {
                         Text("Sayılar Oyunu")
                     } footer: {
-                        // FIX: Use localized description from GameSettings
-                        Text(GameSettings.DifficultyLevel.allCases.map { $0.description }.joined(separator: " • "))
+                        Text("\(GameSettings.DifficultyLevel.allCases.map { $0.description }.joined(separator: " • "))\n\nZorluğu değiştirmezseniz sayı havuzu seviyenizle ölçeklenir.")
                     }
 
                     // Theme Settings
@@ -198,6 +199,12 @@ struct SettingsView: View {
                 }
                 .onChange(of: settings.numberTimerDuration) { _, _ in
                     settings.usesCustomTimers = true
+                }
+                .onChange(of: settings.letterCount) { _, _ in
+                    settings.usesCustomLetterCount = true
+                }
+                .onChange(of: settings.difficultyLevel) { _, _ in
+                    settings.usesCustomDifficulty = true
                 }
             }
             .navigationTitle("Ayarlar")

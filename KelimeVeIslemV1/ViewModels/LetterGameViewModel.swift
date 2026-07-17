@@ -134,21 +134,29 @@ class LetterGameViewModel: ObservableObject {
         let currentLevel = statistics.level
         let difficulty = currentLevel.difficulty
 
-        // Apply level-based difficulty for letter count
+        // Letter count: the player's Settings value wins in practice mode or
+        // once they've explicitly set a custom count; otherwise the level's
+        // range applies (auto-scaling difficulty).
+        let usesFixedCount = settings.practiceMode || settings.usesCustomLetterCount
         let letterCount = Self.clampLetterCount(
-            settings.practiceMode ? settings.letterCount :
+            usesFixedCount ? settings.letterCount :
                 Int.random(in: difficulty.minLetterCount...difficulty.maxLetterCount)
         )
 
+        // Harder letter mixes (fewer vowels, flatter consonant weights) kick in
+        // at higher levels during normal play only.
+        let harderCombos = !settings.practiceMode && difficulty.harderLetterCombos
+
         let letters = letterGenerator.generateLetters(
             count: letterCount,
-            language: settings.language
+            language: settings.language,
+            harderCombos: harderCombos
         )
 
         // Safety check: ensure letters are not empty
         if letters.isEmpty {
             AppLog.game.error("ERROR: LetterGenerator returned empty array! Regenerating with count=9")
-            let fallbackLetters = letterGenerator.generateLetters(count: 9, language: settings.language)
+            let fallbackLetters = letterGenerator.generateLetters(count: 9, language: settings.language, harderCombos: harderCombos)
             game = LetterGame(letters: fallbackLetters, language: settings.language)
         } else {
             game = LetterGame(letters: letters, language: settings.language)

@@ -26,6 +26,26 @@ final class NumberGeneratorTests: XCTestCase {
         }
     }
 
+    func testRestrictedLargePoolOnlyDrawsFromPool() {
+        // Low-level restriction: the single large tile must come from [25, 50]
+        // so it stays usable against small targets.
+        for _ in 0..<50 {
+            let numbers = generator.generateNumbers(smallCount: 5, largeCount: 1, largePool: [25, 50])
+            let large = numbers.filter { $0 >= 25 }
+            XCTAssertEqual(large.count, 1)
+            XCTAssertTrue([25, 50].contains(large[0]), "large tile \(large[0]) must be from the restricted pool")
+        }
+    }
+
+    func testLargePoolFallsBackWhenTooSmall() {
+        // A restricted pool that can't supply the requested count must fall back
+        // to the full set rather than return fewer tiles.
+        let numbers = generator.generateNumbers(smallCount: 0, largeCount: 4, largePool: [25, 50])
+        let large = numbers.filter { $0 >= 25 }
+        XCTAssertEqual(large.count, 4)
+        XCTAssertEqual(Set(large).count, 4, "fallback must still produce distinct large numbers")
+    }
+
     func testGenerateTargetRange() {
         for _ in 0..<50 {
             let target = generator.generateTarget()

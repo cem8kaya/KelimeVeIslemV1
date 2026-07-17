@@ -126,20 +126,33 @@ class NumberGameViewModel: ObservableObject {
         let currentLevel = statistics.level
         let difficulty = currentLevel.difficulty
 
-        // Single difficulty source: the level system decides target range,
-        // pool composition and allowed operations. The user's difficultyLevel
-        // setting only applies in practice mode.
+        // Difficulty source: the level system auto-scales target range, pool
+        // composition and allowed operations. The player's Settings difficulty
+        // wins for pool composition in practice mode, or once they've explicitly
+        // chosen a difficulty (so the "Zorluk" control is never inert).
         let target: Int
         let numbers: [Int]
         if settings.practiceMode {
-            let (generated, _) = numberGenerator.generateGame(difficulty: settings.difficultyLevel)
-            numbers = generated
+            let config = settings.difficultyLevel.numberConfig
+            numbers = numberGenerator.generateNumbers(smallCount: config.small, largeCount: config.large)
             target = Int.random(in: 10...100)
             allowedOperations = ["+", "-", "*", "/"]
         } else {
+            let config = settings.usesCustomDifficulty
+                ? settings.difficultyLevel.numberConfig
+                : (small: difficulty.smallNumberCount, large: difficulty.largeNumberCount)
+
+            // For small targets, restrict the large tile to [25, 50] so it's
+            // actually usable instead of an unreachable 75/100.
+            let restrictedLargePool = [25, 50]
+            let largePool = (difficulty.targetNumberRange.upperBound <= 100
+                             && config.large <= restrictedLargePool.count)
+                ? restrictedLargePool : nil
+
             numbers = numberGenerator.generateNumbers(
-                smallCount: difficulty.smallNumberCount,
-                largeCount: difficulty.largeNumberCount
+                smallCount: config.small,
+                largeCount: config.large,
+                largePool: largePool
             )
             target = Int.random(in: difficulty.targetNumberRange)
             allowedOperations = difficulty.allowedOperations

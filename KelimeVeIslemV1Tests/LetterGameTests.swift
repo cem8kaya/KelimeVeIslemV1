@@ -83,4 +83,34 @@ final class LetterGameTests: XCTestCase {
         XCTAssertEqual(decoded.letters, game.letters)
         XCTAssertEqual(decoded.playerWord, "KEDİ")
     }
+
+    // MARK: - LetterGenerator difficulty
+
+    private let turkishVowels: Set<Character> = ["A", "E", "I", "İ", "O", "Ö", "U", "Ü"]
+
+    func testHarderCombosProducesFewerVowels() {
+        let generator = LetterGenerator()
+
+        // count 10: normal -> Int(10*0.35)=3 vowels, harder -> Int(10*0.28)=2 vowels.
+        let normal = generator.generateLetters(count: 10, language: .turkish, harderCombos: false)
+        let harder = generator.generateLetters(count: 10, language: .turkish, harderCombos: true)
+
+        XCTAssertEqual(normal.count, 10)
+        XCTAssertEqual(harder.count, 10)
+        XCTAssertEqual(normal.filter { turkishVowels.contains($0) }.count, 3)
+        XCTAssertEqual(harder.filter { turkishVowels.contains($0) }.count, 2)
+    }
+
+    func testGeneratorAlwaysKeepsAtLeastTwoVowels() {
+        let generator = LetterGenerator()
+        // Even the hardest 6-letter set keeps the minimum of 2 vowels playable.
+        let harder = generator.generateLetters(count: 6, language: .turkish, harderCombos: true)
+        XCTAssertGreaterThanOrEqual(harder.filter { turkishVowels.contains($0) }.count, 2)
+    }
+
+    func testInvalidLetterCountReturnsEmpty() {
+        let generator = LetterGenerator()
+        XCTAssertTrue(generator.generateLetters(count: 5, language: .turkish).isEmpty)
+        XCTAssertTrue(generator.generateLetters(count: 13, language: .turkish).isEmpty)
+    }
 }
