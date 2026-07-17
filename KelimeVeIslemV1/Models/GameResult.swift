@@ -58,6 +58,7 @@ struct GameStatistics: Codable {
     var totalScore: Int = 0
     var letterGamesPlayed: Int = 0
     var numberGamesPlayed: Int = 0
+    var validWordsCount: Int = 0
     var bestLetterScore: Int = 0
     var bestNumberScore: Int = 0
     var longestWord: String = ""
@@ -67,6 +68,33 @@ struct GameStatistics: Codable {
     // Level progression
     var totalXP: Int = 0
     var currentLevel: Int = 1
+
+    init() {}
+
+    // Tolerant decoding: missing keys fall back to defaults so adding fields
+    // never wipes previously stored statistics. validWordsCount is migrated
+    // from letterGamesPlayed for data recorded before it existed.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        totalGamesPlayed = try container.decodeIfPresent(Int.self, forKey: .totalGamesPlayed) ?? 0
+        totalScore = try container.decodeIfPresent(Int.self, forKey: .totalScore) ?? 0
+        letterGamesPlayed = try container.decodeIfPresent(Int.self, forKey: .letterGamesPlayed) ?? 0
+        numberGamesPlayed = try container.decodeIfPresent(Int.self, forKey: .numberGamesPlayed) ?? 0
+        validWordsCount = try container.decodeIfPresent(Int.self, forKey: .validWordsCount) ?? letterGamesPlayed
+        bestLetterScore = try container.decodeIfPresent(Int.self, forKey: .bestLetterScore) ?? 0
+        bestNumberScore = try container.decodeIfPresent(Int.self, forKey: .bestNumberScore) ?? 0
+        longestWord = try container.decodeIfPresent(String.self, forKey: .longestWord) ?? ""
+        perfectNumberMatches = try container.decodeIfPresent(Int.self, forKey: .perfectNumberMatches) ?? 0
+        lastPlayedDate = try container.decodeIfPresent(Date.self, forKey: .lastPlayedDate)
+        totalXP = try container.decodeIfPresent(Int.self, forKey: .totalXP) ?? 0
+        currentLevel = try container.decodeIfPresent(Int.self, forKey: .currentLevel) ?? 1
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case totalGamesPlayed, totalScore, letterGamesPlayed, numberGamesPlayed
+        case validWordsCount, bestLetterScore, bestNumberScore, longestWord
+        case perfectNumberMatches, lastPlayedDate, totalXP, currentLevel
+    }
 
     var averageScore: Double {
         guard totalGamesPlayed > 0 else { return 0 }
@@ -102,11 +130,15 @@ struct GameStatistics: Codable {
         switch result.details {
         case .letters(let word, _, let isValid):
             letterGamesPlayed += 1
-            if isValid && result.score > bestLetterScore {
-                bestLetterScore = result.score
-            }
-            if word.count > longestWord.count {
-                longestWord = word
+            if isValid {
+                validWordsCount += 1
+                if result.score > bestLetterScore {
+                    bestLetterScore = result.score
+                }
+                // Only dictionary-valid words may become the longest word
+                if word.count > longestWord.count {
+                    longestWord = word
+                }
             }
 
         case .numbers(let target, let playerResult, _, _):

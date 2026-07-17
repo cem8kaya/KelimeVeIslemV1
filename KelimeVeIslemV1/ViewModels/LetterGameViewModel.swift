@@ -35,10 +35,11 @@ class LetterGameViewModel: ObservableObject {
     // Owned by the ViewModel so undo/redo can never desynchronize tile state,
     // and duplicate letters stay distinguishable.
     @Published private(set) var usedLetterIndices: [Int] = []
-    @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
+    @Published var comboCount: Int = 0 // Streak of successful games; persists across games
     @Published var showConfetti: Bool = false // Trigger for confetti animation
     @Published var levelUpInfo: Level? = nil // Level-up notification
     @Published var showLevelUp: Bool = false // Trigger for level-up screen
+    @Published var newAchievements: [Achievement] = [] // Freshly unlocked, awaiting display
 
     // MARK: - Undo/Redo System
     @Published var commandHistory = CommandHistory()
@@ -76,6 +77,8 @@ class LetterGameViewModel: ObservableObject {
             self.letterCount = 9
             self.settings.letterCount = 9
         }
+
+        self.comboCount = PersistenceService.shared.loadComboCount()
     }
 
     // Load settings after initialization (kept for backwards compatibility)
@@ -102,7 +105,7 @@ class LetterGameViewModel: ObservableObject {
         self.currentWord = ""
         self.validationMessage = ""
         self.suggestedWords = []
-        self.comboCount = 0
+        self.comboCount = PersistenceService.shared.loadComboCount()
     }
 
     // Start the game timer (call this after custom init)
@@ -165,7 +168,8 @@ class LetterGameViewModel: ObservableObject {
         validationMessage = ""
         error = nil
         suggestedWords = [] // Reset suggestions
-        comboCount = 0 // Reset combo counter
+        // The combo streak carries across games; only a failed submission resets it
+        comboCount = persistenceService.loadComboCount()
 
         audioService.playSound(.gameStart)
         // Only start timer if not in practice mode
@@ -218,7 +222,9 @@ class LetterGameViewModel: ObservableObject {
             self.game = game
 
             if isValid {
-                comboCount += 1 // Increment combo on valid submission
+                comboCount += 1 // Extend the streak on valid submission
+                persistCombo()
+                checkComboAchievements()
 
                 // Play appropriate success sound based on word length
                 if currentWord.count >= 10 {
@@ -245,7 +251,8 @@ class LetterGameViewModel: ObservableObject {
                     comment: "Valid word!")
                 audioService.playSuccessHaptic()
             } else {
-                comboCount = 0 // Reset combo on invalid submission
+                comboCount = 0 // Reset the streak on invalid submission
+                persistCombo()
                 validationMessage = NSLocalizedString("error.not_in_dictionary",
                     comment: "Word not found in dictionary. Keep trying!")
                 audioService.playSound(.invalidWord)
@@ -288,9 +295,28 @@ class LetterGameViewModel: ObservableObject {
         error = nil
         isLoading = false
         suggestedWords = []
-        comboCount = 0
+        comboCount = persistenceService.loadComboCount()
         showConfetti = false
         commandHistory.clear()
+    }
+
+    // MARK: - Combo Persistence
+
+    private func persistCombo() {
+        guard !settings.practiceMode else { return }
+        persistenceService.saveComboCount(comboCount)
+    }
+
+    private func checkComboAchievements() {
+        guard !settings.practiceMode else { return }
+        let unlocked = AchievementTracker.shared.checkComboAchievement(comboCount)
+        if !unlocked.isEmpty {
+            newAchievements.append(contentsOf: unlocked)
+        }
+    }
+
+    func dismissAchievement(_ achievement: Achievement) {
+        newAchievements.removeAll { $0.id == achievement.id }
     }
 
     // MARK: - Undo/Redo Support Methods
@@ -538,25 +564,26 @@ class LetterGameViewModel: ObservableObject {
         // Save on background thread to avoid blocking UI
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
-                let levelUp = try self?.persistenceService.saveResult(result)
-                print("âœ… Result saved successfully")
+                guard let outcome = try self?.persistenceService.saveResult(result) else { return }
+                print("✅ Result saved successfully")
 
-                // Handle level-up on main thread
-                if let newLevel = levelUp {
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
+                    if let newLevel = outcome.levelUp {
                         self?.levelUpInfo = newLevel
                         self?.showLevelUp = true
                         self?.audioService.playSound(.levelUp)
+                    }
+                    if !outcome.newAchievements.isEmpty {
+                        self?.newAchievements.append(contentsOf: outcome.newAchievements)
                     }
                 }
             } catch {
                 DispatchQueue.main.async {
                     self?.error = .persistenceError("Failed to save result")
                 }
-                print("âš ï¸ Failed to save result: \(error)")
+                print("⚠️ Failed to save result: \(error)")
             }
         }
-    }
     
     // MARK: - Helpers
 

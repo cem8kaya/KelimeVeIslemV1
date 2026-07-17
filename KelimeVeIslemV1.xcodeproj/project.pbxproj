@@ -59,6 +59,7 @@
 		87C0FE442F17B00000000044 /* LevelSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE342F17B00000000034 /* LevelSystemTests.swift */; };
 		87C0FE452F17B00000000045 /* PersistenceServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */; };
 		87C0FE462F17B00000000046 /* LocaleAndTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE362F17B00000000036 /* LocaleAndTokenTests.swift */; };
+		87C0FE472F17B00000000047 /* AchievementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE372F17B00000000037 /* AchievementTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -116,6 +117,7 @@
 		87C0FE342F17B00000000034 /* LevelSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSystemTests.swift; sourceTree = "<group>"; };
 		87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceServiceTests.swift; sourceTree = "<group>"; };
 		87C0FE362F17B00000000036 /* LocaleAndTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleAndTokenTests.swift; sourceTree = "<group>"; };
+		87C0FE372F17B00000000037 /* AchievementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +182,7 @@
 				87C0FE342F17B00000000034 /* LevelSystemTests.swift */,
 				87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */,
 				87C0FE362F17B00000000036 /* LocaleAndTokenTests.swift */,
+				87C0FE372F17B00000000037 /* AchievementTests.swift */,
 			);
 			path = KelimeVeIslemV1Tests;
 			sourceTree = "<group>";
@@ -521,6 +524,7 @@
 				87C0FE442F17B00000000044 /* LevelSystemTests.swift in Sources */,
 				87C0FE452F17B00000000045 /* PersistenceServiceTests.swift in Sources */,
 				87C0FE462F17B00000000046 /* LocaleAndTokenTests.swift in Sources */,
+				87C0FE472F17B00000000047 /* AchievementTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

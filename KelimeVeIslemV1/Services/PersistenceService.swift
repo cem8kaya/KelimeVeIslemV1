@@ -28,6 +28,7 @@ class PersistenceService {
     private let todayChallengeResultKey = "todayChallengeResult"
     private let achievementProgressKey = "achievementProgress"
     private let savedGameStateKey = "savedGameState"
+    private let comboCountKey = "globalComboCount"
     private let maxStoredResults = 100
     private let maxLeaderboardEntries = 50
 
@@ -168,7 +169,7 @@ class PersistenceService {
 
     // MARK: - Game Results
 
-    func saveResult(_ result: GameResult) throws -> Level? {
+    func saveResult(_ result: GameResult) throws -> GameSaveOutcome {
         return try queue.sync {
             var results = loadResultsLocked()
             results.insert(result, at: 0)
@@ -183,20 +184,32 @@ class PersistenceService {
             // Update statistics and get level-up info
             let levelUp = try updateStatisticsLocked(with: result)
 
-            // Check achievements
-            checkAchievementsLocked(for: result)
+            // Achievement evaluation is pure, so it can run inside the queue
+            // and the newly unlocked achievements can be returned to the UI.
+            let statistics = loadStatisticsLocked()
+            var progress = loadAchievementProgressLocked()
+            let newAchievements = AchievementTracker.evaluate(
+                result: result,
+                statistics: statistics,
+                progress: &progress
+            )
+            saveAchievementProgressLocked(progress)
 
-            return levelUp
+            return GameSaveOutcome(levelUp: levelUp, newAchievements: newAchievements)
         }
     }
 
-    private func checkAchievementsLocked(for result: GameResult) {
-        let statistics = loadStatisticsLocked()
+    private func loadAchievementProgressLocked() -> AchievementProgress {
+        guard let data = defaults.data(forKey: achievementProgressKey),
+              let progress = try? JSONDecoder().decode(AchievementProgress.self, from: data) else {
+            return AchievementProgress()
+        }
+        return progress
+    }
 
-        // Run achievement check asynchronously; AchievementTracker re-enters the
-        // public persistence API, so it must not run inside the queue.
-        DispatchQueue.global(qos: .background).async {
-            let _ = AchievementTracker.shared.checkAchievements(after: result, with: statistics)
+    private func saveAchievementProgressLocked(_ progress: AchievementProgress) {
+        if let encoded = try? JSONEncoder().encode(progress) {
+            defaults.set(encoded, forKey: achievementProgressKey)
         }
     }
 
@@ -385,6 +398,23 @@ class PersistenceService {
         }
     }
 
+    // MARK: - Combo Streak
+    //
+    // The combo carries across consecutive games (per install, both modes),
+    // so it survives ViewModel lifecycles and app restarts.
+
+    func loadComboCount() -> Int {
+        return queue.sync {
+            defaults.integer(forKey: comboCountKey)
+        }
+    }
+
+    func saveComboCount(_ count: Int) {
+        queue.sync {
+            defaults.set(max(0, count), forKey: comboCountKey)
+        }
+    }
+
     // MARK: - Achievements
 
     func saveAchievementProgress(_ progress: AchievementProgress) {
@@ -412,6 +442,14 @@ class PersistenceService {
             }
         }
     }
+}
+
+// MARK: - Save Outcome
+
+/// Everything the UI needs to react to after a game result is persisted.
+struct GameSaveOutcome {
+    let levelUp: Level?
+    let newAchievements: [Achievement]
 }
 
 // MARK: - Backup Data Structure

@@ -96,6 +96,19 @@ struct LetterGameView: View {
                     viewModel.levelUpInfo = nil
                 }
             }
+
+            // Achievement toast overlay
+            if let achievement = viewModel.newAchievements.first {
+                VStack {
+                    AchievementToastView(achievement: achievement) {
+                        viewModel.dismissAchievement(achievement)
+                    }
+                    Spacer()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .zIndex(10)
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.newAchievements)
+            }
         }
         .enhancedScorePopup(
             score: Binding(
@@ -255,6 +268,8 @@ struct LetterGameView: View {
                 game: game,
                 message: viewModel.validationMessage,
                 suggestedWords: viewModel.suggestedWords,
+                comboMultiplier: viewModel.comboMultiplier,
+                finalScore: viewModel.score,
                 onPlayAgain: {
                     showResult = false
                     viewModel.startNewGame()

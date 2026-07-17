@@ -49,10 +49,11 @@ class NumberGameViewModel: ObservableObject {
     @Published var hintSolution: [Operation]?
     @Published var isLoading: Bool = false
     @Published var error: AppError?
-    @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
+    @Published var comboCount: Int = 0 // Streak of successful games; persists across games
     @Published var showConfetti: Bool = false // Trigger for confetti animation
     @Published var levelUpInfo: Level? = nil // Level-up notification
     @Published var showLevelUp: Bool = false // Trigger for level-up screen
+    @Published var newAchievements: [Achievement] = [] // Freshly unlocked, awaiting display
 
     // MARK: - Undo/Redo System
     @Published var commandHistory = CommandHistory()
@@ -76,6 +77,7 @@ class NumberGameViewModel: ObservableObject {
         self.isDailyChallenge = false
         // Load settings synchronously so the first game can't race a deferred load
         self.settings = settings ?? PersistenceService.shared.loadSettings()
+        self.comboCount = PersistenceService.shared.loadComboCount()
     }
 
     // Custom initializer for daily challenges with pre-generated numbers
@@ -89,7 +91,7 @@ class NumberGameViewModel: ObservableObject {
         self.resultMessage = ""
         self.showHint = false
         self.hintSolution = nil
-        self.comboCount = 0
+        self.comboCount = PersistenceService.shared.loadComboCount()
     }
 
     // Start the game timer (call this after custom init)
@@ -137,7 +139,8 @@ class NumberGameViewModel: ObservableObject {
         hintSolution = nil
         error = nil
         isLoading = false
-        comboCount = 0 // Reset combo counter
+        // The combo streak carries across games; only a failed submission resets it
+        comboCount = persistenceService.loadComboCount()
 
         audioService.playSound(.gameStart)
         // Only start timer if not in practice mode
@@ -222,7 +225,9 @@ class NumberGameViewModel: ObservableObject {
                 let difference = abs(game.targetNumber - result)
 
                 if difference == 0 {
-                    comboCount += 1 // Increment combo on perfect match
+                    comboCount += 1 // Extend the streak on perfect match
+                    persistCombo()
+                    checkComboAchievements()
                     // Trigger confetti for perfect score (100 points)
                     showConfetti = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -233,19 +238,23 @@ class NumberGameViewModel: ObservableObject {
                     audioService.playSound(.success)
                     audioService.playSuccessHaptic()
                 } else if difference <= 5 {
-                    comboCount += 1 // Increment combo on close match
+                    comboCount += 1 // Extend the streak on close match
+                    persistCombo()
+                    checkComboAchievements()
                     resultMessage = String(format: NSLocalizedString("success.close_match",
                         comment: "Close! Off by %d"), difference)
                     audioService.playSound(.success)
                     audioService.playHaptic(style: .medium)
                 } else {
-                    comboCount = 0 // Reset combo on far miss
+                    comboCount = 0 // Reset the streak on far miss
+                    persistCombo()
                     resultMessage = String(format: NSLocalizedString("info.result",
                         comment: "Result: %d (target: %d)"), result, game.targetNumber)
                     audioService.playSound(.buttonTap)
                 }
             } else {
-                comboCount = 0 // Reset combo on invalid expression
+                comboCount = 0 // Reset the streak on invalid expression
+                persistCombo()
                 resultMessage = NSLocalizedString("error.invalid_expression",
                     comment: "Invalid expression")
                 audioService.playSound(.failure)
@@ -329,9 +338,28 @@ class NumberGameViewModel: ObservableObject {
         hintSolution = nil
         error = nil
         isLoading = false
-        comboCount = 0
+        comboCount = persistenceService.loadComboCount()
         showConfetti = false
         commandHistory.clear()
+    }
+
+    // MARK: - Combo Persistence
+
+    private func persistCombo() {
+        guard !settings.practiceMode else { return }
+        persistenceService.saveComboCount(comboCount)
+    }
+
+    private func checkComboAchievements() {
+        guard !settings.practiceMode else { return }
+        let unlocked = AchievementTracker.shared.checkComboAchievement(comboCount)
+        if !unlocked.isEmpty {
+            newAchievements.append(contentsOf: unlocked)
+        }
+    }
+
+    func dismissAchievement(_ achievement: Achievement) {
+        newAchievements.removeAll { $0.id == achievement.id }
     }
 
     // MARK: - Undo/Redo Support Methods
@@ -496,21 +524,24 @@ class NumberGameViewModel: ObservableObject {
         // Save on background thread to avoid blocking UI
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
-                let levelUp = try self?.persistenceService.saveResult(result)
-                print("âœ… Result saved successfully")
+                guard let outcome = try self?.persistenceService.saveResult(result) else { return }
+                print("✅ Result saved successfully")
 
-                // Handle level-up on main thread
-                if let newLevel = levelUp {
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
+                    if let newLevel = outcome.levelUp {
                         self?.levelUpInfo = newLevel
                         self?.showLevelUp = true
+                        self?.audioService.playSound(.levelUp)
+                    }
+                    if !outcome.newAchievements.isEmpty {
+                        self?.newAchievements.append(contentsOf: outcome.newAchievements)
                     }
                 }
             } catch {
                 DispatchQueue.main.async {
                     self?.error = .persistenceError("Failed to save result")
                 }
-                print("âš ï¸ Failed to save result: \(error)")
+                print("⚠️ Failed to save result: \(error)")
             }
         }
     }

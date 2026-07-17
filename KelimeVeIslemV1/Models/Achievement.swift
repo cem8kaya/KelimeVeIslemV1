@@ -299,139 +299,171 @@ class AchievementTracker {
 
     private init() {}
 
-    func checkAchievements(after result: GameResult, with statistics: GameStatistics) -> [Achievement] {
-        var progress = loadProgress()
-        var newlyUnlocked: [Achievement] = []
+    // MARK: - Pure evaluation
+    //
+    // The evaluation is a pure function over (result, statistics, progress) so
+    // it can run inside PersistenceService's queue without re-entering it, and
+    // "newly unlocked" is computed by diffing the unlocked set — a progress
+    // update that jumps over a threshold can no longer miss its notification.
 
-        // General achievements
-        progress.updateAchievement("first_game", progress: statistics.totalGamesPlayed)
-        if progress.achievements["first_game"]?.isUnlocked == true && statistics.totalGamesPlayed == 1 {
-            newlyUnlocked.append(progress.achievements["first_game"]!)
-        }
+    static func evaluate(
+        result: GameResult,
+        statistics: GameStatistics,
+        progress: inout AchievementProgress
+    ) -> [Achievement] {
+        let unlockedBefore = Set(progress.achievements.values.filter { $0.isUnlocked }.map { $0.id })
 
-        progress.updateAchievement("games_10", progress: statistics.totalGamesPlayed)
-        if progress.achievements["games_10"]?.isUnlocked == true && statistics.totalGamesPlayed == 10 {
-            newlyUnlocked.append(progress.achievements["games_10"]!)
-        }
+        // Progress-counter achievements: (id, current value)
+        var updates: [(id: String, value: Int)] = [
+            ("first_game", statistics.totalGamesPlayed),
+            ("games_10", statistics.totalGamesPlayed),
+            ("games_50", statistics.totalGamesPlayed),
+            ("games_100", statistics.totalGamesPlayed),
+        ]
 
-        progress.updateAchievement("games_50", progress: statistics.totalGamesPlayed)
-        if progress.achievements["games_50"]?.isUnlocked == true && statistics.totalGamesPlayed == 50 {
-            newlyUnlocked.append(progress.achievements["games_50"]!)
-        }
+        if case .letters(let word, let letters, let isValid) = result.details, isValid {
+            updates.append(("first_valid_word", statistics.validWordsCount))
+            updates.append(("words_100", statistics.validWordsCount))
 
-        progress.updateAchievement("games_100", progress: statistics.totalGamesPlayed)
-        if progress.achievements["games_100"]?.isUnlocked == true && statistics.totalGamesPlayed == 100 {
-            newlyUnlocked.append(progress.achievements["games_100"]!)
-        }
-
-        // Letter game achievements
-        if case .letters(let word, _, let isValid) = result.details {
-            if isValid {
-                let validWordsCount = statistics.letterGamesPlayed // Simplified tracking
-                progress.updateAchievement("first_valid_word", progress: validWordsCount)
-                if progress.achievements["first_valid_word"]?.isUnlocked == true && validWordsCount == 1 {
-                    newlyUnlocked.append(progress.achievements["first_valid_word"]!)
-                }
-
-                progress.updateAchievement("words_100", progress: validWordsCount)
-                if progress.achievements["words_100"]?.isUnlocked == true && validWordsCount == 100 {
-                    newlyUnlocked.append(progress.achievements["words_100"]!)
-                }
-
-                // Long word achievement
-                if word.count >= 9 {
-                    progress.unlockAchievement("long_word")
-                    if progress.achievements["long_word"]?.isUnlocked == true {
-                        newlyUnlocked.append(progress.achievements["long_word"]!)
-                    }
-                }
+            if word.count >= 9 {
+                progress.unlockAchievement("long_word")
+            }
+            if !letters.isEmpty && word.count == letters.count {
+                progress.unlockAchievement("use_all_letters")
             }
         }
 
-        // Number game achievements
-        if case .numbers(let target, let playerResult, _, _) = result.details {
-            if let playerResult = playerResult, playerResult == target {
-                progress.updateAchievement("first_perfect", progress: statistics.perfectNumberMatches)
-                if progress.achievements["first_perfect"]?.isUnlocked == true && statistics.perfectNumberMatches == 1 {
-                    newlyUnlocked.append(progress.achievements["first_perfect"]!)
-                }
-
-                progress.updateAchievement("perfect_10", progress: statistics.perfectNumberMatches)
-                if progress.achievements["perfect_10"]?.isUnlocked == true && statistics.perfectNumberMatches == 10 {
-                    newlyUnlocked.append(progress.achievements["perfect_10"]!)
-                }
-            }
+        if case .numbers(let target, let playerResult, _, _) = result.details,
+           playerResult == target {
+            updates.append(("first_perfect", statistics.perfectNumberMatches))
+            updates.append(("perfect_10", statistics.perfectNumberMatches))
         }
 
-        // Speed achievement
+        for (id, value) in updates {
+            progress.updateAchievement(id, progress: value)
+        }
+
+        // One-shot achievements
         if result.duration <= 30 && result.isSuccess {
             progress.unlockAchievement("speed_demon")
-            if progress.achievements["speed_demon"]?.isUnlocked == true {
-                newlyUnlocked.append(progress.achievements["speed_demon"]!)
-            }
         }
-
-        // High score achievement
         if result.score >= 200 {
             progress.unlockAchievement("high_score")
-            if progress.achievements["high_score"]?.isUnlocked == true {
-                newlyUnlocked.append(progress.achievements["high_score"]!)
-            }
         }
 
-        saveProgress(progress)
-        return newlyUnlocked
+        return newlyUnlocked(in: progress, comparedTo: unlockedBefore)
+    }
+
+    static func evaluateCombo(_ comboCount: Int, progress: inout AchievementProgress) -> [Achievement] {
+        let unlockedBefore = Set(progress.achievements.values.filter { $0.isUnlocked }.map { $0.id })
+
+        if comboCount >= 5 { progress.unlockAchievement("combo_5") }
+        if comboCount >= 10 { progress.unlockAchievement("combo_10") }
+
+        return newlyUnlocked(in: progress, comparedTo: unlockedBefore)
+    }
+
+    static func evaluateDailyChallenge(stats: DailyChallengeStats, progress: inout AchievementProgress) -> [Achievement] {
+        let unlockedBefore = Set(progress.achievements.values.filter { $0.isUnlocked }.map { $0.id })
+
+        progress.updateAchievement("daily_first", progress: stats.totalChallengesCompleted)
+        progress.updateAchievement("daily_streak_7", progress: stats.currentStreak)
+
+        return newlyUnlocked(in: progress, comparedTo: unlockedBefore)
+    }
+
+    private static func newlyUnlocked(
+        in progress: AchievementProgress,
+        comparedTo unlockedBefore: Set<String>
+    ) -> [Achievement] {
+        return progress.achievements.values
+            .filter { $0.isUnlocked && !unlockedBefore.contains($0.id) }
+            .sorted { $0.id < $1.id }
+    }
+
+    // MARK: - Persistence-backed entry points (must NOT be called from inside
+    // PersistenceService's queue — they re-enter the public persistence API)
+
+    func checkAchievements(after result: GameResult, with statistics: GameStatistics) -> [Achievement] {
+        var progress = persistenceService.loadAchievementProgress()
+        let newly = AchievementTracker.evaluate(result: result, statistics: statistics, progress: &progress)
+        persistenceService.saveAchievementProgress(progress)
+        return newly
     }
 
     func checkComboAchievement(_ comboCount: Int) -> [Achievement] {
-        var progress = loadProgress()
-        var newlyUnlocked: [Achievement] = []
-
-        if comboCount >= 5 && !(progress.achievements["combo_5"]?.isUnlocked ?? false) {
-            progress.unlockAchievement("combo_5")
-            newlyUnlocked.append(progress.achievements["combo_5"]!)
+        var progress = persistenceService.loadAchievementProgress()
+        let newly = AchievementTracker.evaluateCombo(comboCount, progress: &progress)
+        if !newly.isEmpty {
+            persistenceService.saveAchievementProgress(progress)
         }
-
-        if comboCount >= 10 && !(progress.achievements["combo_10"]?.isUnlocked ?? false) {
-            progress.unlockAchievement("combo_10")
-            newlyUnlocked.append(progress.achievements["combo_10"]!)
-        }
-
-        if !newlyUnlocked.isEmpty {
-            saveProgress(progress)
-        }
-        return newlyUnlocked
+        return newly
     }
 
     func checkDailyChallengeAchievements(stats: DailyChallengeStats) -> [Achievement] {
-        var progress = loadProgress()
-        var newlyUnlocked: [Achievement] = []
-
-        progress.updateAchievement("daily_first", progress: stats.totalChallengesCompleted)
-        if progress.achievements["daily_first"]?.isUnlocked == true && stats.totalChallengesCompleted == 1 {
-            newlyUnlocked.append(progress.achievements["daily_first"]!)
+        var progress = persistenceService.loadAchievementProgress()
+        let newly = AchievementTracker.evaluateDailyChallenge(stats: stats, progress: &progress)
+        if !newly.isEmpty {
+            persistenceService.saveAchievementProgress(progress)
         }
-
-        progress.updateAchievement("daily_streak_7", progress: stats.currentStreak)
-        if progress.achievements["daily_streak_7"]?.isUnlocked == true && stats.currentStreak == 7 {
-            newlyUnlocked.append(progress.achievements["daily_streak_7"]!)
-        }
-
-        if !newlyUnlocked.isEmpty {
-            saveProgress(progress)
-        }
-        return newlyUnlocked
-    }
-
-    private func saveProgress(_ progress: AchievementProgress) {
-        persistenceService.saveAchievementProgress(progress)
-    }
-
-    private func loadProgress() -> AchievementProgress {
-        return persistenceService.loadAchievementProgress()
+        return newly
     }
 
     func getProgress() -> AchievementProgress {
-        return loadProgress()
+        return persistenceService.loadAchievementProgress()
+    }
+}
+
+// MARK: - Achievement Toast
+
+/// Compact banner shown at the top of a game screen when an achievement
+/// unlocks. Auto-dismisses after a few seconds or on tap.
+struct AchievementToastView: View {
+    let achievement: Achievement
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: achievement.iconName)
+                .font(.title2)
+                .foregroundColor(.yellow)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Başarım Kazanıldı!")
+                    .font(.caption.bold())
+                    .foregroundColor(.yellow)
+                Text(achievement.title)
+                    .font(.subheadline.bold())
+                    .foregroundColor(.white)
+                Text(achievement.description)
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.8))
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Image(systemName: "xmark")
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.6))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.black.opacity(0.85))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.yellow.opacity(0.6), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal, 20)
+        .onTapGesture(perform: onDismiss)
+        .task {
+            try? await Task.sleep(nanoseconds: 3_500_000_000)
+            onDismiss()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Başarım kazanıldı: \(achievement.title)")
     }
 }
