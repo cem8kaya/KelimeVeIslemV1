@@ -46,6 +46,32 @@ final class NumberGameTests: XCTestCase {
         XCTAssertThrowsError(try game.evaluateExpression("5/0"))
     }
 
+    // MARK: - Classic Countdown rules (integer arithmetic)
+
+    func testNonExactDivisionThrows() {
+        let game = makeGame()
+        // 7/2 = 3.5 used to be silently truncated to 3; now it's invalid.
+        XCTAssertThrowsError(try game.evaluateExpression("7/2"))
+        XCTAssertThrowsError(try game.evaluateExpression("7/2*4"))
+    }
+
+    func testNegativeIntermediateResultThrows() {
+        let game = makeGame()
+        XCTAssertThrowsError(try game.evaluateExpression("3-5"))
+        XCTAssertThrowsError(try game.evaluateExpression("(3-5)+10"))
+    }
+
+    func testNonNegativeSubtractionIsAllowed() throws {
+        let game = makeGame()
+        XCTAssertEqual(try game.evaluateExpression("5-3+1"), 3)
+        XCTAssertEqual(try game.evaluateExpression("5-5"), 0)
+    }
+
+    func testUnaryMinusIsRejected() {
+        let game = makeGame()
+        XCTAssertThrowsError(try game.evaluateExpression("-5+10"))
+    }
+
     func testEmptyExpressionThrows() {
         let game = makeGame()
         XCTAssertThrowsError(try game.evaluateExpression(""))

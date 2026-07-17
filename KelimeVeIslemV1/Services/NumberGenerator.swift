@@ -53,7 +53,14 @@ final class NumberGenerator: @unchecked Sendable {
     // MARK: - Solver (Helper to find solutions)
     
     func findSolution(numbers: [Int], target: Int, maxDepth: Int = 4) -> [Operation]? {
-        return solve(available: numbers, target: target, operations: [], depth: 0, maxDepth: maxDepth)
+        // Iterative deepening: try shallow searches first so the returned
+        // solution uses the fewest operations possible.
+        for depth in 1...max(1, maxDepth) {
+            if let solution = solve(available: numbers, target: target, operations: [], depth: 0, maxDepth: depth) {
+                return solution
+            }
+        }
+        return nil
     }
     
     private func solve(available: [Int], target: Int, operations: [Operation], depth: Int, maxDepth: Int) -> [Operation]? {
@@ -173,13 +180,21 @@ final class NumberGenerator: @unchecked Sendable {
             for j in (i+1)..<available.count {
                 let a = available[i]
                 let b = available[j]
-                
-                let possibleResults: [(result: Int, op: String)] = [
+
+                var possibleResults: [(result: Int, op: String)] = [
                     (a + b, "+"),
                     (abs(a - b), "−"),
                     (a * b, "×"),
                 ]
-                
+
+                // Exact division candidates, matching findSolution's rules
+                if b != 0 && a % b == 0 {
+                    possibleResults.append((a / b, "÷"))
+                }
+                if a != 0 && b % a == 0 {
+                    possibleResults.append((b / a, "÷"))
+                }
+
                 for (result, op) in possibleResults {
                     var newAvailable = available
                     newAvailable.remove(at: j)

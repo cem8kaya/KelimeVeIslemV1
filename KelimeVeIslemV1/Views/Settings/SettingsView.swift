@@ -192,6 +192,12 @@ struct SettingsView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                .onChange(of: settings.letterTimerDuration) { _, _ in
+                    settings.usesCustomTimers = true
+                }
+                .onChange(of: settings.numberTimerDuration) { _, _ in
+                    settings.usesCustomTimers = true
+                }
             }
             .navigationTitle("Ayarlar")
             .navigationBarTitleDisplayMode(.inline)

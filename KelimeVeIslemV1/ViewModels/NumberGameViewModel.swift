@@ -54,6 +54,9 @@ class NumberGameViewModel: ObservableObject {
     @Published var levelUpInfo: Level? = nil // Level-up notification
     @Published var showLevelUp: Bool = false // Trigger for level-up screen
     @Published var newAchievements: [Achievement] = [] // Freshly unlocked, awaiting display
+    @Published private(set) var isTimeUnlimited: Bool = false // Practice mode: no countdown
+    @Published private(set) var timerTotalDuration: Int = 90 // Full duration of the running timer
+    @Published private(set) var allowedOperations: [String] = ["+", "-", "*", "/"]
 
     // MARK: - Undo/Redo System
     @Published var commandHistory = CommandHistory()
@@ -71,6 +74,9 @@ class NumberGameViewModel: ObservableObject {
     // Set for daily-challenge games; doubles the XP earned from the result.
     private let isDailyChallenge: Bool
 
+    // Wall-clock start of the current game; used for the real duration in results.
+    private var gameStartDate: Date?
+
     // MARK: - Initialization
 
     init(settings: GameSettings? = nil) {
@@ -86,6 +92,7 @@ class NumberGameViewModel: ObservableObject {
         self.settings = settings
         self.game = customGame
         self.timeRemaining = settings.numberTimerDuration
+        self.timerTotalDuration = settings.numberTimerDuration
         self.gameState = .playing
         self.currentSolution = ""
         self.resultMessage = ""
@@ -97,6 +104,7 @@ class NumberGameViewModel: ObservableObject {
     // Start the game timer (call this after custom init)
     func startGameTimer() {
         guard gameState == .playing, timer == nil else { return }
+        gameStartDate = Date()
         audioService.playSound(.gameStart)
         startTimer()
     }
@@ -118,21 +126,38 @@ class NumberGameViewModel: ObservableObject {
         let currentLevel = statistics.level
         let difficulty = currentLevel.difficulty
 
-        // Apply level-based difficulty for target number
-        let targetRange = settings.practiceMode ? 10...100 : difficulty.targetNumberRange
-        let target = Int.random(in: targetRange)
-
-        let (numbers, _) = numberGenerator.generateGame(difficulty: settings.difficultyLevel)
+        // Single difficulty source: the level system decides target range,
+        // pool composition and allowed operations. The user's difficultyLevel
+        // setting only applies in practice mode.
+        let target: Int
+        let numbers: [Int]
+        if settings.practiceMode {
+            let (generated, _) = numberGenerator.generateGame(difficulty: settings.difficultyLevel)
+            numbers = generated
+            target = Int.random(in: 10...100)
+            allowedOperations = ["+", "-", "*", "/"]
+        } else {
+            numbers = numberGenerator.generateNumbers(
+                smallCount: difficulty.smallNumberCount,
+                largeCount: difficulty.largeNumberCount
+            )
+            target = Int.random(in: difficulty.targetNumberRange)
+            allowedOperations = difficulty.allowedOperations
+        }
 
         game = NumberGame(numbers: numbers, targetNumber: target)
         solutionTokens = []
         currentSolution = ""
 
-        // Apply level-based timer duration
-        let timerDuration = settings.practiceMode ? 999999 :
-            (settings.numberTimerDuration > 0 ? settings.numberTimerDuration : difficulty.numberTimeSeconds)
-
-        timeRemaining = timerDuration
+        // Timer: the level's time budget applies unless the player explicitly
+        // customized the duration in Settings. Practice mode has no timer at all.
+        isTimeUnlimited = settings.practiceMode
+        let timerDuration = settings.usesCustomTimers
+            ? settings.numberTimerDuration
+            : difficulty.numberTimeSeconds
+        timerTotalDuration = timerDuration
+        timeRemaining = settings.practiceMode ? 0 : timerDuration
+        gameStartDate = Date()
         gameState = .playing
         resultMessage = ""
         showHint = false
@@ -375,6 +400,11 @@ class NumberGameViewModel: ObservableObject {
     }
 
     func selectOperator(_ operation: String) {
+        // Level gating: ×/÷ unlock at higher levels (parentheses always allowed)
+        if "+-*/".contains(operation), !allowedOperations.contains(operation) {
+            audioService.playErrorHaptic()
+            return
+        }
         let command = AppendTokenCommand(token: .op(operation), viewModel: self)
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
@@ -476,6 +506,11 @@ class NumberGameViewModel: ObservableObject {
         )
         syncSolutionFromTokens()
         self.timeRemaining = savedState.timeRemaining
+        self.timerTotalDuration = max(savedState.timeRemaining, settings.numberTimerDuration)
+        // Approximate the original start so result durations stay meaningful
+        self.gameStartDate = Date().addingTimeInterval(
+            -Double(max(0, timerTotalDuration - savedState.timeRemaining))
+        )
         self.comboCount = savedState.comboCount
         self.gameState = .playing
         self.resultMessage = ""
@@ -501,7 +536,8 @@ class NumberGameViewModel: ObservableObject {
             return
         }
 
-        let timeTaken = settings.numberTimerDuration - timeRemaining
+        // Real elapsed time, robust against restored games and custom timers
+        let timeTaken = max(0, Int(Date().timeIntervalSince(gameStartDate ?? Date())))
         let details = GameResult.ResultDetails.numbers(
             target: game.targetNumber,
             result: game.playerResult,

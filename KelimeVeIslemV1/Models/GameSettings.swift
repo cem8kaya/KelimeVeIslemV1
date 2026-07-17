@@ -18,6 +18,11 @@ struct GameSettings: Codable {
     var selectedTheme: String  // Store theme as string for compatibility
     var practiceMode: Bool
 
+    /// False until the player manually changes a timer in Settings. While
+    /// false, the level system's time budget applies; once true, the player's
+    /// explicit choice always wins.
+    var usesCustomTimers: Bool
+
     // NOTE: Sound on/off lives in AudioService (single source of truth for the
     // audio pipeline); it is intentionally not duplicated here anymore.
 
@@ -29,7 +34,8 @@ struct GameSettings: Codable {
         useOnlineDictionary: false,
         difficultyLevel: .medium,
         selectedTheme: "classic",
-        practiceMode: false
+        practiceMode: false,
+        usesCustomTimers: false
     )
 
     init(
@@ -40,7 +46,8 @@ struct GameSettings: Codable {
         useOnlineDictionary: Bool,
         difficultyLevel: DifficultyLevel,
         selectedTheme: String,
-        practiceMode: Bool
+        practiceMode: Bool,
+        usesCustomTimers: Bool = false
     ) {
         self.language = language
         self.letterCount = letterCount
@@ -50,6 +57,7 @@ struct GameSettings: Codable {
         self.difficultyLevel = difficultyLevel
         self.selectedTheme = selectedTheme
         self.practiceMode = practiceMode
+        self.usesCustomTimers = usesCustomTimers
     }
 
     // Tolerant decoding: missing keys fall back to defaults so adding fields
@@ -65,11 +73,16 @@ struct GameSettings: Codable {
         difficultyLevel = try container.decodeIfPresent(DifficultyLevel.self, forKey: .difficultyLevel) ?? defaults.difficultyLevel
         selectedTheme = try container.decodeIfPresent(String.self, forKey: .selectedTheme) ?? defaults.selectedTheme
         practiceMode = try container.decodeIfPresent(Bool.self, forKey: .practiceMode) ?? defaults.practiceMode
+        // Data saved before this field existed came from a UI where timers
+        // were always explicit — preserve that behaviour on migration.
+        usesCustomTimers = try container.decodeIfPresent(Bool.self, forKey: .usesCustomTimers)
+            ?? (container.contains(.letterTimerDuration) || container.contains(.numberTimerDuration))
     }
 
     private enum CodingKeys: String, CodingKey {
         case language, letterCount, letterTimerDuration, numberTimerDuration
         case useOnlineDictionary, difficultyLevel, selectedTheme, practiceMode
+        case usesCustomTimers
     }
 
     enum DifficultyLevel: String, Codable, CaseIterable {

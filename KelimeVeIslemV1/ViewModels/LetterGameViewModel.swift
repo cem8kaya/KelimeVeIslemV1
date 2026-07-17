@@ -40,6 +40,8 @@ class LetterGameViewModel: ObservableObject {
     @Published var levelUpInfo: Level? = nil // Level-up notification
     @Published var showLevelUp: Bool = false // Trigger for level-up screen
     @Published var newAchievements: [Achievement] = [] // Freshly unlocked, awaiting display
+    @Published private(set) var isTimeUnlimited: Bool = false // Practice mode: no countdown
+    @Published private(set) var timerTotalDuration: Int = 60 // Full duration of the running timer
 
     // MARK: - Undo/Redo System
     @Published var commandHistory = CommandHistory()
@@ -58,6 +60,13 @@ class LetterGameViewModel: ObservableObject {
     // Set for daily-challenge games; doubles the XP earned from the result.
     private let isDailyChallenge: Bool
 
+    // Wall-clock start of the current game; used for the real duration in results.
+    private var gameStartDate: Date?
+
+    static func clampLetterCount(_ count: Int) -> Int {
+        return min(max(6, count), 12)
+    }
+
     // MARK: - Initialization
 
     init(settings: GameSettings? = nil) {
@@ -71,12 +80,9 @@ class LetterGameViewModel: ObservableObject {
             self.letterCount = self.settings.letterCount
         }
 
-        // Validate letterCount is in valid range (6-12)
-        if self.letterCount < 6 || self.letterCount > 12 {
-            print("⚠️ Invalid letterCount (\(self.letterCount)), resetting to default (9)")
-            self.letterCount = 9
-            self.settings.letterCount = 9
-        }
+        // Keep letterCount in the supported 6-12 range
+        self.letterCount = Self.clampLetterCount(self.letterCount)
+        self.settings.letterCount = self.letterCount
 
         self.comboCount = PersistenceService.shared.loadComboCount()
     }
@@ -84,14 +90,8 @@ class LetterGameViewModel: ObservableObject {
     // Load settings after initialization (kept for backwards compatibility)
     func loadPersistedSettings() {
         self.settings = persistenceService.loadSettings()
-        self.letterCount = settings.letterCount
-
-        // Validate letterCount is in valid range (6-12)
-        if self.letterCount < 6 || self.letterCount > 12 {
-            print("⚠️ Invalid letterCount (\(self.letterCount)), resetting to default (9)")
-            self.letterCount = 9
-            self.settings.letterCount = 9
-        }
+        self.letterCount = Self.clampLetterCount(settings.letterCount)
+        self.settings.letterCount = self.letterCount
     }
 
     // Custom initializer for daily challenges with pre-generated letters
@@ -101,6 +101,7 @@ class LetterGameViewModel: ObservableObject {
         self.letterCount = customGame.letters.count
         self.game = customGame
         self.timeRemaining = settings.letterTimerDuration
+        self.timerTotalDuration = settings.letterTimerDuration
         self.gameState = .playing
         self.currentWord = ""
         self.validationMessage = ""
@@ -111,6 +112,7 @@ class LetterGameViewModel: ObservableObject {
     // Start the game timer (call this after custom init)
     func startGameTimer() {
         guard gameState == .playing, timer == nil else { return }
+        gameStartDate = Date()
         audioService.playSound(.gameStart)
         startTimer()
     }
@@ -133,14 +135,10 @@ class LetterGameViewModel: ObservableObject {
         let difficulty = currentLevel.difficulty
 
         // Apply level-based difficulty for letter count
-        var letterCount = settings.practiceMode ? settings.letterCount :
-            Int.random(in: difficulty.minLetterCount...difficulty.maxLetterCount)
-
-        // Validate letterCount is in valid range (6-12)
-        if letterCount < 6 || letterCount > 12 {
-            print("⚠️ Invalid letterCount (\(letterCount)), using default (9)")
-            letterCount = 9
-        }
+        let letterCount = Self.clampLetterCount(
+            settings.practiceMode ? settings.letterCount :
+                Int.random(in: difficulty.minLetterCount...difficulty.maxLetterCount)
+        )
 
         let letters = letterGenerator.generateLetters(
             count: letterCount,
@@ -159,11 +157,15 @@ class LetterGameViewModel: ObservableObject {
         currentWord = ""
         usedLetterIndices = []
 
-        // Apply level-based timer duration
-        let timerDuration = settings.practiceMode ? 999999 :
-            (settings.letterTimerDuration > 0 ? settings.letterTimerDuration : difficulty.letterTimeSeconds)
-
-        timeRemaining = timerDuration
+        // Timer: the level's time budget applies unless the player explicitly
+        // customized the duration in Settings. Practice mode has no timer at all.
+        isTimeUnlimited = settings.practiceMode
+        let timerDuration = settings.usesCustomTimers
+            ? settings.letterTimerDuration
+            : difficulty.letterTimeSeconds
+        timerTotalDuration = timerDuration
+        timeRemaining = settings.practiceMode ? 0 : timerDuration
+        gameStartDate = Date()
         gameState = .playing
         validationMessage = ""
         error = nil
@@ -518,6 +520,11 @@ class LetterGameViewModel: ObservableObject {
         }
         self.usedLetterIndices = indices
         self.timeRemaining = savedState.timeRemaining
+        self.timerTotalDuration = max(savedState.timeRemaining, settings.letterTimerDuration)
+        // Approximate the original start so result durations stay meaningful
+        self.gameStartDate = Date().addingTimeInterval(
+            -Double(max(0, timerTotalDuration - savedState.timeRemaining))
+        )
         self.comboCount = savedState.comboCount
         self.gameState = .playing
         self.validationMessage = ""
@@ -542,7 +549,8 @@ class LetterGameViewModel: ObservableObject {
             return
         }
 
-        let timeTaken = settings.letterTimerDuration - timeRemaining
+        // Real elapsed time, robust against restored games and custom timers
+        let timeTaken = max(0, Int(Date().timeIntervalSince(gameStartDate ?? Date())))
         let details = GameResult.ResultDetails.letters(
             word: game.playerWord,
             letters: game.letters.map { String($0) },

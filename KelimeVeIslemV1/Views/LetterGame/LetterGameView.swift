@@ -147,13 +147,20 @@ struct LetterGameView: View {
     private var headerView: some View {
         VStack(spacing: 8) {
             HStack {
-                let settings = PersistenceService.shared.loadSettings()
-                EnhancedTimerView(
-                    timeRemaining: viewModel.timeRemaining,
-                    totalDuration: settings.letterTimerDuration,
-                    theme: themeManager.colors
-                )
-                .accessibilityLabel("Time remaining: \(viewModel.timeRemaining) seconds")
+                if viewModel.isTimeUnlimited {
+                    Image(systemName: "infinity")
+                        .font(.title.bold())
+                        .foregroundColor(.white)
+                        .frame(width: 80, height: 80)
+                        .accessibilityLabel("Süresiz alıştırma modu")
+                } else {
+                    EnhancedTimerView(
+                        timeRemaining: viewModel.timeRemaining,
+                        totalDuration: viewModel.timerTotalDuration,
+                        theme: themeManager.colors
+                    )
+                    .accessibilityLabel("Time remaining: \(viewModel.timeRemaining) seconds")
+                }
 
                 Spacer()
 

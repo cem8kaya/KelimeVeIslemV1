@@ -47,6 +47,12 @@ final class NumberGeneratorTests: XCTestCase {
         XCTAssertEqual(solution?.isEmpty, true)
     }
 
+    func testIterativeDeepeningPrefersShortestSolution() throws {
+        // 2*3 = 6 in a single operation; deeper detours must not win.
+        let solution = try XCTUnwrap(generator.findSolution(numbers: [2, 3, 4], target: 6))
+        XCTAssertEqual(solution.count, 1)
+    }
+
     func testFindClosestSolutionReturnsSomething() throws {
         let (closest, ops) = try XCTUnwrap(
             generator.findClosestSolution(numbers: [1, 2, 3], target: 999)

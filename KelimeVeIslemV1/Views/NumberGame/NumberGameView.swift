@@ -144,13 +144,20 @@ struct NumberGameView: View {
     private var headerView: some View {
         VStack(spacing: 8) {
             HStack {
-                let settings = PersistenceService.shared.loadSettings()
-                EnhancedTimerView(
-                    timeRemaining: viewModel.timeRemaining,
-                    totalDuration: settings.numberTimerDuration,
-                    theme: themeManager.colors
-                )
-                .frame(width: 80, height: 80)
+                if viewModel.isTimeUnlimited {
+                    Image(systemName: "infinity")
+                        .font(.title.bold())
+                        .foregroundColor(.white)
+                        .frame(width: 80, height: 80)
+                        .accessibilityLabel("Süresiz alıştırma modu")
+                } else {
+                    EnhancedTimerView(
+                        timeRemaining: viewModel.timeRemaining,
+                        totalDuration: viewModel.timerTotalDuration,
+                        theme: themeManager.colors
+                    )
+                    .frame(width: 80, height: 80)
+                }
 
                 Spacer()
 
@@ -192,6 +199,7 @@ struct NumberGameView: View {
                 game: viewModel.game,
                 currentSolution: viewModel.currentSolution,
                 usedNumberIndices: viewModel.usedNumberIndices,
+                allowedOperations: viewModel.allowedOperations,
                 theme: themeManager.colors,
                 viewModel: viewModel,
                 onNumberTap: handleNumberTap,
@@ -350,6 +358,7 @@ struct NumberPlayingView: View {
     let game: NumberGame?
     let currentSolution: String
     let usedNumberIndices: [Int]
+    let allowedOperations: [String]
     let theme: ThemeColors
     let viewModel: NumberGameViewModel
 
@@ -431,7 +440,11 @@ struct NumberPlayingView: View {
                 
                 // Operators and Actions
                 VStack(spacing: 10) {
-                    OperatorButtonsView(theme: theme, onOperatorTap: onOperatorTap)
+                    OperatorButtonsView(
+                        theme: theme,
+                        allowedOperations: allowedOperations,
+                        onOperatorTap: onOperatorTap
+                    )
 
                     // Undo/Redo buttons
                     HStack(spacing: 10) {
@@ -565,6 +578,7 @@ struct NumberTilesView: View {
 
 struct OperatorButtonsView: View {
     let theme: ThemeColors
+    var allowedOperations: [String] = ["+", "-", "*", "/"]
     let onOperatorTap: (String) -> Void
 
     let operators = ["+", "-", "*", "/", "(", ")"]
@@ -572,16 +586,20 @@ struct OperatorButtonsView: View {
     var body: some View {
         HStack(spacing: 10) {
             ForEach(operators, id: \.self) { op in
+                // ×/÷ unlock with level progression; parentheses always allowed
+                let isAllowed = !"+-*/".contains(op) || allowedOperations.contains(op)
                 Button(action: { onOperatorTap(op) }) {
                     Text(op)
                         .font(.title2.bold())
-                        .foregroundColor(theme.primaryText)
+                        .foregroundColor(theme.primaryText.opacity(isAllowed ? 1.0 : 0.35))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
-                        .background(theme.primaryText.opacity(0.2))
+                        .background(theme.primaryText.opacity(isAllowed ? 0.2 : 0.08))
                         .cornerRadius(10)
                 }
                 .buttonStyle(GrowingButton())
+                .disabled(!isAllowed)
+                .accessibilityLabel(isAllowed ? op : "\(op) (daha yüksek seviyede açılır)")
             }
         }
         .padding(.horizontal, 20)
