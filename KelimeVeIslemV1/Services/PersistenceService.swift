@@ -13,12 +13,12 @@
 import Foundation
 
 class PersistenceService {
-    
+
     static let shared = PersistenceService()
-    
-    private let defaults = UserDefaults.standard
+
+    private let defaults: UserDefaults
     private let queue = DispatchQueue(label: "com.kelimeveislem.persistence", qos: .userInitiated)
-    
+
     // Keys
     private let settingsKey = "gameSettings"
     private let statisticsKey = "gameStatistics"
@@ -30,30 +30,93 @@ class PersistenceService {
     private let savedGameStateKey = "savedGameState"
     private let maxStoredResults = 100
     private let maxLeaderboardEntries = 50
-    
-    private init() {}
-    
-    // MARK: - Settings
-    
-    func saveSettings(_ settings: GameSettings) throws {
-        try queue.sync {
-            do {
-                let encoded = try JSONEncoder().encode(settings)
-                defaults.set(encoded, forKey: settingsKey)
-                defaults.synchronize()
-            } catch {
-                throw AppError.persistenceError("Failed to save settings: \(error.localizedDescription)")
-            }
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    // MARK: - Locked primitives (must only be called from inside `queue`)
+    //
+    // Every public API below wraps exactly one queue.sync/queue.async block and
+    // delegates to these helpers. Never call a public API from inside another
+    // public API's queue block — that nests sync on a serial queue and deadlocks.
+
+    private func loadSettingsLocked() -> GameSettings {
+        guard let data = defaults.data(forKey: settingsKey),
+              let settings = try? JSONDecoder().decode(GameSettings.self, from: data) else {
+            return .default
+        }
+        return settings
+    }
+
+    private func saveSettingsLocked(_ settings: GameSettings) throws {
+        do {
+            let encoded = try JSONEncoder().encode(settings)
+            defaults.set(encoded, forKey: settingsKey)
+        } catch {
+            throw AppError.persistenceError("Failed to save settings: \(error.localizedDescription)")
         }
     }
-    
+
+    private func loadStatisticsLocked() -> GameStatistics {
+        guard let data = defaults.data(forKey: statisticsKey) else {
+            return GameStatistics()
+        }
+
+        do {
+            return try JSONDecoder().decode(GameStatistics.self, from: data)
+        } catch {
+            print("⚠️ Failed to decode statistics: \(error)")
+            print("🗑️ Clearing corrupted statistics...")
+            defaults.removeObject(forKey: statisticsKey)
+            return GameStatistics()
+        }
+    }
+
+    private func saveStatisticsLocked(_ statistics: GameStatistics) throws {
+        do {
+            let encoded = try JSONEncoder().encode(statistics)
+            defaults.set(encoded, forKey: statisticsKey)
+        } catch {
+            throw AppError.persistenceError("Failed to save statistics: \(error.localizedDescription)")
+        }
+    }
+
+    private func loadResultsLocked() -> [GameResult] {
+        guard let data = defaults.data(forKey: resultsKey) else {
+            return []
+        }
+
+        do {
+            return try JSONDecoder().decode([GameResult].self, from: data)
+        } catch {
+            print("⚠️ Failed to decode results: \(error)")
+            print("🗑️ Clearing corrupted data...")
+            defaults.removeObject(forKey: resultsKey)
+            return []
+        }
+    }
+
+    private func saveResultsLocked(_ results: [GameResult]) throws {
+        do {
+            let encoded = try JSONEncoder().encode(results)
+            defaults.set(encoded, forKey: resultsKey)
+        } catch {
+            throw AppError.persistenceError("Failed to save results: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Settings
+
+    func saveSettings(_ settings: GameSettings) throws {
+        try queue.sync {
+            try saveSettingsLocked(settings)
+        }
+    }
+
     func loadSettings() -> GameSettings {
         return queue.sync {
-            guard let data = defaults.data(forKey: settingsKey),
-                  let settings = try? JSONDecoder().decode(GameSettings.self, from: data) else {
-                return .default
-            }
-            return settings
+            loadSettingsLocked()
         }
     }
 
@@ -64,7 +127,6 @@ class PersistenceService {
             do {
                 let encoded = try JSONEncoder().encode(gameState)
                 defaults.set(encoded, forKey: savedGameStateKey)
-                defaults.synchronize()
             } catch {
                 throw AppError.persistenceError("Failed to save game state: \(error.localizedDescription)")
             }
@@ -78,7 +140,6 @@ class PersistenceService {
                   gameState.isValid() else {
                 // Remove invalid or expired game state
                 defaults.removeObject(forKey: savedGameStateKey)
-                defaults.synchronize()
                 return nil
             }
             return gameState
@@ -88,76 +149,28 @@ class PersistenceService {
     func clearGameState() {
         queue.sync {
             defaults.removeObject(forKey: savedGameStateKey)
-            defaults.synchronize()
         }
     }
 
     // MARK: - Statistics
-    
+
     func saveStatistics(_ statistics: GameStatistics) throws {
         try queue.sync {
-            do {
-                let encoded = try JSONEncoder().encode(statistics)
-                defaults.set(encoded, forKey: statisticsKey)
-                defaults.synchronize()
-            } catch {
-                throw AppError.persistenceError("Failed to save statistics: \(error.localizedDescription)")
-            }
+            try saveStatisticsLocked(statistics)
         }
     }
-    
+
     func loadStatistics() -> GameStatistics {
         return queue.sync {
-            guard let data = defaults.data(forKey: statisticsKey) else {
-                return GameStatistics()
-            }
-            
-            do {
-                let statistics = try JSONDecoder().decode(GameStatistics.self, from: data)
-                return statistics
-            } catch {
-                print("⚠️ Failed to decode statistics: \(error)")
-                print("🗑️ Clearing corrupted statistics...")
-                
-                // Clear corrupted data
-                defaults.removeObject(forKey: statisticsKey)
-                defaults.synchronize()
-                
-                return GameStatistics()
-            }
+            loadStatisticsLocked()
         }
     }
-    
+
     // MARK: - Game Results
-    
+
     func saveResult(_ result: GameResult) throws -> Level? {
         return try queue.sync {
-            // Load results internally (we're already on the queue)
-            guard let data = defaults.data(forKey: resultsKey) else {
-                // No existing results, create new array
-                let results = [result]
-                let encoded = try JSONEncoder().encode(results)
-                defaults.set(encoded, forKey: resultsKey)
-                defaults.synchronize()
-
-                // Update statistics and get level-up info
-                let levelUp = try updateStatisticsInternal(with: result)
-
-                // Check achievements
-                checkAchievementsInternal(for: result)
-                return levelUp
-            }
-
-            var results: [GameResult]
-            do {
-                results = try JSONDecoder().decode([GameResult].self, from: data)
-            } catch {
-                print("⚠️ Failed to decode existing results: \(error)")
-                print("🗑️ Starting fresh with new result")
-                // If decode fails, start fresh
-                results = []
-            }
-
+            var results = loadResultsLocked()
             results.insert(result, at: 0)
 
             // Keep only the most recent results
@@ -165,95 +178,49 @@ class PersistenceService {
                 results = Array(results.prefix(maxStoredResults))
             }
 
-            do {
-                let encoded = try JSONEncoder().encode(results)
-                defaults.set(encoded, forKey: resultsKey)
-                defaults.synchronize()
-            } catch {
-                throw AppError.persistenceError("Failed to save result: \(error.localizedDescription)")
-            }
+            try saveResultsLocked(results)
 
             // Update statistics and get level-up info
-            let levelUp = try updateStatisticsInternal(with: result)
+            let levelUp = try updateStatisticsLocked(with: result)
 
             // Check achievements
-            checkAchievementsInternal(for: result)
+            checkAchievementsLocked(for: result)
 
             return levelUp
         }
     }
 
-    private func checkAchievementsInternal(for result: GameResult) {
-        // This is called from within queue.sync, get latest statistics
-        guard let data = defaults.data(forKey: statisticsKey),
-              let statistics = try? JSONDecoder().decode(GameStatistics.self, from: data) else {
-            return
-        }
+    private func checkAchievementsLocked(for result: GameResult) {
+        let statistics = loadStatisticsLocked()
 
-        // Run achievement check asynchronously
+        // Run achievement check asynchronously; AchievementTracker re-enters the
+        // public persistence API, so it must not run inside the queue.
         DispatchQueue.global(qos: .background).async {
             let _ = AchievementTracker.shared.checkAchievements(after: result, with: statistics)
         }
     }
-    
-    private func updateStatisticsInternal(with result: GameResult) throws -> Level? {
-        // This is called from within queue.sync, so don't use queue again
-        guard let data = defaults.data(forKey: statisticsKey) else {
-            var newStats = GameStatistics()
-            let levelUp = newStats.update(with: result)
-            let encoded = try JSONEncoder().encode(newStats)
-            defaults.set(encoded, forKey: statisticsKey)
-            defaults.synchronize()
-            return levelUp
-        }
 
-        var stats: GameStatistics
-        do {
-            stats = try JSONDecoder().decode(GameStatistics.self, from: data)
-        } catch {
-            print("⚠️ Failed to decode statistics: \(error)")
-            stats = GameStatistics()
-        }
-
+    private func updateStatisticsLocked(with result: GameResult) throws -> Level? {
+        var stats = loadStatisticsLocked()
         let levelUp = stats.update(with: result)
-        let encoded = try JSONEncoder().encode(stats)
-        defaults.set(encoded, forKey: statisticsKey)
-        defaults.synchronize()
+        try saveStatisticsLocked(stats)
 
-        // Log level up if it occurred
         if let newLevel = levelUp {
             print("🎉 LEVEL UP! Reached level \(newLevel.levelNumber)")
         }
 
         return levelUp
     }
-    
+
     func loadResults() -> [GameResult] {
         return queue.sync {
-            guard let data = defaults.data(forKey: resultsKey) else {
-                return []
-            }
-            
-            do {
-                let results = try JSONDecoder().decode([GameResult].self, from: data)
-                return results
-            } catch {
-                print("⚠️ Failed to decode results: \(error)")
-                print("🗑️ Clearing corrupted data...")
-                
-                // Clear corrupted data
-                defaults.removeObject(forKey: resultsKey)
-                defaults.synchronize()
-                
-                return []
-            }
+            loadResultsLocked()
         }
     }
-    
+
     func clearResults() throws {
         queue.sync {
             defaults.removeObject(forKey: resultsKey)
-            defaults.synchronize()
         }
     }
 
@@ -262,53 +229,47 @@ class PersistenceService {
             defaults.removeObject(forKey: settingsKey)
             defaults.removeObject(forKey: statisticsKey)
             defaults.removeObject(forKey: resultsKey)
-            defaults.synchronize()
         }
     }
-    
+
     // Force clear all data without throwing (for recovery)
     func forceResetAllData() {
         queue.async {
             self.defaults.removeObject(forKey: self.settingsKey)
             self.defaults.removeObject(forKey: self.statisticsKey)
             self.defaults.removeObject(forKey: self.resultsKey)
-            self.defaults.synchronize()
             print("🔄 All data has been reset")
         }
     }
-    
+
     // MARK: - Quick Access Helpers
-    
+
     func getRecentResults(limit: Int = 10) -> [GameResult] {
         let results = loadResults()
         return Array(results.prefix(limit))
     }
-    
+
     func getResultsByMode(_ mode: GameMode) -> [GameResult] {
         return loadResults().filter { $0.mode == mode }
     }
-    
+
     func getTopScores(mode: GameMode, limit: Int = 10) -> [GameResult] {
         let results = getResultsByMode(mode)
         return Array(results.sorted { $0.score > $1.score }.prefix(limit))
     }
-    
+
     // MARK: - Backup & Restore
-    
+
     func exportData() throws -> Data {
         return try queue.sync {
-            let results = loadResults()
-            let statistics = loadStatistics()
-            let settings = loadSettings()
-            
             let backup = BackupData(
-                results: results,
-                statistics: statistics,
-                settings: settings,
+                results: loadResultsLocked(),
+                statistics: loadStatisticsLocked(),
+                settings: loadSettingsLocked(),
                 version: "2.0",
                 exportDate: Date()
             )
-            
+
             do {
                 return try JSONEncoder().encode(backup)
             } catch {
@@ -316,20 +277,15 @@ class PersistenceService {
             }
         }
     }
-    
+
     func importData(from data: Data) throws {
         try queue.sync {
             do {
                 let backup = try JSONDecoder().decode(BackupData.self, from: data)
 
-                // Save imported data
-                let encodedResults = try JSONEncoder().encode(backup.results)
-                defaults.set(encodedResults, forKey: resultsKey)
-
-                try saveStatistics(backup.statistics)
-                try saveSettings(backup.settings)
-
-                defaults.synchronize()
+                try saveResultsLocked(backup.results)
+                try saveStatisticsLocked(backup.statistics)
+                try saveSettingsLocked(backup.settings)
             } catch {
                 throw AppError.persistenceError("Failed to import data: \(error.localizedDescription)")
             }
@@ -343,7 +299,6 @@ class PersistenceService {
             do {
                 let encoded = try JSONEncoder().encode(stats)
                 self.defaults.set(encoded, forKey: self.dailyChallengeStatsKey)
-                self.defaults.synchronize()
             } catch {
                 print("⚠️ Failed to save daily challenge stats: \(error)")
             }
@@ -373,7 +328,6 @@ class PersistenceService {
             do {
                 let encoded = try JSONEncoder().encode(limitedResults)
                 self.defaults.set(encoded, forKey: self.dailyChallengeLeaderboardKey)
-                self.defaults.synchronize()
             } catch {
                 print("⚠️ Failed to save daily challenge leaderboard: \(error)")
             }
@@ -400,7 +354,6 @@ class PersistenceService {
             do {
                 let encoded = try JSONEncoder().encode(result)
                 self.defaults.set(encoded, forKey: self.todayChallengeResultKey)
-                self.defaults.synchronize()
             } catch {
                 print("⚠️ Failed to save today's challenge result: \(error)")
             }
@@ -423,7 +376,6 @@ class PersistenceService {
                 } else {
                     // Clear old result
                     defaults.removeObject(forKey: todayChallengeResultKey)
-                    defaults.synchronize()
                     return nil
                 }
             } catch {
@@ -440,7 +392,6 @@ class PersistenceService {
             do {
                 let encoded = try JSONEncoder().encode(progress)
                 self.defaults.set(encoded, forKey: self.achievementProgressKey)
-                self.defaults.synchronize()
             } catch {
                 print("⚠️ Failed to save achievement progress: \(error)")
             }

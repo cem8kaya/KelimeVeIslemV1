@@ -49,6 +49,9 @@
 		87EF52FD2EC11D0000B4F222 /* VisualFeedbackComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52FB2EC11D0000B4F222 /* VisualFeedbackComponents.swift */; };
 		87EF52FE2EC11D0000B4F222 /* AnimationModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52F82EC11D0000B4F222 /* AnimationModifiers.swift */; };
 		87EF52FF2EC11D0000B4F222 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52FA2EC11D0000B4F222 /* ThemeManager.swift */; };
+		87C0FE112F17A00000000011 /* LevelSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE012F17A00000000001 /* LevelSystem.swift */; };
+		87C0FE122F17A00000000012 /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE022F17A00000000002 /* LevelUpView.swift */; };
+		87C0FE132F17A00000000013 /* LevelProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE032F17A00000000003 /* LevelProgressView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -95,6 +98,9 @@
 		87EF52F92EC11D0000B4F222 /* GameCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCommand.swift; sourceTree = "<group>"; };
 		87EF52FA2EC11D0000B4F222 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		87EF52FB2EC11D0000B4F222 /* VisualFeedbackComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualFeedbackComponents.swift; sourceTree = "<group>"; };
+		87C0FE012F17A00000000001 /* LevelSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSystem.swift; sourceTree = "<group>"; };
+		87C0FE022F17A00000000002 /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
+		87C0FE032F17A00000000003 /* LevelProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelProgressView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -193,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				87EF52F62EC11CE500B4F222 /* SavedGameState.swift */,
+				87C0FE012F17A00000000001 /* LevelSystem.swift */,
 				870030552EBE8C5B00A6E0DA /* Achievement.swift */,
 				870030562EBE8C5B00A6E0DA /* DailyChallenge.swift */,
 				87D71E2C2EB2462000B16425 /* GameSettings.swift */,
@@ -255,6 +262,8 @@
 			isa = PBXGroup;
 			children = (
 				87D71E522EB2479900B16425 /* HomeView.swift */,
+				87C0FE022F17A00000000002 /* LevelUpView.swift */,
+				87C0FE032F17A00000000003 /* LevelProgressView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -407,6 +416,9 @@
 				87D71E5D2EB247EC00B16425 /* NumberResultView.swift in Sources */,
 				87D71E502EB2477C00B16425 /* StatisticsViewModel.swift in Sources */,
 				87D71E532EB2479900B16425 /* HomeView.swift in Sources */,
+				87C0FE112F17A00000000011 /* LevelSystem.swift in Sources */,
+				87C0FE122F17A00000000012 /* LevelUpView.swift in Sources */,
+				87C0FE132F17A00000000013 /* LevelProgressView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
