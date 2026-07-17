@@ -6,6 +6,7 @@
 import XCTest
 @testable import KelimeVeIslemV1
 
+@MainActor
 final class LocaleTests: XCTestCase {
 
     // MARK: - Turkish case conversion
@@ -44,6 +45,7 @@ final class LocaleTests: XCTestCase {
     }
 }
 
+@MainActor
 final class SolutionTokenTests: XCTestCase {
 
     private func makeViewModel(numbers: [Int] = [100, 10, 5, 5], target: Int = 250) -> NumberGameViewModel {

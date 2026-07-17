@@ -6,6 +6,7 @@
 import XCTest
 @testable import KelimeVeIslemV1
 
+@MainActor
 final class LetterGameTests: XCTestCase {
 
     // MARK: - canUseLetters

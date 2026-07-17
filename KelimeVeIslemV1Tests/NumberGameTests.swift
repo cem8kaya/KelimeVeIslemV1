@@ -6,6 +6,7 @@
 import XCTest
 @testable import KelimeVeIslemV1
 
+@MainActor
 final class NumberGameTests: XCTestCase {
 
     private func makeGame(numbers: [Int] = [1, 2, 3, 4, 25, 50], target: Int = 100) -> NumberGame {

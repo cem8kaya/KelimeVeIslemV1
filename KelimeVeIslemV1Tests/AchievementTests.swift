@@ -6,6 +6,7 @@
 import XCTest
 @testable import KelimeVeIslemV1
 
+@MainActor
 final class AchievementTests: XCTestCase {
 
     private func letterResult(word: String, letters: [String], isValid: Bool, score: Int = 50, duration: Int = 45) -> GameResult {
