@@ -52,7 +52,11 @@ actor DictionaryService {
         }
         
         isLoaded = true
-        AppLog.dictionary.info("Dictionary loaded: TR=\(turkishWords.count), EN=\(englishWords.count)")
+        // Logger interpolation is a closure; capture counts locally so the
+        // actor-isolated properties aren't referenced without explicit self.
+        let turkishCount = turkishWords.count
+        let englishCount = englishWords.count
+        AppLog.dictionary.info("Dictionary loaded: TR=\(turkishCount), EN=\(englishCount)")
     }
     
     private func loadDictionarySync(from path: String, language: GameLanguage) -> Set<String> {
