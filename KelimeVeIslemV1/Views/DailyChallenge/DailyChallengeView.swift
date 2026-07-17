@@ -170,6 +170,17 @@ struct DailyChallengeView: View {
                     }
                 )
             }
+            .alert(
+                "🏆 Başarım Kazanıldı!",
+                isPresented: Binding(
+                    get: { !viewModel.newAchievements.isEmpty },
+                    set: { if !$0 { viewModel.newAchievements = [] } }
+                )
+            ) {
+                Button("Harika!") { viewModel.newAchievements = [] }
+            } message: {
+                Text(viewModel.newAchievements.map { "\($0.title): \($0.description)" }.joined(separator: "\n"))
+            }
         }
     }
 

@@ -48,10 +48,14 @@ class LetterGameViewModel: ObservableObject {
     private var timer: DispatchSourceTimer?
     public var settings: GameSettings // Changed from private to public for read access
     private var cancellables = Set<AnyCancellable>()
-    
+
+    // Set for daily-challenge games; doubles the XP earned from the result.
+    private let isDailyChallenge: Bool
+
     // MARK: - Initialization
 
     init(settings: GameSettings? = nil) {
+        self.isDailyChallenge = false
         if let settings = settings {
             self.settings = settings
             self.letterCount = settings.letterCount
@@ -83,7 +87,8 @@ class LetterGameViewModel: ObservableObject {
     }
 
     // Custom initializer for daily challenges with pre-generated letters
-    init(customGame: LetterGame, settings: GameSettings) {
+    init(customGame: LetterGame, settings: GameSettings, isDailyChallenge: Bool = false) {
+        self.isDailyChallenge = isDailyChallenge
         self.settings = settings
         self.letterCount = customGame.letters.count
         self.game = customGame
@@ -97,6 +102,7 @@ class LetterGameViewModel: ObservableObject {
 
     // Start the game timer (call this after custom init)
     func startGameTimer() {
+        guard gameState == .playing, timer == nil else { return }
         audioService.playSound(.gameStart)
         startTimer()
     }
@@ -488,7 +494,7 @@ class LetterGameViewModel: ObservableObject {
             duration: timeTaken,
             details: details,
             combo: comboCount,
-            isDailyChallenge: false
+            isDailyChallenge: isDailyChallenge
         )
         
         // Save on background thread to avoid blocking UI

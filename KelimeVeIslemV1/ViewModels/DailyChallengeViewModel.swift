@@ -16,6 +16,7 @@ class DailyChallengeViewModel: ObservableObject {
     @Published var leaderboard: [DailyChallengeResult]
     @Published var showChallengeGame = false
     @Published var todayResult: DailyChallengeResult?
+    @Published var newAchievements: [Achievement] = []
 
     private let persistenceService = PersistenceService.shared
 
@@ -46,6 +47,10 @@ class DailyChallengeViewModel: ObservableObject {
         // Add to leaderboard
         leaderboard.insert(result, at: 0)
         persistenceService.saveDailyChallengeLeaderboard(leaderboard)
+
+        // Daily-challenge achievements (first completion, streaks) are only
+        // reachable from here — the generic post-game check doesn't see them.
+        newAchievements = AchievementTracker.shared.checkDailyChallengeAchievements(stats: stats)
 
         showChallengeGame = false
     }

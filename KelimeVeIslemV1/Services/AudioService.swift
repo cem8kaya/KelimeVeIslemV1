@@ -55,10 +55,16 @@ class AudioService: ObservableObject {
     private var soundBuffers: [String: AVAudioPCMBuffer] = [:]
 
     private init() {
-        isSoundEnabled = UserDefaults.standard.bool(forKey: "soundEnabled")
-        isMusicEnabled = UserDefaults.standard.bool(forKey: "musicEnabled")
-        soundVolume = UserDefaults.standard.float(forKey: "soundVolume")
-        musicVolume = UserDefaults.standard.float(forKey: "musicVolume")
+        // First launch: bool(forKey:) returns false when the key is absent, which
+        // used to silently disable all audio. Default to enabled until the user
+        // explicitly turns sound/music off.
+        let defaults = UserDefaults.standard
+        isSoundEnabled = defaults.object(forKey: "soundEnabled") == nil
+            ? true : defaults.bool(forKey: "soundEnabled")
+        isMusicEnabled = defaults.object(forKey: "musicEnabled") == nil
+            ? true : defaults.bool(forKey: "musicEnabled")
+        soundVolume = defaults.float(forKey: "soundVolume")
+        musicVolume = defaults.float(forKey: "musicVolume")
 
         // Set defaults if values are 0 (first launch)
         if soundVolume == 0 { soundVolume = 0.7 }

@@ -45,25 +45,21 @@ class NumberGameViewModel: ObservableObject {
     private var timer: DispatchSourceTimer?
     private var settings: GameSettings
     private var cancellables = Set<AnyCancellable>()
-    
+
+    // Set for daily-challenge games; doubles the XP earned from the result.
+    private let isDailyChallenge: Bool
+
     // MARK: - Initialization
 
     init(settings: GameSettings? = nil) {
-        // Load settings synchronously from a nonisolated context-safe way
-        if let providedSettings = settings {
-            self.settings = providedSettings
-        } else {
-            // Access PersistenceService in a safe way
-            self.settings = GameSettings.default
-            // Load actual settings after initialization
-            Task { @MainActor in
-                self.settings = PersistenceService.shared.loadSettings()
-            }
-        }
+        self.isDailyChallenge = false
+        // Load settings synchronously so the first game can't race a deferred load
+        self.settings = settings ?? PersistenceService.shared.loadSettings()
     }
 
     // Custom initializer for daily challenges with pre-generated numbers
-    init(customGame: NumberGame, settings: GameSettings) {
+    init(customGame: NumberGame, settings: GameSettings, isDailyChallenge: Bool = false) {
+        self.isDailyChallenge = isDailyChallenge
         self.settings = settings
         self.game = customGame
         self.timeRemaining = settings.numberTimerDuration
@@ -77,6 +73,7 @@ class NumberGameViewModel: ObservableObject {
 
     // Start the game timer (call this after custom init)
     func startGameTimer() {
+        guard gameState == .playing, timer == nil else { return }
         audioService.playSound(.gameStart)
         startTimer()
     }
@@ -436,7 +433,7 @@ class NumberGameViewModel: ObservableObject {
             duration: timeTaken,
             details: details,
             combo: comboCount,
-            isDailyChallenge: false
+            isDailyChallenge: isDailyChallenge
         )
         
         // Save on background thread to avoid blocking UI

@@ -77,9 +77,15 @@ struct DailyChallengeLetterGameView: View {
         self.onComplete = onComplete
         self.onDismiss = onDismiss
 
-        // Create a custom letter game with the provided letters
-        let game = LetterGame(letters: letters.map { Character($0) })
-        _viewModel = StateObject(wrappedValue: LetterGameViewModel(customGame: game, settings: GameSettings.default))
+        // Create a custom letter game with the provided letters, honouring the
+        // player's real settings (language, timer durations) instead of defaults.
+        let settings = PersistenceService.shared.loadSettings()
+        let game = LetterGame(letters: letters.map { Character($0) }, language: settings.language)
+        _viewModel = StateObject(wrappedValue: LetterGameViewModel(
+            customGame: game,
+            settings: settings,
+            isDailyChallenge: true
+        ))
     }
 
     var body: some View {
@@ -264,6 +270,11 @@ struct DailyChallengeLetterGameView: View {
             // Confetti
             ConfettiView(trigger: viewModel.showConfetti)
         }
+        .onAppear {
+            // The custom init leaves the game in .playing without a running
+            // timer; start the countdown when the view actually appears.
+            viewModel.startGameTimer()
+        }
         .onChange(of: viewModel.gameState) { oldValue, newValue in
             if case .finished = newValue {
                 let duration = Int(Date().timeIntervalSince(startTime))
@@ -298,6 +309,7 @@ struct DailyChallengeNumberGameView: View {
     @State private var showResult = false
     @State private var finalScore = 0
     @State private var finalDuration = 0
+    @State private var usedNumberIndices: Set<Int> = []
 
     init(numbers: [Int], target: Int, startTime: Date, onComplete: @escaping (Int, Int) -> Void, onDismiss: @escaping () -> Void) {
         self.numbers = numbers
@@ -306,9 +318,29 @@ struct DailyChallengeNumberGameView: View {
         self.onComplete = onComplete
         self.onDismiss = onDismiss
 
-        // Create a custom number game with the provided numbers and target
+        // Create a custom number game with the provided numbers and target,
+        // honouring the player's real settings instead of defaults.
+        let settings = PersistenceService.shared.loadSettings()
         let game = NumberGame(numbers: numbers, targetNumber: target)
-        _viewModel = StateObject(wrappedValue: NumberGameViewModel(customGame: game, settings: GameSettings.default))
+        _viewModel = StateObject(wrappedValue: NumberGameViewModel(
+            customGame: game,
+            settings: settings,
+            isDailyChallenge: true
+        ))
+    }
+
+    private func handleNumberTap(_ number: Int, at index: Int) {
+        // Same rules as the main game: each tile once, no two numbers in a row.
+        guard !usedNumberIndices.contains(index) else {
+            AudioService.shared.playErrorHaptic()
+            return
+        }
+        if viewModel.currentSolution.last?.isNumber == true {
+            AudioService.shared.playErrorHaptic()
+            return
+        }
+        viewModel.addToSolution("\(number)")
+        usedNumberIndices.insert(index)
     }
 
     var body: some View {
@@ -397,20 +429,25 @@ struct DailyChallengeNumberGameView: View {
                         .fill(Color.white.opacity(0.2))
                 )
 
-                // Available numbers
+                // Available numbers — index-based so duplicate numbers get
+                // distinct tiles and each tile can only be used once.
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                    ForEach(numbers, id: \.self) { number in
+                    ForEach(numbers.indices, id: \.self) { index in
+                        let number = numbers[index]
+                        let isUsed = usedNumberIndices.contains(index)
                         Button(action: {
-                            viewModel.addToSolution("\(number)")
+                            handleNumberTap(number, at: index)
                         }) {
                             Text("\(number)")
                                 .font(.title2.bold())
                                 .foregroundColor(.white)
                                 .frame(width: 70, height: 70)
-                                .background(Color.blue.opacity(0.7))
+                                .background(isUsed ? Color.gray.opacity(0.4) : Color.blue.opacity(0.7))
                                 .cornerRadius(15)
+                                .opacity(isUsed ? 0.5 : 1.0)
                         }
                         .buttonStyle(GrowingButton())
+                        .disabled(isUsed)
                     }
                 }
                 .padding(.horizontal)
@@ -443,7 +480,10 @@ struct DailyChallengeNumberGameView: View {
 
                 // Action buttons
                 HStack(spacing: 15) {
-                    Button(action: viewModel.clearSolution) {
+                    Button(action: {
+                        viewModel.clearSolution()
+                        usedNumberIndices.removeAll()
+                    }) {
                         Label("Temizle", systemImage: "arrow.uturn.backward")
                             .font(.headline)
                             .foregroundColor(.white)
@@ -455,9 +495,7 @@ struct DailyChallengeNumberGameView: View {
                     .buttonStyle(GrowingButton())
 
                     Button(action: {
-                        Task {
-                            await viewModel.submitSolution()
-                        }
+                        viewModel.submitSolution()
                     }) {
                         Label("Gönder", systemImage: "checkmark.circle.fill")
                             .font(.headline)
@@ -501,6 +539,11 @@ struct DailyChallengeNumberGameView: View {
 
             // Confetti
             ConfettiView(trigger: viewModel.showConfetti)
+        }
+        .onAppear {
+            // The custom init leaves the game in .playing without a running
+            // timer; start the countdown when the view actually appears.
+            viewModel.startGameTimer()
         }
         .onChange(of: viewModel.gameState) { oldValue, newValue in
             if case .finished = newValue {
