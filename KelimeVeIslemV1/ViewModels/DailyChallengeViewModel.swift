@@ -25,7 +25,8 @@ class DailyChallengeViewModel: ObservableObject {
     }
 
     init() {
-        self.todayChallenge = DailyChallenge.today()
+        let language = PersistenceService.shared.loadSettings().language
+        self.todayChallenge = DailyChallenge.today(language: language)
         self.stats = persistenceService.loadDailyChallengeStats()
         self.leaderboard = persistenceService.loadDailyChallengeLeaderboard()
         self.todayResult = persistenceService.loadTodayChallengeResult()
@@ -61,11 +62,17 @@ class DailyChallengeViewModel: ObservableObject {
         todayResult = persistenceService.loadTodayChallengeResult()
 
         // Check if we need to generate a new challenge for today
+        let language = persistenceService.loadSettings().language
         if let lastResult = todayResult {
             if !todayChallenge.isSameDay(as: lastResult.challengeDate) {
                 todayResult = nil
-                todayChallenge = DailyChallenge.today()
+                todayChallenge = DailyChallenge.today(language: language)
             }
+        }
+
+        // Regenerate if the player switched languages since the challenge was built
+        if todayChallenge.language != language {
+            todayChallenge = DailyChallenge.today(language: language)
         }
     }
 }

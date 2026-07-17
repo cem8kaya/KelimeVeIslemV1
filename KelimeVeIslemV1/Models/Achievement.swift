@@ -258,7 +258,7 @@ struct AchievementProgress: Codable, Sendable {
 
         // Return whether a new achievement was unlocked
         if !wasUnlocked && achievement.isUnlocked {
-            print("🏆 Achievement unlocked: \(achievement.title)")
+            AppLog.game.info("Achievement unlocked: \(achievement.title)")
         }
     }
 
@@ -266,7 +266,7 @@ struct AchievementProgress: Codable, Sendable {
         guard var achievement = achievements[id], !achievement.isUnlocked else { return }
         achievement.unlock()
         achievements[id] = achievement
-        print("🏆 Achievement unlocked: \(achievement.title)")
+        AppLog.game.info("Achievement unlocked: \(achievement.title)")
     }
 
     func getUnlockedAchievements() -> [Achievement] {

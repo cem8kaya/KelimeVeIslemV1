@@ -224,7 +224,7 @@ struct SettingsView: View {
         do {
             try PersistenceService.shared.saveSettings(settings)
         } catch {
-            print("âš ï¸ Failed to save settings: \(error)")
+            AppLog.app.error("âš ï¸ Failed to save settings: \(String(describing: error))")
         }
     }
     
@@ -232,7 +232,7 @@ struct SettingsView: View {
         PersistenceService.shared.forceResetAllData()
         settings = .default
         themeManager.currentTheme = .classic
-        print("✅ All data has been reset")
+        AppLog.app.info("All data has been reset")
     }
 
     private func themePreviewColor(for theme: AppTheme) -> Color {

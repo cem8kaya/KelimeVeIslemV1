@@ -1,0 +1,162 @@
+/*
+ * Localizable.strings - English
+ * KelimeVeIslemV1
+ */
+
+// MARK: - Game Modes
+"game.mode.letters" = "Letters";
+"game.mode.numbers" = "Numbers";
+"game.mode.letters.description" = "Build words from letters";
+"game.mode.numbers.description" = "Reach the target number";
+
+// MARK: - Home View
+"home.stats" = "Statistics";
+"home.settings" = "Settings";
+"home.progress.title" = "Your Progress";
+"home.stats.total_games" = "Total Games";
+"home.stats.avg_score" = "Avg. Score";
+"home.stats.best_score" = "Best Score";
+
+// MARK: - Game Common
+"game.score" = "Score";
+"game.timer" = "Time";
+"game.exit" = "Exit";
+"game.exit.confirmation.title" = "Leave the Game?";
+"game.exit.confirmation.message" = "Your current progress will be lost.";
+"game.exit.button" = "Leave Game";
+"game.resume" = "Resume";
+
+// MARK: - Number Game
+"number_game.title" = "Numbers Game";
+"number_game.ready.title" = "Ready for Numbers?";
+"number_game.ready.subtitle" = "Reach the target\nusing the given numbers!";
+"number_game.start" = "Start Game";
+"number_game.target" = "Target";
+"number_game.solution" = "Your Solution";
+"number_game.solution.placeholder" = "Build your expression...";
+"number_game.submit" = "Submit Solution";
+"number_game.give_up" = "Give Up";
+"number_game.clear" = "Clear";
+"number_game.hint" = "Hint";
+"number_game.hint.title" = "Solution Hint";
+"number_game.hint.close" = "Close";
+"number_game.loading" = "Calculating solution...";
+"number_game.available_numbers" = "Available Numbers";
+
+// MARK: - Letter Game
+"letter_game.title" = "Letters Game";
+"letter_game.ready.title" = "Ready to Play?";
+"letter_game.ready.subtitle" = "You will get %d letters.\nBuild the longest word you can!";
+"letter_game.start" = "Start Game";
+"letter_game.available_letters" = "Available Letters";
+"letter_game.your_word" = "Your Word";
+"letter_game.word.placeholder" = "Tap the letters above...";
+"letter_game.submit" = "Submit Word";
+"letter_game.give_up" = "Give Up";
+"letter_game.deselect_all" = "Deselect All";
+"letter_game.shuffle" = "Shuffle Letters";
+"letter_game.loading" = "Validating word...";
+
+// MARK: - Result Views - Number Game
+"result.number.your_result" = "Your Result";
+"result.number.difference" = "Difference: %d";
+"result.number.your_solution" = "Your Solution";
+"result.number.play_again" = "Play Again";
+"result.number.back_to_menu" = "Back to Menu";
+
+// MARK: - Result Views - Letter Game
+"result.letter.your_word" = "Your Word";
+"result.letter.suggestions" = "Try These Words!";
+"result.letter.play_again" = "Play Again";
+"result.letter.back_to_menu" = "Back to Menu";
+
+// MARK: - Statistics
+"stats.title" = "Statistics";
+"stats.done" = "Done";
+"stats.overall" = "Overall Statistics";
+"stats.games_played" = "Games Played";
+"stats.total_score" = "Total Score";
+"stats.average_score" = "Average Score";
+"stats.perfect_matches" = "Perfect Matches";
+"stats.best_letter_score" = "Best Letter Score";
+"stats.best_number_score" = "Best Number Score";
+"stats.points" = "%d points";
+"stats.achievements" = "Achievements";
+"stats.achievement.word_master" = "Word Master";
+"stats.achievement.word_master.desc" = "%d letter games played";
+"stats.achievement.number_wizard" = "Number Wizard";
+"stats.achievement.number_wizard.desc" = "%d number games played";
+"stats.achievement.perfect_precision" = "Perfect Precision";
+"stats.achievement.perfect_precision.desc" = "%d perfect matches";
+"stats.achievement.longest_word" = "Longest Word";
+"stats.recent_games" = "Recent Games";
+"stats.clear_all" = "Clear All Statistics";
+"stats.clear.confirmation.title" = "Clear Statistics?";
+"stats.clear.confirmation.message" = "This will permanently delete your entire game history and statistics.";
+"stats.clear.cancel" = "Cancel";
+"stats.clear.confirm" = "Clear";
+"stats.never_played" = "Never played";
+
+// MARK: - Settings
+"settings.title" = "Settings";
+"settings.done" = "Done";
+"settings.language" = "Language";
+"settings.language.section" = "Game Language";
+"settings.language.footer" = "Choose the dictionary language for word validation";
+"settings.letters_game" = "Letters Game";
+"settings.letter_count" = "Letter Count: %d";
+"settings.letter_timer" = "Time: %ds";
+"settings.numbers_game" = "Numbers Game";
+"settings.difficulty" = "Difficulty";
+"settings.difficulty.easy" = "Easy";
+"settings.difficulty.medium" = "Medium";
+"settings.difficulty.hard" = "Hard";
+"settings.difficulty.footer" = "Easy: 5 small + 1 large number • Medium: 4 small + 2 large numbers • Hard: 3 small + 3 large numbers";
+"settings.number_timer" = "Time: %ds";
+"settings.audio" = "Audio";
+"settings.sound_effects" = "Sound Effects";
+"settings.dictionary" = "Dictionary";
+"settings.online_dictionary" = "Use Online Dictionary";
+"settings.online_dictionary.footer" = "Enable to validate words with an online dictionary API (requires internet connection)";
+"settings.about" = "About";
+"settings.version" = "Version";
+"settings.troubleshooting" = "Troubleshooting";
+"settings.reset_all" = "Reset All Data";
+"settings.reset.footer" = "Use this if you experience crashes or freezes. This deletes the entire game history, statistics and settings.";
+"settings.reset.confirmation.title" = "Reset All Data?";
+"settings.reset.confirmation.message" = "This will permanently delete your game history and statistics and restore default settings. This cannot be undone.";
+"settings.reset.cancel" = "Cancel";
+"settings.reset.confirm" = "Reset";
+
+// MARK: - Difficulty Levels
+"difficulty.easy" = "Easy";
+"difficulty.medium" = "Medium";
+"difficulty.hard" = "Hard";
+
+// MARK: - Language Names
+"language.turkish" = "Türkçe";
+"language.english" = "English";
+
+// MARK: - Common
+"common.ok" = "OK";
+"common.cancel" = "Cancel";
+"common.close" = "Close";
+"common.delete" = "Delete";
+"common.error" = "Error";
+
+// MARK: - Success Messages
+"success.valid_word" = "Valid word! Great!";
+"success.perfect_match" = "Perfect! Exact match!";
+"success.close_match" = "Close! Off by %d";
+
+// MARK: - Error Messages
+"error.invalid_letters" = "Used unavailable letters";
+"error.not_in_dictionary" = "Word not found in dictionary. Keep trying!";
+"error.invalid_expression" = "Invalid expression";
+
+// MARK: - Info Messages
+"info.result" = "Result: %d (target: %d)";
+
+// MARK: - Letter Result
+"letter_result.suggestions" = "Possible Words (from dictionary)";
+"letter_result.no_suggestions" = "No other words found.";

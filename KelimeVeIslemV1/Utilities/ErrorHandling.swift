@@ -12,7 +12,21 @@
 
 import Foundation
 import Combine
-import Combine
+import os
+
+// MARK: - Logging
+
+/// Central os.Logger categories — use these instead of print() so logs are
+/// filterable in Console.app and cheap in release builds.
+enum AppLog {
+    private static let subsystem = "com.oqza.KelimeVeIslemV1"
+
+    static let app = Logger(subsystem: subsystem, category: "app")
+    static let persistence = Logger(subsystem: subsystem, category: "persistence")
+    static let dictionary = Logger(subsystem: subsystem, category: "dictionary")
+    static let audio = Logger(subsystem: subsystem, category: "audio")
+    static let game = Logger(subsystem: subsystem, category: "game")
+}
 
 // MARK: - App Errors
 
@@ -69,7 +83,7 @@ class ErrorHandler: ObservableObject {
         showError = true
         
         // Log error for debugging
-        print("❌ Error: \(error.localizedDescription)")
+        AppLog.app.error("Error: \(error.localizedDescription)")
     }
     
     func clearError() {

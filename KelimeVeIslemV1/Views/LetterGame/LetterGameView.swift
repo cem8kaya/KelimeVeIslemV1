@@ -186,7 +186,9 @@ struct LetterGameView: View {
             if viewModel.gameState == .ready {
                 GameReadyView(
                     title: "Oynamaya Hazır mısınız?",
-                    subtitle: "\(viewModel.letterCount) harf alacaksınız.\nYapabileceğiniz en uzun kelimeyi oluşturun!",
+                    // The actual letter count is decided by the level system at
+                    // game start, so don't promise a fixed number here.
+                    subtitle: "Harf havuzundan\nyapabileceğiniz en uzun kelimeyi oluşturun!",
                     actionTitle: "Oyunu Başlat",
                     color: Color(hex: "#10B981"), // Emerald Green
                     onStart: { viewModel.startNewGame() }

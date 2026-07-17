@@ -13,12 +13,14 @@ struct DailyChallenge: Codable, Identifiable {
     let date: Date
     let mode: GameMode
     let seed: Int
+    let language: GameLanguage
     let challengeData: ChallengeData
 
-    init(date: Date, mode: GameMode) {
+    init(date: Date, mode: GameMode, language: GameLanguage = .turkish) {
         self.id = UUID()
         self.date = date
         self.mode = mode
+        self.language = language
 
         // Create seed based on date for consistent daily generation
         let calendar = Calendar.current
@@ -26,7 +28,22 @@ struct DailyChallenge: Codable, Identifiable {
         self.seed = (components.year ?? 0) * 10000 + (components.month ?? 0) * 100 + (components.day ?? 0)
 
         // Generate challenge data based on mode and seed
-        self.challengeData = DailyChallenge.generateChallenge(for: mode, seed: seed)
+        self.challengeData = DailyChallenge.generateChallenge(for: mode, seed: seed, language: language)
+    }
+
+    // Tolerant decoding: challenges stored before `language` existed were Turkish.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        date = try container.decode(Date.self, forKey: .date)
+        mode = try container.decode(GameMode.self, forKey: .mode)
+        seed = try container.decode(Int.self, forKey: .seed)
+        language = try container.decodeIfPresent(GameLanguage.self, forKey: .language) ?? .turkish
+        challengeData = try container.decode(ChallengeData.self, forKey: .challengeData)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, date, mode, seed, language, challengeData
     }
 
     enum ChallengeData: Codable {
@@ -34,29 +51,39 @@ struct DailyChallenge: Codable, Identifiable {
         case numbers(numbers: [Int], target: Int)
     }
 
-    static func generateChallenge(for mode: GameMode, seed: Int) -> ChallengeData {
+    static func generateChallenge(for mode: GameMode, seed: Int, language: GameLanguage = .turkish) -> ChallengeData {
         var generator = SeededRandomGenerator(seed: seed)
 
         switch mode {
         case .letters:
-            // Generate 9 letters with proper vowel/consonant distribution
-            let turkishVowels = ["A", "E", "I", "İ", "O", "Ö", "U", "Ü"]
-            let turkishConsonants = ["B", "C", "Ç", "D", "F", "G", "Ğ", "H", "J", "K", "L", "M", "N", "P", "R", "S", "Ş", "T", "V", "Y", "Z"]
+            // Generate 9 letters with proper vowel/consonant distribution,
+            // deterministic per (day, language) so all players of a language
+            // share the same puzzle.
+            let vowels: [String]
+            let consonants: [String]
+            switch language {
+            case .turkish:
+                vowels = ["A", "E", "I", "İ", "O", "Ö", "U", "Ü"]
+                consonants = ["B", "C", "Ç", "D", "F", "G", "Ğ", "H", "J", "K", "L", "M", "N", "P", "R", "S", "Ş", "T", "V", "Y", "Z"]
+            case .english:
+                vowels = ["A", "E", "I", "O", "U"]
+                consonants = ["B", "C", "D", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "X", "Y", "Z"]
+            }
 
             var letters: [String] = []
 
             // Add 3-4 vowels
             let vowelCount = 3 + generator.next() % 2
             for _ in 0..<vowelCount {
-                let randomIndex = generator.next() % turkishVowels.count
-                letters.append(turkishVowels[randomIndex])
+                let randomIndex = generator.next() % vowels.count
+                letters.append(vowels[randomIndex])
             }
 
             // Fill remaining with consonants
             let consonantCount = 9 - vowelCount
             for _ in 0..<consonantCount {
-                let randomIndex = generator.next() % turkishConsonants.count
-                letters.append(turkishConsonants[randomIndex])
+                let randomIndex = generator.next() % consonants.count
+                letters.append(consonants[randomIndex])
             }
 
             // Shuffle letters
@@ -92,7 +119,7 @@ struct DailyChallenge: Codable, Identifiable {
         }
     }
 
-    static func today() -> DailyChallenge {
+    static func today(language: GameLanguage = .turkish) -> DailyChallenge {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
@@ -100,7 +127,7 @@ struct DailyChallenge: Codable, Identifiable {
         let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 1
         let mode: GameMode = dayOfYear % 2 == 0 ? .letters : .numbers
 
-        return DailyChallenge(date: today, mode: mode)
+        return DailyChallenge(date: today, mode: mode, language: language)
     }
 
     func isSameDay(as date: Date) -> Bool {

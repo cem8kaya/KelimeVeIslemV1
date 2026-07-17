@@ -67,8 +67,8 @@ class PersistenceService {
         do {
             return try JSONDecoder().decode(GameStatistics.self, from: data)
         } catch {
-            print("⚠️ Failed to decode statistics: \(error)")
-            print("🗑️ Clearing corrupted statistics...")
+            AppLog.persistence.error("Failed to decode statistics: \(String(describing: error))")
+            AppLog.persistence.info("Clearing corrupted statistics...")
             defaults.removeObject(forKey: statisticsKey)
             return GameStatistics()
         }
@@ -91,8 +91,8 @@ class PersistenceService {
         do {
             return try JSONDecoder().decode([GameResult].self, from: data)
         } catch {
-            print("⚠️ Failed to decode results: \(error)")
-            print("🗑️ Clearing corrupted data...")
+            AppLog.persistence.error("Failed to decode results: \(String(describing: error))")
+            AppLog.persistence.info("Clearing corrupted data...")
             defaults.removeObject(forKey: resultsKey)
             return []
         }
@@ -219,7 +219,7 @@ class PersistenceService {
         try saveStatisticsLocked(stats)
 
         if let newLevel = levelUp {
-            print("🎉 LEVEL UP! Reached level \(newLevel.levelNumber)")
+            AppLog.persistence.info("LEVEL UP! Reached level \(newLevel.levelNumber)")
         }
 
         return levelUp
@@ -251,7 +251,7 @@ class PersistenceService {
             self.defaults.removeObject(forKey: self.settingsKey)
             self.defaults.removeObject(forKey: self.statisticsKey)
             self.defaults.removeObject(forKey: self.resultsKey)
-            print("🔄 All data has been reset")
+            AppLog.persistence.info("All data has been reset")
         }
     }
 
@@ -313,7 +313,7 @@ class PersistenceService {
                 let encoded = try JSONEncoder().encode(stats)
                 self.defaults.set(encoded, forKey: self.dailyChallengeStatsKey)
             } catch {
-                print("⚠️ Failed to save daily challenge stats: \(error)")
+                AppLog.persistence.error("Failed to save daily challenge stats: \(String(describing: error))")
             }
         }
     }
@@ -327,7 +327,7 @@ class PersistenceService {
             do {
                 return try JSONDecoder().decode(DailyChallengeStats.self, from: data)
             } catch {
-                print("⚠️ Failed to decode daily challenge stats: \(error)")
+                AppLog.persistence.error("Failed to decode daily challenge stats: \(String(describing: error))")
                 return DailyChallengeStats()
             }
         }
@@ -335,14 +335,22 @@ class PersistenceService {
 
     func saveDailyChallengeLeaderboard(_ results: [DailyChallengeResult]) {
         queue.async {
-            // Keep only the most recent entries
-            let limitedResults = Array(results.prefix(self.maxLeaderboardEntries))
+            // A leaderboard keeps the TOP entries: sort by score (ties broken
+            // by recency) before trimming, instead of keeping the newest 50.
+            let limitedResults = Array(
+                results
+                    .sorted {
+                        if $0.score != $1.score { return $0.score > $1.score }
+                        return $0.completedAt > $1.completedAt
+                    }
+                    .prefix(self.maxLeaderboardEntries)
+            )
 
             do {
                 let encoded = try JSONEncoder().encode(limitedResults)
                 self.defaults.set(encoded, forKey: self.dailyChallengeLeaderboardKey)
             } catch {
-                print("⚠️ Failed to save daily challenge leaderboard: \(error)")
+                AppLog.persistence.error("Failed to save daily challenge leaderboard: \(String(describing: error))")
             }
         }
     }
@@ -356,7 +364,7 @@ class PersistenceService {
             do {
                 return try JSONDecoder().decode([DailyChallengeResult].self, from: data)
             } catch {
-                print("⚠️ Failed to decode daily challenge leaderboard: \(error)")
+                AppLog.persistence.error("Failed to decode daily challenge leaderboard: \(String(describing: error))")
                 return []
             }
         }
@@ -368,7 +376,7 @@ class PersistenceService {
                 let encoded = try JSONEncoder().encode(result)
                 self.defaults.set(encoded, forKey: self.todayChallengeResultKey)
             } catch {
-                print("⚠️ Failed to save today's challenge result: \(error)")
+                AppLog.persistence.error("Failed to save today's challenge result: \(String(describing: error))")
             }
         }
     }
@@ -392,7 +400,7 @@ class PersistenceService {
                     return nil
                 }
             } catch {
-                print("⚠️ Failed to decode today's challenge result: \(error)")
+                AppLog.persistence.error("Failed to decode today's challenge result: \(String(describing: error))")
                 return nil
             }
         }
@@ -423,7 +431,7 @@ class PersistenceService {
                 let encoded = try JSONEncoder().encode(progress)
                 self.defaults.set(encoded, forKey: self.achievementProgressKey)
             } catch {
-                print("⚠️ Failed to save achievement progress: \(error)")
+                AppLog.persistence.error("Failed to save achievement progress: \(String(describing: error))")
             }
         }
     }
@@ -437,7 +445,7 @@ class PersistenceService {
             do {
                 return try JSONDecoder().decode(AchievementProgress.self, from: data)
             } catch {
-                print("⚠️ Failed to decode achievement progress: \(error)")
+                AppLog.persistence.error("Failed to decode achievement progress: \(String(describing: error))")
                 return AchievementProgress()
             }
         }

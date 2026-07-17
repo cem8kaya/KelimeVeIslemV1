@@ -81,7 +81,7 @@ class AudioService: ObservableObject {
             try audioSession.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
             try audioSession.setActive(true)
         } catch {
-            print("⚠️ Failed to set up audio session: \(error)")
+            AppLog.audio.error("Failed to set up audio session: \(String(describing: error))")
         }
     }
 
@@ -99,7 +99,7 @@ class AudioService: ObservableObject {
                 channels: 1,
                 interleaved: false
             ) else {
-                print("Audio format creation failed")
+                AppLog.audio.info("Audio format creation failed")
                 return
             }
 
@@ -116,7 +116,7 @@ class AudioService: ObservableObject {
                     self.audioFormat = format
                 }
             } catch {
-                print("Failed to start audio engine: \(error)")
+                AppLog.audio.error("Failed to start audio engine: \(String(describing: error))")
             }
         }
     }
@@ -243,7 +243,7 @@ class AudioService: ObservableObject {
         // For now, we'll use simple looping tones
         // In a real app, you would load audio files
         // This is a placeholder that demonstrates the concept
-        print("🎵 Background music (\(type)) would play here")
+        AppLog.audio.info("🎵 Background music (\(String(describing: type))) would play here")
     }
 
     // MARK: - Sound Preloading
@@ -268,13 +268,13 @@ class AudioService: ObservableObject {
                     }
                 }
             }
-            print("✅ Preloaded \(commonSounds.count) sound effects")
+            AppLog.audio.info("Preloaded \(commonSounds.count) sound effects")
         }
     }
 
     private func generateAndPlayTone(frequency: Float, duration: TimeInterval, volume: Float = 0.7) {
         guard let player = playerNode else {
-            print("⚠️ Audio engine not ready")
+            AppLog.audio.error("Audio engine not ready")
             return
         }
 
@@ -313,7 +313,7 @@ class AudioService: ObservableObject {
             channels: 1,
             interleaved: false
         ) else {
-            print("⚠️ Failed to create audio format")
+            AppLog.audio.error("Failed to create audio format")
             return nil
         }
 
@@ -321,14 +321,14 @@ class AudioService: ObservableObject {
             pcmFormat: audioFormat,
             frameCapacity: UInt32(audioData.count)
         ) else {
-            print("⚠️ Failed to create audio buffer")
+            AppLog.audio.error("Failed to create audio buffer")
             return nil
         }
 
         audioBuffer.frameLength = audioBuffer.frameCapacity
 
         guard let channelData = audioBuffer.floatChannelData else {
-            print("⚠️ Failed to get channel data")
+            AppLog.audio.error("Failed to get channel data")
             return nil
         }
 

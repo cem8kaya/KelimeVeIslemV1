@@ -69,7 +69,6 @@ class NumberGameViewModel: ObservableObject {
     
     private var timer: DispatchSourceTimer?
     private var settings: GameSettings
-    private var cancellables = Set<AnyCancellable>()
 
     // Set for daily-challenge games; doubles the XP earned from the result.
     private let isDailyChallenge: Bool
@@ -487,9 +486,9 @@ class NumberGameViewModel: ObservableObject {
 
         do {
             try persistenceService.saveGameState(savedState)
-            print("✅ Game state saved successfully")
+            AppLog.game.info("Game state saved successfully")
         } catch {
-            print("⚠️ Failed to save game state: \(error)")
+            AppLog.game.error("Failed to save game state: \(String(describing: error))")
         }
     }
 
@@ -532,7 +531,7 @@ class NumberGameViewModel: ObservableObject {
 
         // Don't save results in practice mode
         if settings.practiceMode {
-            print("Practice mode: result not saved")
+            AppLog.game.info("Practice mode: result not saved")
             return
         }
 
@@ -561,7 +560,7 @@ class NumberGameViewModel: ObservableObject {
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
                 guard let outcome = try self?.persistenceService.saveResult(result) else { return }
-                print("✅ Result saved successfully")
+                AppLog.game.info("Result saved successfully")
 
                 DispatchQueue.main.async {
                     if let newLevel = outcome.levelUp {
@@ -577,7 +576,7 @@ class NumberGameViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self?.error = .persistenceError("Failed to save result")
                 }
-                print("⚠️ Failed to save result: \(error)")
+                AppLog.game.error("Failed to save result: \(String(describing: error))")
             }
         }
     }
@@ -607,6 +606,5 @@ class NumberGameViewModel: ObservableObject {
         // Clean up timer
         timer?.cancel()
         timer = nil
-        cancellables.removeAll()
     }
 }

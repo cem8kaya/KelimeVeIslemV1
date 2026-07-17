@@ -51,7 +51,7 @@ actor DictionaryService {
         }
         
         isLoaded = true
-        print("✅ Dictionary loaded: TR=\(turkishWords.count), EN=\(englishWords.count)")
+        AppLog.dictionary.info("Dictionary loaded: TR=\(turkishWords.count), EN=\(englishWords.count)")
     }
     
     private func loadDictionarySync(from path: String, language: GameLanguage) -> Set<String> {
@@ -63,7 +63,7 @@ actor DictionaryService {
 
             return Set(words)
         } catch {
-            print("⚠️ Error loading dictionary from \(path): \(error)")
+            AppLog.dictionary.error("Error loading dictionary from \(path): \(String(describing: error))")
             return []
         }
     }
@@ -95,7 +95,7 @@ actor DictionaryService {
                     await self.validateOnline(word: normalized, language: language)
                 }
             } catch {
-                print("⚠️ Online validation timeout, falling back to local")
+                AppLog.dictionary.error("Online validation timeout, falling back to local")
                 return false
             }
         }
@@ -179,7 +179,7 @@ actor DictionaryService {
             
             return parseAPIResponse(data, language: language)
         } catch {
-            print("⚠️ Online validation error: \(error)")
+            AppLog.dictionary.error("Online validation error: \(String(describing: error))")
             return false
         }
     }
@@ -212,7 +212,7 @@ actor DictionaryService {
                 return false
             }
         } catch {
-            print("⚠️ Error parsing API response: \(error)")
+            AppLog.dictionary.error("Error parsing API response: \(String(describing: error))")
         }
 
         return false

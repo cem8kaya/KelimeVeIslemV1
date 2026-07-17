@@ -15,8 +15,6 @@
 		8774FF7D2EC1B57900D720B3 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8774FF7C2EC1B57900D720B3 /* AchievementsView.swift */; };
 		8774FF7F2EC1B68800D720B3 /* DailyChallengeGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8774FF7E2EC1B68800D720B3 /* DailyChallengeGameView.swift */; };
 		87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E172EB2453900B16425 /* Assets.xcassets */; };
-		87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */; };
-		87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E192EB2453900B16425 /* Persistence.swift */; };
 		87D71E272EB245D000B16425 /* KelimeVeIslemApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */; };
 		87D71E292EB245F600B16425 /* GameMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E282EB245F600B16425 /* GameMode.swift */; };
 		87D71E2B2EB2460F00B16425 /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E2A2EB2460F00B16425 /* GameResult.swift */; };
@@ -24,8 +22,6 @@
 		87D71E2F2EB2463000B16425 /* LetterGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E2E2EB2463000B16425 /* LetterGame.swift */; };
 		87D71E312EB2464000B16425 /* NumberGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E302EB2464000B16425 /* NumberGame.swift */; };
 		87D71E332EB2466200B16425 /* english_words.txt in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E322EB2465D00B16425 /* english_words.txt */; };
-		87D71E352EB2467500B16425 /* Localizable.strings.en in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E342EB2467300B16425 /* Localizable.strings.en */; };
-		87D71E372EB2468300B16425 /* Localizable.strings.tr in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E362EB2468200B16425 /* Localizable.strings.tr */; };
 		87D71E392EB2469D00B16425 /* turkish_words.txt in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E382EB2469900B16425 /* turkish_words.txt */; };
 		87D71E3C2EB246D500B16425 /* AudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E3B2EB246D400B16425 /* AudioService.swift */; };
 		87D71E402EB2470000B16425 /* DictionaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E3F2EB246FF00B16425 /* DictionaryService.swift */; };
@@ -63,7 +59,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		870030512EBE8C4600A6E0DA /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = Localizable.strings; sourceTree = "<group>"; };
+		870030512EBE8C4600A6E0DA /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		87C0FE512F17C00000000051 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		870030552EBE8C5B00A6E0DA /* Achievement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievement.swift; sourceTree = "<group>"; };
 		870030562EBE8C5B00A6E0DA /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
 		870030592EBE8C7F00A6E0DA /* DailyChallengeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeViewModel.swift; sourceTree = "<group>"; };
@@ -72,8 +69,6 @@
 		8774FF7E2EC1B68800D720B3 /* DailyChallengeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeGameView.swift; sourceTree = "<group>"; };
 		87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KelimeVeIslemV1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		87D71E172EB2453900B16425 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		87D71E192EB2453900B16425 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = KelimeVeIslemV1.xcdatamodel; sourceTree = "<group>"; };
 		87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KelimeVeIslemApp.swift; sourceTree = "<group>"; };
 		87D71E282EB245F600B16425 /* GameMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameMode.swift; sourceTree = "<group>"; };
 		87D71E2A2EB2460F00B16425 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
@@ -81,8 +76,6 @@
 		87D71E2E2EB2463000B16425 /* LetterGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterGame.swift; sourceTree = "<group>"; };
 		87D71E302EB2464000B16425 /* NumberGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGame.swift; sourceTree = "<group>"; };
 		87D71E322EB2465D00B16425 /* english_words.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = english_words.txt; sourceTree = "<group>"; };
-		87D71E342EB2467300B16425 /* Localizable.strings.en */ = {isa = PBXFileReference; lastKnownFileType = text; path = Localizable.strings.en; sourceTree = "<group>"; };
-		87D71E362EB2468200B16425 /* Localizable.strings.tr */ = {isa = PBXFileReference; lastKnownFileType = text; path = Localizable.strings.tr; sourceTree = "<group>"; };
 		87D71E382EB2469900B16425 /* turkish_words.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = turkish_words.txt; sourceTree = "<group>"; };
 		87D71E3B2EB246D400B16425 /* AudioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
 		87D71E3F2EB246FF00B16425 /* DictionaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryService.swift; sourceTree = "<group>"; };
@@ -138,14 +131,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		870030532EBE8C4600A6E0DA /* tr.lproj */ = {
-			isa = PBXGroup;
-			children = (
-				870030522EBE8C4600A6E0DA /* Localizable.strings */,
-			);
-			path = tr.lproj;
-			sourceTree = "<group>";
-		};
 		8700305C2EBE8C8E00A6E0DA /* Achievements */ = {
 			isa = PBXGroup;
 			children = (
@@ -199,11 +184,9 @@
 		87D71E1A2EB2453900B16425 /* KelimeVeIslemV1 */ = {
 			isa = PBXGroup;
 			children = (
-				870030532EBE8C4600A6E0DA /* tr.lproj */,
-				87D71E192EB2453900B16425 /* Persistence.swift */,
+				870030522EBE8C4600A6E0DA /* Localizable.strings */,
 				87D71E172EB2453900B16425 /* Assets.xcassets */,
 				87D71E1F2EB2457800B16425 /* App */,
-				87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */,
 				87D71E212EB2459500B16425 /* Models */,
 				87D71E222EB2459C00B16425 /* Resources */,
 				87D71E232EB245AA00B16425 /* Services */,
@@ -256,9 +239,7 @@
 			isa = PBXGroup;
 			children = (
 				87D71E322EB2465D00B16425 /* english_words.txt */,
-				87D71E342EB2467300B16425 /* Localizable.strings.en */,
 				87D71E382EB2469900B16425 /* turkish_words.txt */,
-				87D71E362EB2468200B16425 /* Localizable.strings.tr */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -448,12 +429,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				87D71E372EB2468300B16425 /* Localizable.strings.tr in Resources */,
 				870030542EBE8C4600A6E0DA /* Localizable.strings in Resources */,
 				87D71E392EB2469D00B16425 /* turkish_words.txt in Resources */,
 				87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */,
 				87D71E332EB2466200B16425 /* english_words.txt in Resources */,
-				87D71E352EB2467500B16425 /* Localizable.strings.en in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,7 +455,6 @@
 				87D71E272EB245D000B16425 /* KelimeVeIslemApp.swift in Sources */,
 				87D71E2D2EB2462000B16425 /* GameSettings.swift in Sources */,
 				87D71E4E2EB2476E00B16425 /* NumberGameViewModel.swift in Sources */,
-				87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */,
 				87EF52F72EC11CE500B4F222 /* SavedGameState.swift in Sources */,
 				87EF52FC2EC11D0000B4F222 /* GameCommand.swift in Sources */,
 				87EF52FD2EC11D0000B4F222 /* VisualFeedbackComponents.swift in Sources */,
@@ -485,7 +463,6 @@
 				87EF52FF2EC11D0000B4F222 /* ThemeManager.swift in Sources */,
 				87D71E442EB2471A00B16425 /* NumberGenerator.swift in Sources */,
 				87D71E462EB2472600B16425 /* PersistenceService.swift in Sources */,
-				87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */,
 				87D71E562EB247B400B16425 /* LetterGameView.swift in Sources */,
 				87D71E602EB2480700B16425 /* SettingsView.swift in Sources */,
 				87D71E5B2EB247DC00B16425 /* NumberGameView.swift in Sources */,
@@ -535,6 +512,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				870030512EBE8C4600A6E0DA /* tr */,
+				87C0FE512F17C00000000051 /* en */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -805,18 +783,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCVersionGroup section */
-		87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */,
-			);
-			currentVersion = 87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */;
-			path = KelimeVeIslemV1.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 87D71DFC2EB2452200B16425 /* Project object */;
 }
