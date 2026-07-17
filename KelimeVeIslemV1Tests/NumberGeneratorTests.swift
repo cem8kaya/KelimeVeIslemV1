@@ -62,7 +62,8 @@ final class NumberGeneratorTests: XCTestCase {
     }
 
     // Each recorded operation must be internally consistent.
-    private func verifyOperationsAreConsistent(_ operations: [Operation]) {
+    // (Qualified type: Foundation.Operation shadows the game's Operation here.)
+    private func verifyOperationsAreConsistent(_ operations: [KelimeVeIslemV1.Operation]) {
         for op in operations {
             let a = op.operand1
             let b = op.operand2
