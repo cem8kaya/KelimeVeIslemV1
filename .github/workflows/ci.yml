@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: Build & Test (iOS Simulator)
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode (newest available)
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_2[0-9]* /Applications/Xcode_1[0-9]* 2>/dev/null | sort -V | tail -1)" && xcodebuild -version
+
+      - name: Show available simulators
+        run: xcrun simctl list devices available | head -30
+
+      - name: Build and test
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project KelimeVeIslemV1.xcodeproj \
+            -scheme KelimeVeIslemV1 \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            | tee xcodebuild.log | grep -E '^(Test Case|Test Suite|\*\* TEST|error:|warning:.*error)' || (tail -100 xcodebuild.log && exit 1)
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: xcodebuild.log

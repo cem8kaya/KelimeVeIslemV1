@@ -52,6 +52,12 @@
 		87C0FE112F17A00000000011 /* LevelSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE012F17A00000000001 /* LevelSystem.swift */; };
 		87C0FE122F17A00000000012 /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE022F17A00000000002 /* LevelUpView.swift */; };
 		87C0FE132F17A00000000013 /* LevelProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE032F17A00000000003 /* LevelProgressView.swift */; };
+		87C0FE402F17B00000000040 /* NumberGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE302F17B00000000030 /* NumberGameTests.swift */; };
+		87C0FE412F17B00000000041 /* LetterGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE312F17B00000000031 /* LetterGameTests.swift */; };
+		87C0FE422F17B00000000042 /* NumberGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE322F17B00000000032 /* NumberGeneratorTests.swift */; };
+		87C0FE432F17B00000000043 /* DailyChallengeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE332F17B00000000033 /* DailyChallengeTests.swift */; };
+		87C0FE442F17B00000000044 /* LevelSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE342F17B00000000034 /* LevelSystemTests.swift */; };
+		87C0FE452F17B00000000045 /* PersistenceServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -101,10 +107,24 @@
 		87C0FE012F17A00000000001 /* LevelSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSystem.swift; sourceTree = "<group>"; };
 		87C0FE022F17A00000000002 /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
 		87C0FE032F17A00000000003 /* LevelProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelProgressView.swift; sourceTree = "<group>"; };
+		87C0FE212F17B00000000021 /* KelimeVeIslemV1Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KelimeVeIslemV1Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		87C0FE302F17B00000000030 /* NumberGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGameTests.swift; sourceTree = "<group>"; };
+		87C0FE312F17B00000000031 /* LetterGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterGameTests.swift; sourceTree = "<group>"; };
+		87C0FE322F17B00000000032 /* NumberGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGeneratorTests.swift; sourceTree = "<group>"; };
+		87C0FE332F17B00000000033 /* DailyChallengeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeTests.swift; sourceTree = "<group>"; };
+		87C0FE342F17B00000000034 /* LevelSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSystemTests.swift; sourceTree = "<group>"; };
+		87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		87D71E012EB2452200B16425 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		87C0FE242F17B00000000024 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -143,14 +163,29 @@
 			isa = PBXGroup;
 			children = (
 				87D71E1A2EB2453900B16425 /* KelimeVeIslemV1 */,
+				87C0FE222F17B00000000022 /* KelimeVeIslemV1Tests */,
 				87D71E052EB2452200B16425 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		87C0FE222F17B00000000022 /* KelimeVeIslemV1Tests */ = {
+			isa = PBXGroup;
+			children = (
+				87C0FE302F17B00000000030 /* NumberGameTests.swift */,
+				87C0FE312F17B00000000031 /* LetterGameTests.swift */,
+				87C0FE322F17B00000000032 /* NumberGeneratorTests.swift */,
+				87C0FE332F17B00000000033 /* DailyChallengeTests.swift */,
+				87C0FE342F17B00000000034 /* LevelSystemTests.swift */,
+				87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */,
+			);
+			path = KelimeVeIslemV1Tests;
 			sourceTree = "<group>";
 		};
 		87D71E052EB2452200B16425 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */,
+				87C0FE212F17B00000000021 /* KelimeVeIslemV1Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -324,6 +359,26 @@
 			productReference = 87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */;
 			productType = "com.apple.product-type.application";
 		};
+		87C0FE202F17B00000000020 /* KelimeVeIslemV1Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 87C0FE282F17B00000000028 /* Build configuration list for PBXNativeTarget "KelimeVeIslemV1Tests" */;
+			buildPhases = (
+				87C0FE232F17B00000000023 /* Sources */,
+				87C0FE242F17B00000000024 /* Frameworks */,
+				87C0FE252F17B00000000025 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				87C0FE272F17B00000000027 /* PBXTargetDependency */,
+			);
+			name = KelimeVeIslemV1Tests;
+			packageProductDependencies = (
+			);
+			productName = KelimeVeIslemV1Tests;
+			productReference = 87C0FE212F17B00000000021 /* KelimeVeIslemV1Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -336,6 +391,10 @@
 				TargetAttributes = {
 					87D71E032EB2452200B16425 = {
 						CreatedOnToolsVersion = 26.0.1;
+					};
+					87C0FE202F17B00000000020 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = 87D71E032EB2452200B16425;
 					};
 				};
 			};
@@ -355,9 +414,28 @@
 			projectRoot = "";
 			targets = (
 				87D71E032EB2452200B16425 /* KelimeVeIslemV1 */,
+				87C0FE202F17B00000000020 /* KelimeVeIslemV1Tests */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXContainerItemProxy section */
+		87C0FE262F17B00000000026 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 87D71DFC2EB2452200B16425 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 87D71E032EB2452200B16425;
+			remoteInfo = KelimeVeIslemV1;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		87C0FE272F17B00000000027 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 87D71E032EB2452200B16425 /* KelimeVeIslemV1 */;
+			targetProxy = 87C0FE262F17B00000000026 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXResourcesBuildPhase section */
 		87D71E022EB2452200B16425 /* Resources */ = {
@@ -370,6 +448,13 @@
 				87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */,
 				87D71E332EB2466200B16425 /* english_words.txt in Resources */,
 				87D71E352EB2467500B16425 /* Localizable.strings.en in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		87C0FE252F17B00000000025 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,6 +504,19 @@
 				87C0FE112F17A00000000011 /* LevelSystem.swift in Sources */,
 				87C0FE122F17A00000000012 /* LevelUpView.swift in Sources */,
 				87C0FE132F17A00000000013 /* LevelProgressView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		87C0FE232F17B00000000023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				87C0FE402F17B00000000040 /* NumberGameTests.swift in Sources */,
+				87C0FE412F17B00000000041 /* LetterGameTests.swift in Sources */,
+				87C0FE422F17B00000000042 /* NumberGeneratorTests.swift in Sources */,
+				87C0FE432F17B00000000043 /* DailyChallengeTests.swift in Sources */,
+				87C0FE442F17B00000000044 /* LevelSystemTests.swift in Sources */,
+				87C0FE452F17B00000000045 /* PersistenceServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -625,6 +723,48 @@
 			};
 			name = Release;
 		};
+		87C0FE292F17B00000000029 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5T896483H9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oqza.KelimeVeIslemV1Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KelimeVeIslemV1.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KelimeVeIslemV1";
+			};
+			name = Debug;
+		};
+		87C0FE2A2F17B0000000002A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5T896483H9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oqza.KelimeVeIslemV1Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KelimeVeIslemV1.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KelimeVeIslemV1";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -642,6 +782,15 @@
 			buildConfigurations = (
 				87D71E152EB2452300B16425 /* Debug */,
 				87D71E162EB2452300B16425 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		87C0FE282F17B00000000028 /* Build configuration list for PBXNativeTarget "KelimeVeIslemV1Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				87C0FE292F17B00000000029 /* Debug */,
+				87C0FE2A2F17B0000000002A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
