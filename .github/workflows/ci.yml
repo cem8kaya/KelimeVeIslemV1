@@ -30,9 +30,11 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
-            | tee xcodebuild.log | grep -E '(: error:|: warning:)|^(Test Case|Test Suite|\*\* TEST)' \
+            | tee xcodebuild.log | grep -E '(: error:)|Test [Cc]ase|Test [Ss]uite|Test session|\*\* TEST' \
             || { echo '=== compiler errors ==='; grep -E ': (error|fatal error):' xcodebuild.log | head -50; \
-                 echo '=== log tail ==='; tail -60 xcodebuild.log; exit 1; }
+                 echo '=== failing tests ==='; grep -iE 'test (case|suite).*fail' xcodebuild.log | head -50; \
+                 echo '=== testing-failed summary ==='; sed -n '/^Testing failed:/,/\*\* TEST/p' xcodebuild.log | head -80; \
+                 echo '=== log tail ==='; tail -80 xcodebuild.log; exit 1; }
 
       - name: Upload build log on failure
         if: failure()
