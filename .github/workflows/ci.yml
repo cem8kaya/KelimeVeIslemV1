@@ -23,23 +23,41 @@ jobs:
       - name: Build and test
         run: |
           set -o pipefail
+          RESULT_BUNDLE="TestResults.xcresult"
+          rm -rf "$RESULT_BUNDLE"
           xcodebuild test \
             -project KelimeVeIslemV1.xcodeproj \
             -scheme KelimeVeIslemV1 \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -resultBundlePath "$RESULT_BUNDLE" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
-            | tee xcodebuild.log | grep -E '(: error:)|Test [Cc]ase|Test [Ss]uite|Test session|\*\* TEST' \
-            || { echo '=== compiler errors ==='; grep -E ': (error|fatal error):' xcodebuild.log | head -50; \
-                 echo '=== failing tests ==='; grep -iE 'test (case|suite).*fail' xcodebuild.log | head -50; \
-                 echo '=== assertion messages ==='; grep -E ' error: -\[|XCTAssert|\.swift:[0-9]+: error:' xcodebuild.log | head -60; \
-                 echo '=== crashes / early exits ==='; grep -iE 'crash|unexpectedly|Restarting after|did crash|Fatal error|signal' xcodebuild.log | head -40; \
-                 echo '=== log tail ==='; tail -60 xcodebuild.log; exit 1; }
+            2>&1 | tee xcodebuild.log | grep -E '(: error:)|Test [Cc]ase.*(passed|failed)|\*\* (TEST|BUILD)' || true
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            # Diagnostics run without -e/pipefail so a no-match grep can't abort the report.
+            set +o pipefail
+            echo '=== compiler errors ==='
+            grep -E ': (error|fatal error):' xcodebuild.log | head -50 || true
+            echo '=== failed test cases ==='
+            grep -E "Test Case.*' failed" xcodebuild.log | head -60 || true
+            echo '=== assertion / crash messages ==='
+            grep -aE '\.swift:[0-9]+: error:|XCTAssert|Fatal error|Precondition|crashed|Restarting after|dispatch_assert|EXC_' xcodebuild.log | head -80 || true
+            echo '=== xcresult failure summary ==='
+            xcrun xcresulttool get test-results summary --path "$RESULT_BUNDLE" 2>/dev/null | head -120 || \
+              xcrun xcresulttool get --path "$RESULT_BUNDLE" --format json 2>/dev/null \
+                | python3 -c 'import sys,json; d=json.load(sys.stdin); print(json.dumps(d, indent=1)[:6000])' 2>/dev/null || true
+            echo '=== log tail ==='
+            tail -40 xcodebuild.log
+            exit "$status"
+          fi
 
-      - name: Upload build log on failure
+      - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: xcodebuild-log
-          path: xcodebuild.log
+          name: test-logs
+          path: |
+            xcodebuild.log
+            TestResults.xcresult
