@@ -69,7 +69,6 @@ struct DailyChallengeLetterGameView: View {
     @State private var showResult = false
     @State private var finalScore = 0
     @State private var finalDuration = 0
-    @State private var usedLetterIndices: Set<Int> = []
 
     init(letters: [String], startTime: Date, onComplete: @escaping (Int, Int) -> Void, onDismiss: @escaping () -> Void) {
         self.letters = letters
@@ -170,13 +169,11 @@ struct DailyChallengeLetterGameView: View {
                 if let game = viewModel.game {
                     DailyChallengeLetterTilesView(
                         letters: game.letters.map { String($0) },
-                        usedIndices: usedLetterIndices,
+                        usedIndices: Set(viewModel.usedLetterIndices),
                         onLetterTap: { index in
-                            guard let currentGame = viewModel.game else { return }
-                            usedLetterIndices.insert(index)
-                            let letter = currentGame.letters[index]
-                            let newWord = viewModel.currentWord + String(letter)
-                            viewModel.updateWord(newWord)
+                            guard let currentGame = viewModel.game,
+                                  currentGame.letters.indices.contains(index) else { return }
+                            viewModel.selectLetter(currentGame.letters[index], at: index)
                         }
                     )
                     .padding(.horizontal)
@@ -185,8 +182,7 @@ struct DailyChallengeLetterGameView: View {
                 // Action buttons
                 HStack(spacing: 15) {
                     Button(action: {
-                        viewModel.updateWord("")
-                        usedLetterIndices.removeAll()
+                        viewModel.deselectAll()
                     }) {
                         Label("Temizle", systemImage: "arrow.uturn.backward")
                             .font(.headline)
@@ -200,7 +196,6 @@ struct DailyChallengeLetterGameView: View {
 
                     Button(action: {
                         viewModel.shuffleLetters()
-                        usedLetterIndices.removeAll()
                     }) {
                         Label("Karıştır", systemImage: "arrow.triangle.2.circlepath")
                             .font(.headline)
@@ -309,7 +304,6 @@ struct DailyChallengeNumberGameView: View {
     @State private var showResult = false
     @State private var finalScore = 0
     @State private var finalDuration = 0
-    @State private var usedNumberIndices: Set<Int> = []
 
     init(numbers: [Int], target: Int, startTime: Date, onComplete: @escaping (Int, Int) -> Void, onDismiss: @escaping () -> Void) {
         self.numbers = numbers
@@ -331,16 +325,12 @@ struct DailyChallengeNumberGameView: View {
 
     private func handleNumberTap(_ number: Int, at index: Int) {
         // Same rules as the main game: each tile once, no two numbers in a row.
-        guard !usedNumberIndices.contains(index) else {
+        guard !viewModel.usedNumberIndices.contains(index),
+              !viewModel.lastTokenIsNumber else {
             AudioService.shared.playErrorHaptic()
             return
         }
-        if viewModel.currentSolution.last?.isNumber == true {
-            AudioService.shared.playErrorHaptic()
-            return
-        }
-        viewModel.addToSolution("\(number)")
-        usedNumberIndices.insert(index)
+        viewModel.selectNumber(number, tileIndex: index)
     }
 
     var body: some View {
@@ -434,7 +424,7 @@ struct DailyChallengeNumberGameView: View {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                     ForEach(numbers.indices, id: \.self) { index in
                         let number = numbers[index]
-                        let isUsed = usedNumberIndices.contains(index)
+                        let isUsed = viewModel.usedNumberIndices.contains(index)
                         Button(action: {
                             handleNumberTap(number, at: index)
                         }) {
@@ -463,7 +453,7 @@ struct DailyChallengeNumberGameView: View {
                     ForEach(["+", "-", "×", "÷"], id: \.self) { op in
                         Button(action: {
                             let actualOp = op == "×" ? "*" : op == "÷" ? "/" : op
-                            viewModel.addToSolution(actualOp)
+                            viewModel.selectOperator(actualOp)
                         }) {
                             Text(op)
                                 .font(.title2.bold())
@@ -481,8 +471,7 @@ struct DailyChallengeNumberGameView: View {
                 // Action buttons
                 HStack(spacing: 15) {
                     Button(action: {
-                        viewModel.clearSolution()
-                        usedNumberIndices.removeAll()
+                        viewModel.clearSolutionWithCommand()
                     }) {
                         Label("Temizle", systemImage: "arrow.uturn.backward")
                             .font(.headline)

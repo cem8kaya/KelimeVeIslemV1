@@ -16,7 +16,6 @@ struct LetterGameView: View {
     @State private var showError = false
     @State private var showExitConfirmation = false
     @State private var showParticles = false
-    @FocusState private var isTextFieldFocused: Bool
 
     init(savedGameState: SavedGameState? = nil) {
         self.savedGameState = savedGameState
@@ -183,14 +182,10 @@ struct LetterGameView: View {
                 PlayingView(
                     letters: viewModel.game?.letters ?? [],
                     currentWord: viewModel.currentWord,
-                    isTextFieldFocused: $isTextFieldFocused,
+                    usedLetterIndices: viewModel.usedLetterIndices,
                     viewModel: viewModel,
                     theme: themeManager.colors,
-                    onWordChange: { word in
-                        viewModel.updateWord(word)
-                    },
                     onSubmit: {
-                        isTextFieldFocused = false
                         Task {
                             await viewModel.submitWord()
                         }
@@ -277,19 +272,19 @@ struct LetterGameView: View {
 
 struct PlayingView: View {
     let letters: [Character]
-    @State private var usedLetterIndices: [Int] = []
     @State private var shuffleRotation: Double = 0
 
     let currentWord: String
-    var isTextFieldFocused: FocusState<Bool>.Binding
+    // Tile selection is owned by the ViewModel so undo/redo, clear and shuffle
+    // can never leave the view's highlight state out of sync.
+    let usedLetterIndices: [Int]
     let viewModel: LetterGameViewModel
     let theme: ThemeColors
-    let onWordChange: (String) -> Void
     let onSubmit: () -> Void
     let onGiveUp: () -> Void
 
     private var usedLetters: [Character] {
-        usedLetterIndices.map { letters[$0] }
+        usedLetterIndices.compactMap { letters.indices.contains($0) ? letters[$0] : nil }
     }
     
     var body: some View {
@@ -326,9 +321,8 @@ struct PlayingView: View {
                 usedIndices: usedLetterIndices,
                 theme: theme
             ) { letter, index in
-                // Add letter using command pattern
-                usedLetterIndices.append(index)
-                viewModel.selectLetter(letter)
+                // Add letter using command pattern (tile bookkeeping in the VM)
+                viewModel.selectLetter(letter, at: index)
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Available letters: \(letters.map { String($0) }.joined(separator: ", "))")
@@ -346,7 +340,6 @@ struct PlayingView: View {
                     if !currentWord.isEmpty {
                         Button {
                             // Clear word using command pattern
-                            usedLetterIndices = []
                             viewModel.clearWordWithCommand()
                         } label: {
                             Image(systemName: "xmark.circle.fill")
@@ -378,9 +371,6 @@ struct PlayingView: View {
                 HStack(spacing: 12) {
                     Button {
                         viewModel.performUndo()
-                        if !currentWord.isEmpty {
-                            usedLetterIndices.removeLast()
-                        }
                     } label: {
                         HStack {
                             Image(systemName: "arrow.uturn.backward")
@@ -397,14 +387,7 @@ struct PlayingView: View {
                     .accessibilityLabel("Geri al")
 
                     Button {
-                        let previousLength = currentWord.count
                         viewModel.performRedo()
-                        if currentWord.count > previousLength, let lastChar = currentWord.last {
-                            // Find the first available index for this letter
-                            if let index = letters.firstIndex(where: { $0 == lastChar && !usedLetterIndices.contains(letters.firstIndex(of: $0) ?? -1) }) {
-                                usedLetterIndices.append(index)
-                            }
-                        }
                     } label: {
                         HStack {
                             Image(systemName: "arrow.uturn.forward")
@@ -465,11 +448,7 @@ struct PlayingView: View {
             HStack(spacing: 12) {
                 // Deselect All button
                 Button(action: {
-                    usedLetterIndices = []
-                    onWordChange("")
-                    // Haptic feedback
-                    let generator = UIImpactFeedbackGenerator(style: .medium)
-                    generator.impactOccurred()
+                    viewModel.deselectAll()
                 }) {
                     HStack {
                         Image(systemName: "arrow.counterclockwise")
@@ -491,10 +470,8 @@ struct PlayingView: View {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
                         shuffleRotation += 360
                     }
+                    // Shuffling clears the selection inside the ViewModel
                     viewModel.shuffleLetters()
-                    // Also clear selected letters when shuffling
-                    usedLetterIndices = []
-                    onWordChange("")
                 }) {
                     HStack {
                         Image(systemName: "shuffle")

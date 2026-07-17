@@ -30,15 +30,15 @@ actor DictionaryService {
     
     private func loadLocalDictionaries() async {
         guard !isLoaded else { return }
-        
+
         // Load Turkish words
         if let turkishPath = Bundle.main.path(forResource: "turkish_words", ofType: "txt") {
-            turkishWords = loadDictionarySync(from: turkishPath)
+            turkishWords = loadDictionarySync(from: turkishPath, language: .turkish)
         }
-        
+
         // Load English words
         if let englishPath = Bundle.main.path(forResource: "english_words", ofType: "txt") {
-            englishWords = loadDictionarySync(from: englishPath)
+            englishWords = loadDictionarySync(from: englishPath, language: .english)
         }
         
         // Fallback: add some common words if files don't exist
@@ -54,13 +54,13 @@ actor DictionaryService {
         print("✅ Dictionary loaded: TR=\(turkishWords.count), EN=\(englishWords.count)")
     }
     
-    private func loadDictionarySync(from path: String) -> Set<String> {
+    private func loadDictionarySync(from path: String, language: GameLanguage) -> Set<String> {
         do {
             let content = try String(contentsOfFile: path, encoding: .utf8)
             let words = content.components(separatedBy: .newlines)
-                .map { $0.trimmingCharacters(in: .whitespaces).uppercased() }
+                .map { $0.trimmingCharacters(in: .whitespaces).gameUppercased(for: language) }
                 .filter { !$0.isEmpty && $0.count >= 2 }
-            
+
             return Set(words)
         } catch {
             print("⚠️ Error loading dictionary from \(path): \(error)")
@@ -75,18 +75,19 @@ actor DictionaryService {
         if !isLoaded {
             await loadLocalDictionaries()
         }
-        
-        let normalized = word.uppercased().trimmingCharacters(in: .whitespaces)
-        
+
+        let normalized = word.gameUppercased(for: language).trimmingCharacters(in: .whitespaces)
+
         guard normalized.count >= 2 else { return false }
-        
-        // Check local dictionary first
+
+        // Check local dictionary first — a local hit is final, so an online
+        // failure can never override a locally valid word.
         let wordSet = language == .turkish ? turkishWords : englishWords
-        
+
         if wordSet.contains(normalized) {
             return true
         }
-        
+
         // If online validation is enabled, try API with timeout
         if useOnline {
             do {
@@ -98,16 +99,16 @@ actor DictionaryService {
                 return false
             }
         }
-        
+
         return false
     }
-    
+
     func isWordInDictionary(_ word: String, language: GameLanguage) async -> Bool {
         if !isLoaded {
             await loadLocalDictionaries()
         }
-        
-        let normalized = word.uppercased().trimmingCharacters(in: .whitespaces)
+
+        let normalized = word.gameUppercased(for: language).trimmingCharacters(in: .whitespaces)
         let wordSet = language == .turkish ? turkishWords : englishWords
         return wordSet.contains(normalized)
     }
@@ -129,7 +130,7 @@ actor DictionaryService {
         }
         
         let wordSet = language == .turkish ? turkishWords : englishWords
-        let availableCharacters = availableLetters.map { Character($0.uppercased()) }
+        let availableCharacters = availableLetters.compactMap { $0.gameUppercased(for: language).first }
         
         // Create a frequency map of available letters for fast lookup
         var availableLetterCounts: [Character: Int] = [:]
@@ -184,23 +185,36 @@ actor DictionaryService {
     }
     
     private func makeAPIURL(for word: String, language: GameLanguage) -> URL? {
+        // Both APIs expect lowercase queries. The conversion must be
+        // locale-aware for Turkish ("İ" -> "i", "I" -> "ı").
+        let query = word.gameLowercased(for: language)
         switch language {
         case .turkish:
-            return URL(string: "https://sozluk.gov.tr/gts?ara=\(word.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? word)")
+            return URL(string: "https://sozluk.gov.tr/gts?ara=\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query)")
         case .english:
-            return URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(word.lowercased())")
+            return URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(query)")
         }
     }
-    
+
     private func parseAPIResponse(_ data: Data, language: GameLanguage) -> Bool {
         do {
-            if let json = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
-                return !json.isEmpty
+            let json = try JSONSerialization.jsonObject(with: data)
+
+            // Success responses are a non-empty array of entries for both
+            // sozluk.gov.tr and dictionaryapi.dev.
+            if let entries = json as? [[String: Any]] {
+                return !entries.isEmpty
+            }
+
+            // sozluk.gov.tr signals "not found" with a JSON object such as
+            // {"error": "Sonuç bulunamadı"} — treat any object as a miss.
+            if json is [String: Any] {
+                return false
             }
         } catch {
             print("⚠️ Error parsing API response: \(error)")
         }
-        
+
         return false
     }
     

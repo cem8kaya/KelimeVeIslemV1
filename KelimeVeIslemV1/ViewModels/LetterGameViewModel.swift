@@ -30,6 +30,11 @@ class LetterGameViewModel: ObservableObject {
     // NEW: Expose letter count and suggested words for the View
     @Published var letterCount: Int // Expose for GameReadyView
     @Published var suggestedWords: [String] = [] // NEW: For displaying results
+
+    // Indices of the pool tiles used by the current word, in selection order.
+    // Owned by the ViewModel so undo/redo can never desynchronize tile state,
+    // and duplicate letters stay distinguishable.
+    @Published private(set) var usedLetterIndices: [Int] = []
     @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
     @Published var showConfetti: Bool = false // Trigger for confetti animation
     @Published var levelUpInfo: Level? = nil // Level-up notification
@@ -149,6 +154,7 @@ class LetterGameViewModel: ObservableObject {
         }
 
         currentWord = ""
+        usedLetterIndices = []
 
         // Apply level-based timer duration
         let timerDuration = settings.practiceMode ? 999999 :
@@ -169,7 +175,7 @@ class LetterGameViewModel: ObservableObject {
     }
     
     func updateWord(_ word: String) {
-        currentWord = word.uppercased()
+        currentWord = word.gameUppercased(for: settings.language)
         game?.updateWord(currentWord)
         validationMessage = ""
     }
@@ -275,6 +281,7 @@ class LetterGameViewModel: ObservableObject {
         stopTimer()
         game = nil
         currentWord = ""
+        usedLetterIndices = []
         timeRemaining = 0
         gameState = .ready
         validationMessage = ""
@@ -288,8 +295,9 @@ class LetterGameViewModel: ObservableObject {
 
     // MARK: - Undo/Redo Support Methods
 
-    func addLetterToWord(_ letter: Character) {
+    func addLetterToWord(_ letter: Character, tileIndex: Int) {
         currentWord.append(letter)
+        usedLetterIndices.append(tileIndex)
         game?.updateWord(currentWord)
         validationMessage = ""
     }
@@ -297,6 +305,9 @@ class LetterGameViewModel: ObservableObject {
     func removeLastLetter() {
         if !currentWord.isEmpty {
             currentWord.removeLast()
+            if !usedLetterIndices.isEmpty {
+                usedLetterIndices.removeLast()
+            }
             game?.updateWord(currentWord)
             validationMessage = ""
         }
@@ -304,18 +315,21 @@ class LetterGameViewModel: ObservableObject {
 
     func clearWord() {
         currentWord = ""
+        usedLetterIndices = []
         game?.updateWord(currentWord)
         validationMessage = ""
     }
 
-    func restoreWord(_ word: String) {
+    func restoreWord(_ word: String, tileIndices: [Int]) {
         currentWord = word
+        usedLetterIndices = tileIndices
         game?.updateWord(currentWord)
         validationMessage = ""
     }
 
-    func selectLetter(_ letter: Character) {
-        let command = LetterSelectionCommand(letter: letter, viewModel: self)
+    func selectLetter(_ letter: Character, at tileIndex: Int) {
+        guard !usedLetterIndices.contains(tileIndex) else { return }
+        let command = LetterSelectionCommand(letter: letter, tileIndex: tileIndex, viewModel: self)
         commandHistory.executeCommand(command)
         // Play letter selection sound with pitch variation based on letter
         let pitch = Int(letter.asciiValue ?? 0) % 10
@@ -324,9 +338,19 @@ class LetterGameViewModel: ObservableObject {
     }
 
     func clearWordWithCommand() {
-        let command = ClearWordCommand(previousWord: currentWord, viewModel: self)
+        let command = ClearWordCommand(
+            previousWord: currentWord,
+            previousIndices: usedLetterIndices,
+            viewModel: self
+        )
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
+    }
+
+    /// Clears the current selection without recording an undo step.
+    func deselectAll() {
+        clearWord()
+        audioService.playHaptic(style: .medium)
     }
 
     func performUndo() {
@@ -349,12 +373,15 @@ class LetterGameViewModel: ObservableObject {
 
         // Create a new game instance with shuffled letters while preserving other properties
         var newGame = LetterGame(letters: shuffledLetters, language: game.language)
-        newGame.playerWord = game.playerWord
         newGame.timeRemaining = game.timeRemaining
         newGame.score = game.score
         newGame.isValid = game.isValid
 
         self.game = newGame
+
+        // Tile positions changed, so the current selection is no longer valid.
+        clearWord()
+        commandHistory.clear()
 
         // Play haptic and sound feedback
         audioService.playSound(.buttonTap)
@@ -453,6 +480,17 @@ class LetterGameViewModel: ObservableObject {
 
         self.game = restoredGame
         self.currentWord = savedState.currentWord ?? ""
+        // Re-derive tile selection from the restored word: match each letter
+        // greedily to the first unused tile with that character.
+        var indices: [Int] = []
+        for char in self.currentWord {
+            if let index = restoredGame.letters.indices.first(where: {
+                restoredGame.letters[$0] == char && !indices.contains($0)
+            }) {
+                indices.append(index)
+            }
+        }
+        self.usedLetterIndices = indices
         self.timeRemaining = savedState.timeRemaining
         self.comboCount = savedState.comboCount
         self.gameState = .playing

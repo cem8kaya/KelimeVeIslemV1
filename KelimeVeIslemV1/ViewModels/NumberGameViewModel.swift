@@ -14,13 +14,34 @@ import Foundation
 import Combine
 import UIKit
 
+/// One element of the player's solution. Numbers carry the index of the tile
+/// they came from so duplicate numbers in the pool stay distinguishable and
+/// deletion always removes a whole number, never a single digit.
+enum SolutionToken: Equatable {
+    case number(value: Int, tileIndex: Int)
+    case op(String) // "+", "-", "*", "/", "(", ")"
+
+    var text: String {
+        switch self {
+        case .number(let value, _): return String(value)
+        case .op(let symbol): return symbol
+        }
+    }
+
+    var isNumber: Bool {
+        if case .number = self { return true }
+        return false
+    }
+}
+
 @MainActor
 class NumberGameViewModel: ObservableObject {
-    
+
     // MARK: - Published Properties
-    
+
     @Published var game: NumberGame?
-    @Published var currentSolution: String = ""
+    @Published private(set) var currentSolution: String = ""
+    @Published private(set) var solutionTokens: [SolutionToken] = []
     @Published var timeRemaining: Int = 0
     @Published var gameState: GameState = .ready
     @Published var resultMessage: String = ""
@@ -102,6 +123,7 @@ class NumberGameViewModel: ObservableObject {
         let (numbers, _) = numberGenerator.generateGame(difficulty: settings.difficultyLevel)
 
         game = NumberGame(numbers: numbers, targetNumber: target)
+        solutionTokens = []
         currentSolution = ""
 
         // Apply level-based timer duration
@@ -124,9 +146,66 @@ class NumberGameViewModel: ObservableObject {
         }
     }
     
-    func updateSolution(_ solution: String) {
-        currentSolution = solution
-        game?.updateSolution(solution)
+    // MARK: - Token-based solution editing
+
+    /// Tile indices currently consumed by the solution, derived from the tokens.
+    var usedNumberIndices: [Int] {
+        solutionTokens.compactMap {
+            if case .number(_, let tileIndex) = $0 { return tileIndex }
+            return nil
+        }
+    }
+
+    var lastTokenIsNumber: Bool {
+        solutionTokens.last?.isNumber == true
+    }
+
+    private func syncSolutionFromTokens() {
+        currentSolution = solutionTokens.map(\.text).joined()
+        game?.updateSolution(currentSolution)
+    }
+
+    func appendToken(_ token: SolutionToken) {
+        solutionTokens.append(token)
+        syncSolutionFromTokens()
+    }
+
+    func removeLastToken() {
+        guard !solutionTokens.isEmpty else { return }
+        solutionTokens.removeLast()
+        syncSolutionFromTokens()
+    }
+
+    func restoreTokens(_ tokens: [SolutionToken]) {
+        solutionTokens = tokens
+        syncSolutionFromTokens()
+    }
+
+    /// Rebuilds tokens from a plain string (used when restoring a saved game).
+    /// Number tile indices are re-assigned greedily against the game's pool.
+    func tokenize(solution: String, numbers: [Int]) -> [SolutionToken] {
+        var tokens: [SolutionToken] = []
+        var usedIndices: Set<Int> = []
+        var digits = ""
+
+        func flushNumber() {
+            guard let value = Int(digits), !digits.isEmpty else { digits = ""; return }
+            let tileIndex = numbers.indices.first { numbers[$0] == value && !usedIndices.contains($0) } ?? -1
+            if tileIndex >= 0 { usedIndices.insert(tileIndex) }
+            tokens.append(.number(value: value, tileIndex: tileIndex))
+            digits = ""
+        }
+
+        for char in solution {
+            if char.isNumber {
+                digits.append(char)
+            } else if "+-*/()".contains(char) {
+                flushNumber()
+                tokens.append(.op(String(char)))
+            }
+        }
+        flushNumber()
+        return tokens
     }
     
     func submitSolution() {
@@ -214,26 +293,18 @@ class NumberGameViewModel: ObservableObject {
         }
     }
     
-    func addToSolution(_ text: String) {
-        currentSolution += text
-        updateSolution(currentSolution)
+    /// Deletes the last token: a whole number (freeing its tile) or one operator.
+    func deleteLastToken() {
+        guard !solutionTokens.isEmpty else { return }
+        removeLastToken()
         audioService.playSound(.buttonTap)
     }
-    
-    func deleteLast() {
-        if !currentSolution.isEmpty {
-            currentSolution.removeLast()
-            updateSolution(currentSolution)
-            audioService.playSound(.buttonTap)
-        }
-    }
-    
+
     func clearSolution() {
-        currentSolution = ""
-        updateSolution(currentSolution)
-        audioService.playSound(.buttonTap)
+        solutionTokens = []
+        syncSolutionFromTokens()
     }
-    
+
     func pauseGame() {
         guard gameState == .playing else { return }
         stopTimer()
@@ -249,6 +320,7 @@ class NumberGameViewModel: ObservableObject {
     func resetGame() {
         stopTimer()
         game = nil
+        solutionTokens = []
         currentSolution = ""
         timeRemaining = 0
         gameState = .ready
@@ -264,44 +336,25 @@ class NumberGameViewModel: ObservableObject {
 
     // MARK: - Undo/Redo Support Methods
 
-    func addNumberToSolution(_ number: Int) {
-        currentSolution += String(number)
-        updateSolution(currentSolution)
-    }
-
-    func addOperatorToSolution(_ operation: String) {
-        currentSolution += operation
-        updateSolution(currentSolution)
-    }
-
-    func removeLastFromSolution() {
-        if !currentSolution.isEmpty {
-            currentSolution.removeLast()
-            updateSolution(currentSolution)
-        }
-    }
-
-    func restoreSolution(_ solution: String) {
-        currentSolution = solution
-        updateSolution(currentSolution)
-    }
-
-    func selectNumber(_ number: Int) {
-        let command = NumberSelectionCommand(number: number, viewModel: self)
+    func selectNumber(_ number: Int, tileIndex: Int) {
+        let command = AppendTokenCommand(
+            token: .number(value: number, tileIndex: tileIndex),
+            viewModel: self
+        )
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
         audioService.playHaptic(style: .light)
     }
 
     func selectOperator(_ operation: String) {
-        let command = OperatorSelectionCommand(operation: operation, viewModel: self)
+        let command = AppendTokenCommand(token: .op(operation), viewModel: self)
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
         audioService.playHaptic(style: .light)
     }
 
     func clearSolutionWithCommand() {
-        let command = ClearSolutionCommand(previousSolution: currentSolution, viewModel: self)
+        let command = ClearSolutionCommand(previousTokens: solutionTokens, viewModel: self)
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
     }
@@ -389,7 +442,11 @@ class NumberGameViewModel: ObservableObject {
         }
 
         self.game = restoredGame
-        self.currentSolution = savedState.currentSolution ?? ""
+        self.solutionTokens = tokenize(
+            solution: savedState.currentSolution ?? "",
+            numbers: restoredGame.numbers
+        )
+        syncSolutionFromTokens()
         self.timeRemaining = savedState.timeRemaining
         self.comboCount = savedState.comboCount
         self.gameState = .playing
