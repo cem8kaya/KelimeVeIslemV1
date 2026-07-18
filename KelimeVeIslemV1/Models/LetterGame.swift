@@ -70,12 +70,12 @@ struct LetterGame: Codable, Identifiable {
     }
     
     mutating func updateWord(_ word: String) {
-        // Sanitize input
+        // Sanitize input (locale-aware: "i" must become "İ" in Turkish)
         let sanitized = word
-            .uppercased()
+            .gameUppercased(for: language)
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .filter { $0.isLetter }
-        
+
         self.playerWord = sanitized
     }
     
@@ -112,8 +112,8 @@ struct LetterGame: Codable, Identifiable {
     
     func canUseLetters(_ word: String) -> Bool {
         var availableLetters = letters
-        
-        for char in word.uppercased() {
+
+        for char in word.gameUppercased(for: language) {
             if let index = availableLetters.firstIndex(of: char) {
                 availableLetters.remove(at: index)
             } else {
@@ -167,7 +167,7 @@ struct LetterGame: Codable, Identifiable {
 enum GameLanguage: String, Codable, CaseIterable {
     case turkish = "tr"
     case english = "en"
-    
+
     var displayName: String {
         switch self {
         case .turkish:
@@ -176,9 +176,33 @@ enum GameLanguage: String, Codable, CaseIterable {
             return "English"
         }
     }
-    
+
     var code: String {
         return rawValue
+    }
+
+    var locale: Locale {
+        switch self {
+        case .turkish:
+            return Locale(identifier: "tr_TR")
+        case .english:
+            return Locale(identifier: "en_US")
+        }
+    }
+}
+
+// MARK: - Locale-aware case conversion
+//
+// Plain uppercased()/lowercased() breaks Turkish: "i" uppercases to "I"
+// instead of "İ" and "I" lowercases to "i" instead of "ı". Every string that
+// touches game letters or dictionary lookups must go through these helpers.
+extension String {
+    func gameUppercased(for language: GameLanguage) -> String {
+        return uppercased(with: language.locale)
+    }
+
+    func gameLowercased(for language: GameLanguage) -> String {
+        return lowercased(with: language.locale)
     }
 }
 

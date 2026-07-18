@@ -29,10 +29,13 @@ struct Level: Codable, Identifiable, Equatable {
         let numberTimeSeconds: Int
         let targetNumberRange: ClosedRange<Int>
         let allowedOperations: [String] // ["+", "-", "*", "/"]
+        let smallNumberCount: Int // pool composition: 1-10 tiles
+        let largeNumberCount: Int // pool composition: 25/50/75/100 tiles
 
         enum CodingKeys: String, CodingKey {
             case letterTimeSeconds, minLetterCount, maxLetterCount, harderLetterCombos
             case numberTimeSeconds, targetNumberRangeMin, targetNumberRangeMax, allowedOperations
+            case smallNumberCount, largeNumberCount
         }
 
         init(
@@ -42,7 +45,9 @@ struct Level: Codable, Identifiable, Equatable {
             harderLetterCombos: Bool,
             numberTimeSeconds: Int,
             targetNumberRange: ClosedRange<Int>,
-            allowedOperations: [String]
+            allowedOperations: [String],
+            smallNumberCount: Int = 4,
+            largeNumberCount: Int = 2
         ) {
             self.letterTimeSeconds = letterTimeSeconds
             self.minLetterCount = minLetterCount
@@ -51,6 +56,8 @@ struct Level: Codable, Identifiable, Equatable {
             self.numberTimeSeconds = numberTimeSeconds
             self.targetNumberRange = targetNumberRange
             self.allowedOperations = allowedOperations
+            self.smallNumberCount = smallNumberCount
+            self.largeNumberCount = largeNumberCount
         }
 
         init(from decoder: Decoder) throws {
@@ -64,6 +71,8 @@ struct Level: Codable, Identifiable, Equatable {
             let max = try container.decode(Int.self, forKey: .targetNumberRangeMax)
             targetNumberRange = min...max
             allowedOperations = try container.decode([String].self, forKey: .allowedOperations)
+            smallNumberCount = try container.decodeIfPresent(Int.self, forKey: .smallNumberCount) ?? 4
+            largeNumberCount = try container.decodeIfPresent(Int.self, forKey: .largeNumberCount) ?? 2
         }
 
         func encode(to encoder: Encoder) throws {
@@ -76,16 +85,8 @@ struct Level: Codable, Identifiable, Equatable {
             try container.encode(targetNumberRange.lowerBound, forKey: .targetNumberRangeMin)
             try container.encode(targetNumberRange.upperBound, forKey: .targetNumberRangeMax)
             try container.encode(allowedOperations, forKey: .allowedOperations)
-        }
-
-        static func == (lhs: DifficultyModifiers, rhs: DifficultyModifiers) -> Bool {
-            lhs.letterTimeSeconds == rhs.letterTimeSeconds &&
-            lhs.minLetterCount == rhs.minLetterCount &&
-            lhs.maxLetterCount == rhs.maxLetterCount &&
-            lhs.harderLetterCombos == rhs.harderLetterCombos &&
-            lhs.numberTimeSeconds == rhs.numberTimeSeconds &&
-            lhs.targetNumberRange == rhs.targetNumberRange &&
-            lhs.allowedOperations == rhs.allowedOperations
+            try container.encode(smallNumberCount, forKey: .smallNumberCount)
+            try container.encode(largeNumberCount, forKey: .largeNumberCount)
         }
     }
 }
@@ -315,8 +316,10 @@ extension Level {
         let letterTimeReduction = min(40, (level - 1) * 2) // Max 40 seconds reduction
         let letterTime = max(60, baseLetterTime - letterTimeReduction)
 
-        let minLetters = min(6, 4 + (level - 1) / 10)
-        let maxLetters = min(9, 6 + (level - 1) / 5)
+        // The game supports 6...12 letters; clamp so a low level can never
+        // produce a count the ViewModel would reject.
+        let minLetters = min(max(6, 4 + (level - 1) / 10), 12)
+        let maxLetters = min(max(minLetters, 6 + (level - 1) / 5), 12)
         let harderLetters = level >= 10
 
         // Number game difficulty
@@ -335,6 +338,18 @@ extension Level {
             operations.append("/")
         }
 
+        // Pool composition scales with level (easy -> hard)
+        let smallCount: Int
+        let largeCount: Int
+        switch level {
+        case ..<10:
+            smallCount = 5; largeCount = 1
+        case ..<25:
+            smallCount = 4; largeCount = 2
+        default:
+            smallCount = 3; largeCount = 3
+        }
+
         return DifficultyModifiers(
             letterTimeSeconds: letterTime,
             minLetterCount: minLetters,
@@ -342,7 +357,9 @@ extension Level {
             harderLetterCombos: harderLetters,
             numberTimeSeconds: numberTime,
             targetNumberRange: targetMin...targetMax,
-            allowedOperations: operations
+            allowedOperations: operations,
+            smallNumberCount: smallCount,
+            largeNumberCount: largeCount
         )
     }
 }

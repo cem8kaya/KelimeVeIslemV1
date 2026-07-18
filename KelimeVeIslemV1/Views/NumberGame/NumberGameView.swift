@@ -17,9 +17,6 @@ struct NumberGameView: View {
     @State private var showExitConfirmation = false
     @State private var showParticles = false
 
-    // Track which numbers were used in the current solution, by their index in the 'numbers' array
-    @State private var usedNumberIndices: [Int] = []
-
     init(savedGameState: SavedGameState? = nil) {
         self.savedGameState = savedGameState
     }
@@ -51,11 +48,6 @@ struct NumberGameView: View {
                 Button("Devam Et", role: .cancel) {}
             } message: {
                 Text("Mevcut ilerlemeniz kaybolacak.")
-            }
-            .onChange(of: viewModel.gameState) { oldValue, newValue in
-                if newValue == .playing {
-                    usedNumberIndices = []
-                }
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
                 // Save game state when app goes to background
@@ -101,6 +93,19 @@ struct NumberGameView: View {
                     viewModel.levelUpInfo = nil
                 }
             }
+
+            // Achievement toast overlay
+            if let achievement = viewModel.newAchievements.first {
+                VStack {
+                    AchievementToastView(achievement: achievement) {
+                        viewModel.dismissAchievement(achievement)
+                    }
+                    Spacer()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .zIndex(10)
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.newAchievements)
+            }
         }
         .enhancedScorePopup(
             score: Binding(
@@ -139,13 +144,20 @@ struct NumberGameView: View {
     private var headerView: some View {
         VStack(spacing: 8) {
             HStack {
-                let settings = PersistenceService.shared.loadSettings()
-                EnhancedTimerView(
-                    timeRemaining: viewModel.timeRemaining,
-                    totalDuration: settings.numberTimerDuration,
-                    theme: themeManager.colors
-                )
-                .frame(width: 80, height: 80)
+                if viewModel.isTimeUnlimited {
+                    Image(systemName: "infinity")
+                        .font(.title.bold())
+                        .foregroundColor(.white)
+                        .frame(width: 80, height: 80)
+                        .accessibilityLabel("Süresiz alıştırma modu")
+                } else {
+                    EnhancedTimerView(
+                        timeRemaining: viewModel.timeRemaining,
+                        totalDuration: viewModel.timerTotalDuration,
+                        theme: themeManager.colors
+                    )
+                    .frame(width: 80, height: 80)
+                }
 
                 Spacer()
 
@@ -185,8 +197,9 @@ struct NumberGameView: View {
         } else {
             NumberPlayingView(
                 game: viewModel.game,
-                currentSolution: $viewModel.currentSolution,
-                usedNumberIndices: $usedNumberIndices,
+                currentSolution: viewModel.currentSolution,
+                usedNumberIndices: viewModel.usedNumberIndices,
+                allowedOperations: viewModel.allowedOperations,
                 theme: themeManager.colors,
                 viewModel: viewModel,
                 onNumberTap: handleNumberTap,
@@ -209,24 +222,19 @@ struct NumberGameView: View {
     }
     
     // MARK: - Interaction Handlers
-    
-    private func handleNumberTap(number: Int, index: Int) {
-        let currentSolution = viewModel.currentSolution
-        let lastChar = currentSolution.last
+    //
+    // Tile bookkeeping lives in the ViewModel now (derived from the token
+    // list), so delete/undo/redo can't desynchronize the tile state anymore.
 
-        // Prevent tapping numbers if the last character was a number or an index is already used
-        if lastChar?.isNumber == true {
+    private func handleNumberTap(number: Int, index: Int) {
+        // Two numbers can't follow each other, and each tile is single-use.
+        guard !viewModel.lastTokenIsNumber,
+              !viewModel.usedNumberIndices.contains(index) else {
             AudioService.shared.playErrorHaptic()
             return
         }
 
-        // Use an array of used indices to enforce single use of each starting number
-        if !usedNumberIndices.contains(index) {
-            viewModel.selectNumber(number)
-            usedNumberIndices.append(index)
-        } else {
-            AudioService.shared.playErrorHaptic()
-        }
+        viewModel.selectNumber(number, tileIndex: index)
     }
 
     private func handleOperatorTap(op: String) {
@@ -256,55 +264,21 @@ struct NumberGameView: View {
 
         viewModel.selectOperator(op)
     }
-    
+
     private func handleDelete() {
-        guard !viewModel.currentSolution.isEmpty else { return }
-        
-        // Check if the character being deleted is a number
-        let lastChar = viewModel.currentSolution.last!
-        if lastChar.isNumber {
-            // Remove the last added number index from the used set
-            _ = usedNumberIndices.popLast()
-        }
-        
-        viewModel.deleteLast()
+        viewModel.deleteLastToken()
     }
-    
+
     private func handleClear() {
-        usedNumberIndices = []
         viewModel.clearSolutionWithCommand()
     }
 
     private func handleUndo() {
-        guard !viewModel.currentSolution.isEmpty else { return }
-
-        // Check if the last character was a number to update usedNumberIndices
-        let lastChar = viewModel.currentSolution.last!
-        if lastChar.isNumber {
-            _ = usedNumberIndices.popLast()
-        }
-
         viewModel.performUndo()
     }
 
     private func handleRedo() {
-        let previousLength = viewModel.currentSolution.count
         viewModel.performRedo()
-
-        // If a number was added, update usedNumberIndices
-        if viewModel.currentSolution.count > previousLength {
-            if let lastChar = viewModel.currentSolution.last, lastChar.isNumber {
-                // Find the corresponding number and add its index
-                if let game = viewModel.game {
-                    let numberString = String(lastChar)
-                    if let number = Int(numberString) {
-                        if let index = game.numbers.firstIndex(where: { $0 == number && !usedNumberIndices.contains(game.numbers.firstIndex(of: $0) ?? -1) }) {
-                            usedNumberIndices.append(index)
-                        }
-                    }
-                }
-            }
-        }
     }
     
     // MARK: - Toolbar
@@ -364,6 +338,8 @@ struct NumberGameView: View {
             NumberResultView(
                 game: game,
                 message: viewModel.resultMessage,
+                comboMultiplier: viewModel.comboMultiplier,
+                finalScore: viewModel.score,
                 onPlayAgain: {
                     showResult = false
                     viewModel.startNewGame()
@@ -380,8 +356,9 @@ struct NumberGameView: View {
 // MARK: - Number Playing View (kept for local logic)
 struct NumberPlayingView: View {
     let game: NumberGame?
-    @Binding var currentSolution: String
-    @Binding var usedNumberIndices: [Int]
+    let currentSolution: String
+    let usedNumberIndices: [Int]
+    let allowedOperations: [String]
     let theme: ThemeColors
     let viewModel: NumberGameViewModel
 
@@ -463,7 +440,11 @@ struct NumberPlayingView: View {
                 
                 // Operators and Actions
                 VStack(spacing: 10) {
-                    OperatorButtonsView(theme: theme, onOperatorTap: onOperatorTap)
+                    OperatorButtonsView(
+                        theme: theme,
+                        allowedOperations: allowedOperations,
+                        onOperatorTap: onOperatorTap
+                    )
 
                     // Undo/Redo buttons
                     HStack(spacing: 10) {
@@ -597,6 +578,7 @@ struct NumberTilesView: View {
 
 struct OperatorButtonsView: View {
     let theme: ThemeColors
+    var allowedOperations: [String] = ["+", "-", "*", "/"]
     let onOperatorTap: (String) -> Void
 
     let operators = ["+", "-", "*", "/", "(", ")"]
@@ -604,16 +586,20 @@ struct OperatorButtonsView: View {
     var body: some View {
         HStack(spacing: 10) {
             ForEach(operators, id: \.self) { op in
+                // ×/÷ unlock with level progression; parentheses always allowed
+                let isAllowed = !"+-*/".contains(op) || allowedOperations.contains(op)
                 Button(action: { onOperatorTap(op) }) {
                     Text(op)
                         .font(.title2.bold())
-                        .foregroundColor(theme.primaryText)
+                        .foregroundColor(theme.primaryText.opacity(isAllowed ? 1.0 : 0.35))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
-                        .background(theme.primaryText.opacity(0.2))
+                        .background(theme.primaryText.opacity(isAllowed ? 0.2 : 0.08))
                         .cornerRadius(10)
                 }
                 .buttonStyle(GrowingButton())
+                .disabled(!isAllowed)
+                .accessibilityLabel(isAllowed ? op : "\(op) (daha yüksek seviyede açılır)")
             }
         }
         .padding(.horizontal, 20)

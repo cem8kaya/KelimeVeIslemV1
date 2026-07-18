@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import os
 
 struct SettingsView: View {
 
@@ -57,6 +58,8 @@ struct SettingsView: View {
                         Stepper("Süre: \(settings.letterTimerDuration)s", value: $settings.letterTimerDuration, in: 30...120, step: 10)
                     } header: {
                         Text("Harfler Oyunu")
+                    } footer: {
+                        Text("Bu değerleri değiştirmezseniz zorluk seviyenizle otomatik ayarlanır. Değiştirdiğinizde seçiminiz her oyunda geçerli olur.")
                     }
 
                     // Numbers Game Settings
@@ -72,8 +75,7 @@ struct SettingsView: View {
                     } header: {
                         Text("Sayılar Oyunu")
                     } footer: {
-                        // FIX: Use localized description from GameSettings
-                        Text(GameSettings.DifficultyLevel.allCases.map { $0.description }.joined(separator: " • "))
+                        Text("\(GameSettings.DifficultyLevel.allCases.map { $0.description }.joined(separator: " • "))\n\nZorluğu değiştirmezseniz sayı havuzu seviyenizle ölçeklenir.")
                     }
 
                     // Theme Settings
@@ -192,6 +194,18 @@ struct SettingsView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                .onChange(of: settings.letterTimerDuration) { _, _ in
+                    settings.usesCustomTimers = true
+                }
+                .onChange(of: settings.numberTimerDuration) { _, _ in
+                    settings.usesCustomTimers = true
+                }
+                .onChange(of: settings.letterCount) { _, _ in
+                    settings.usesCustomLetterCount = true
+                }
+                .onChange(of: settings.difficultyLevel) { _, _ in
+                    settings.usesCustomDifficulty = true
+                }
             }
             .navigationTitle("Ayarlar")
             .navigationBarTitleDisplayMode(.inline)
@@ -218,7 +232,7 @@ struct SettingsView: View {
         do {
             try PersistenceService.shared.saveSettings(settings)
         } catch {
-            print("âš ï¸ Failed to save settings: \(error)")
+            AppLog.app.error("âš ï¸ Failed to save settings: \(String(describing: error))")
         }
     }
     
@@ -226,7 +240,7 @@ struct SettingsView: View {
         PersistenceService.shared.forceResetAllData()
         settings = .default
         themeManager.currentTheme = .classic
-        print("✅ All data has been reset")
+        AppLog.app.info("All data has been reset")
     }
 
     private func themePreviewColor(for theme: AppTheme) -> Color {

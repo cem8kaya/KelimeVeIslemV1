@@ -11,6 +11,7 @@
 //
 
 import Foundation
+import os
 import Combine
 import UIKit
 
@@ -30,10 +31,18 @@ class LetterGameViewModel: ObservableObject {
     // NEW: Expose letter count and suggested words for the View
     @Published var letterCount: Int // Expose for GameReadyView
     @Published var suggestedWords: [String] = [] // NEW: For displaying results
-    @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
+
+    // Indices of the pool tiles used by the current word, in selection order.
+    // Owned by the ViewModel so undo/redo can never desynchronize tile state,
+    // and duplicate letters stay distinguishable.
+    @Published private(set) var usedLetterIndices: [Int] = []
+    @Published var comboCount: Int = 0 // Streak of successful games; persists across games
     @Published var showConfetti: Bool = false // Trigger for confetti animation
     @Published var levelUpInfo: Level? = nil // Level-up notification
     @Published var showLevelUp: Bool = false // Trigger for level-up screen
+    @Published var newAchievements: [Achievement] = [] // Freshly unlocked, awaiting display
+    @Published private(set) var isTimeUnlimited: Bool = false // Practice mode: no countdown
+    @Published private(set) var timerTotalDuration: Int = 60 // Full duration of the running timer
 
     // MARK: - Undo/Redo System
     @Published var commandHistory = CommandHistory()
@@ -47,11 +56,21 @@ class LetterGameViewModel: ObservableObject {
     
     private var timer: DispatchSourceTimer?
     public var settings: GameSettings // Changed from private to public for read access
-    private var cancellables = Set<AnyCancellable>()
-    
+
+    // Set for daily-challenge games; doubles the XP earned from the result.
+    private let isDailyChallenge: Bool
+
+    // Wall-clock start of the current game; used for the real duration in results.
+    private var gameStartDate: Date?
+
+    static func clampLetterCount(_ count: Int) -> Int {
+        return min(max(6, count), 12)
+    }
+
     // MARK: - Initialization
 
     init(settings: GameSettings? = nil) {
+        self.isDailyChallenge = false
         if let settings = settings {
             self.settings = settings
             self.letterCount = settings.letterCount
@@ -61,42 +80,39 @@ class LetterGameViewModel: ObservableObject {
             self.letterCount = self.settings.letterCount
         }
 
-        // Validate letterCount is in valid range (6-12)
-        if self.letterCount < 6 || self.letterCount > 12 {
-            print("⚠️ Invalid letterCount (\(self.letterCount)), resetting to default (9)")
-            self.letterCount = 9
-            self.settings.letterCount = 9
-        }
+        // Keep letterCount in the supported 6-12 range
+        self.letterCount = Self.clampLetterCount(self.letterCount)
+        self.settings.letterCount = self.letterCount
+
+        self.comboCount = PersistenceService.shared.loadComboCount()
     }
 
     // Load settings after initialization (kept for backwards compatibility)
     func loadPersistedSettings() {
         self.settings = persistenceService.loadSettings()
-        self.letterCount = settings.letterCount
-
-        // Validate letterCount is in valid range (6-12)
-        if self.letterCount < 6 || self.letterCount > 12 {
-            print("⚠️ Invalid letterCount (\(self.letterCount)), resetting to default (9)")
-            self.letterCount = 9
-            self.settings.letterCount = 9
-        }
+        self.letterCount = Self.clampLetterCount(settings.letterCount)
+        self.settings.letterCount = self.letterCount
     }
 
     // Custom initializer for daily challenges with pre-generated letters
-    init(customGame: LetterGame, settings: GameSettings) {
+    init(customGame: LetterGame, settings: GameSettings, isDailyChallenge: Bool = false) {
+        self.isDailyChallenge = isDailyChallenge
         self.settings = settings
         self.letterCount = customGame.letters.count
         self.game = customGame
         self.timeRemaining = settings.letterTimerDuration
+        self.timerTotalDuration = settings.letterTimerDuration
         self.gameState = .playing
         self.currentWord = ""
         self.validationMessage = ""
         self.suggestedWords = []
-        self.comboCount = 0
+        self.comboCount = PersistenceService.shared.loadComboCount()
     }
 
     // Start the game timer (call this after custom init)
     func startGameTimer() {
+        guard gameState == .playing, timer == nil else { return }
+        gameStartDate = Date()
         audioService.playSound(.gameStart)
         startTimer()
     }
@@ -118,42 +134,52 @@ class LetterGameViewModel: ObservableObject {
         let currentLevel = statistics.level
         let difficulty = currentLevel.difficulty
 
-        // Apply level-based difficulty for letter count
-        var letterCount = settings.practiceMode ? settings.letterCount :
-            Int.random(in: difficulty.minLetterCount...difficulty.maxLetterCount)
+        // Letter count: the player's Settings value wins in practice mode or
+        // once they've explicitly set a custom count; otherwise the level's
+        // range applies (auto-scaling difficulty).
+        let usesFixedCount = settings.practiceMode || settings.usesCustomLetterCount
+        let letterCount = Self.clampLetterCount(
+            usesFixedCount ? settings.letterCount :
+                Int.random(in: difficulty.minLetterCount...difficulty.maxLetterCount)
+        )
 
-        // Validate letterCount is in valid range (6-12)
-        if letterCount < 6 || letterCount > 12 {
-            print("⚠️ Invalid letterCount (\(letterCount)), using default (9)")
-            letterCount = 9
-        }
+        // Harder letter mixes (fewer vowels, flatter consonant weights) kick in
+        // at higher levels during normal play only.
+        let harderCombos = !settings.practiceMode && difficulty.harderLetterCombos
 
         let letters = letterGenerator.generateLetters(
             count: letterCount,
-            language: settings.language
+            language: settings.language,
+            harderCombos: harderCombos
         )
 
         // Safety check: ensure letters are not empty
         if letters.isEmpty {
-            print("❌ ERROR: LetterGenerator returned empty array! Regenerating with count=9")
-            let fallbackLetters = letterGenerator.generateLetters(count: 9, language: settings.language)
+            AppLog.game.error("ERROR: LetterGenerator returned empty array! Regenerating with count=9")
+            let fallbackLetters = letterGenerator.generateLetters(count: 9, language: settings.language, harderCombos: harderCombos)
             game = LetterGame(letters: fallbackLetters, language: settings.language)
         } else {
             game = LetterGame(letters: letters, language: settings.language)
         }
 
         currentWord = ""
+        usedLetterIndices = []
 
-        // Apply level-based timer duration
-        let timerDuration = settings.practiceMode ? 999999 :
-            (settings.letterTimerDuration > 0 ? settings.letterTimerDuration : difficulty.letterTimeSeconds)
-
-        timeRemaining = timerDuration
+        // Timer: the level's time budget applies unless the player explicitly
+        // customized the duration in Settings. Practice mode has no timer at all.
+        isTimeUnlimited = settings.practiceMode
+        let timerDuration = settings.usesCustomTimers
+            ? settings.letterTimerDuration
+            : difficulty.letterTimeSeconds
+        timerTotalDuration = timerDuration
+        timeRemaining = settings.practiceMode ? 0 : timerDuration
+        gameStartDate = Date()
         gameState = .playing
         validationMessage = ""
         error = nil
         suggestedWords = [] // Reset suggestions
-        comboCount = 0 // Reset combo counter
+        // The combo streak carries across games; only a failed submission resets it
+        comboCount = persistenceService.loadComboCount()
 
         audioService.playSound(.gameStart)
         // Only start timer if not in practice mode
@@ -163,7 +189,7 @@ class LetterGameViewModel: ObservableObject {
     }
     
     func updateWord(_ word: String) {
-        currentWord = word.uppercased()
+        currentWord = word.gameUppercased(for: settings.language)
         game?.updateWord(currentWord)
         validationMessage = ""
     }
@@ -206,7 +232,9 @@ class LetterGameViewModel: ObservableObject {
             self.game = game
 
             if isValid {
-                comboCount += 1 // Increment combo on valid submission
+                comboCount += 1 // Extend the streak on valid submission
+                persistCombo()
+                checkComboAchievements()
 
                 // Play appropriate success sound based on word length
                 if currentWord.count >= 10 {
@@ -233,7 +261,8 @@ class LetterGameViewModel: ObservableObject {
                     comment: "Valid word!")
                 audioService.playSuccessHaptic()
             } else {
-                comboCount = 0 // Reset combo on invalid submission
+                comboCount = 0 // Reset the streak on invalid submission
+                persistCombo()
                 validationMessage = NSLocalizedString("error.not_in_dictionary",
                     comment: "Word not found in dictionary. Keep trying!")
                 audioService.playSound(.invalidWord)
@@ -269,21 +298,42 @@ class LetterGameViewModel: ObservableObject {
         stopTimer()
         game = nil
         currentWord = ""
+        usedLetterIndices = []
         timeRemaining = 0
         gameState = .ready
         validationMessage = ""
         error = nil
         isLoading = false
         suggestedWords = []
-        comboCount = 0
+        comboCount = persistenceService.loadComboCount()
         showConfetti = false
         commandHistory.clear()
     }
 
+    // MARK: - Combo Persistence
+
+    private func persistCombo() {
+        guard !settings.practiceMode else { return }
+        persistenceService.saveComboCount(comboCount)
+    }
+
+    private func checkComboAchievements() {
+        guard !settings.practiceMode else { return }
+        let unlocked = AchievementTracker.shared.checkComboAchievement(comboCount)
+        if !unlocked.isEmpty {
+            newAchievements.append(contentsOf: unlocked)
+        }
+    }
+
+    func dismissAchievement(_ achievement: Achievement) {
+        newAchievements.removeAll { $0.id == achievement.id }
+    }
+
     // MARK: - Undo/Redo Support Methods
 
-    func addLetterToWord(_ letter: Character) {
+    func addLetterToWord(_ letter: Character, tileIndex: Int) {
         currentWord.append(letter)
+        usedLetterIndices.append(tileIndex)
         game?.updateWord(currentWord)
         validationMessage = ""
     }
@@ -291,6 +341,9 @@ class LetterGameViewModel: ObservableObject {
     func removeLastLetter() {
         if !currentWord.isEmpty {
             currentWord.removeLast()
+            if !usedLetterIndices.isEmpty {
+                usedLetterIndices.removeLast()
+            }
             game?.updateWord(currentWord)
             validationMessage = ""
         }
@@ -298,18 +351,21 @@ class LetterGameViewModel: ObservableObject {
 
     func clearWord() {
         currentWord = ""
+        usedLetterIndices = []
         game?.updateWord(currentWord)
         validationMessage = ""
     }
 
-    func restoreWord(_ word: String) {
+    func restoreWord(_ word: String, tileIndices: [Int]) {
         currentWord = word
+        usedLetterIndices = tileIndices
         game?.updateWord(currentWord)
         validationMessage = ""
     }
 
-    func selectLetter(_ letter: Character) {
-        let command = LetterSelectionCommand(letter: letter, viewModel: self)
+    func selectLetter(_ letter: Character, at tileIndex: Int) {
+        guard !usedLetterIndices.contains(tileIndex) else { return }
+        let command = LetterSelectionCommand(letter: letter, tileIndex: tileIndex, viewModel: self)
         commandHistory.executeCommand(command)
         // Play letter selection sound with pitch variation based on letter
         let pitch = Int(letter.asciiValue ?? 0) % 10
@@ -318,9 +374,19 @@ class LetterGameViewModel: ObservableObject {
     }
 
     func clearWordWithCommand() {
-        let command = ClearWordCommand(previousWord: currentWord, viewModel: self)
+        let command = ClearWordCommand(
+            previousWord: currentWord,
+            previousIndices: usedLetterIndices,
+            viewModel: self
+        )
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
+    }
+
+    /// Clears the current selection without recording an undo step.
+    func deselectAll() {
+        clearWord()
+        audioService.playHaptic(style: .medium)
     }
 
     func performUndo() {
@@ -343,12 +409,15 @@ class LetterGameViewModel: ObservableObject {
 
         // Create a new game instance with shuffled letters while preserving other properties
         var newGame = LetterGame(letters: shuffledLetters, language: game.language)
-        newGame.playerWord = game.playerWord
         newGame.timeRemaining = game.timeRemaining
         newGame.score = game.score
         newGame.isValid = game.isValid
 
         self.game = newGame
+
+        // Tile positions changed, so the current selection is no longer valid.
+        clearWord()
+        commandHistory.clear()
 
         // Play haptic and sound feedback
         audioService.playSound(.buttonTap)
@@ -433,9 +502,9 @@ class LetterGameViewModel: ObservableObject {
 
         do {
             try persistenceService.saveGameState(savedState)
-            print("✅ Game state saved successfully")
+            AppLog.game.info("Game state saved successfully")
         } catch {
-            print("⚠️ Failed to save game state: \(error)")
+            AppLog.game.error("Failed to save game state: \(String(describing: error))")
         }
     }
 
@@ -447,7 +516,23 @@ class LetterGameViewModel: ObservableObject {
 
         self.game = restoredGame
         self.currentWord = savedState.currentWord ?? ""
+        // Re-derive tile selection from the restored word: match each letter
+        // greedily to the first unused tile with that character.
+        var indices: [Int] = []
+        for char in self.currentWord {
+            if let index = restoredGame.letters.indices.first(where: {
+                restoredGame.letters[$0] == char && !indices.contains($0)
+            }) {
+                indices.append(index)
+            }
+        }
+        self.usedLetterIndices = indices
         self.timeRemaining = savedState.timeRemaining
+        self.timerTotalDuration = max(savedState.timeRemaining, settings.letterTimerDuration)
+        // Approximate the original start so result durations stay meaningful
+        self.gameStartDate = Date().addingTimeInterval(
+            -Double(max(0, timerTotalDuration - savedState.timeRemaining))
+        )
         self.comboCount = savedState.comboCount
         self.gameState = .playing
         self.validationMessage = ""
@@ -468,11 +553,12 @@ class LetterGameViewModel: ObservableObject {
 
         // Don't save results in practice mode
         if settings.practiceMode {
-            print("Practice mode: result not saved")
+            AppLog.game.info("Practice mode: result not saved")
             return
         }
 
-        let timeTaken = settings.letterTimerDuration - timeRemaining
+        // Real elapsed time, robust against restored games and custom timers
+        let timeTaken = max(0, Int(Date().timeIntervalSince(gameStartDate ?? Date())))
         let details = GameResult.ResultDetails.letters(
             word: game.playerWord,
             letters: game.letters.map { String($0) },
@@ -488,32 +574,34 @@ class LetterGameViewModel: ObservableObject {
             duration: timeTaken,
             details: details,
             combo: comboCount,
-            isDailyChallenge: false
+            isDailyChallenge: isDailyChallenge
         )
         
         // Save on background thread to avoid blocking UI
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
-                let levelUp = try self?.persistenceService.saveResult(result)
-                print("âœ… Result saved successfully")
+                guard let outcome = try self?.persistenceService.saveResult(result) else { return }
+                AppLog.game.info("Result saved successfully")
 
-                // Handle level-up on main thread
-                if let newLevel = levelUp {
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
+                    if let newLevel = outcome.levelUp {
                         self?.levelUpInfo = newLevel
                         self?.showLevelUp = true
                         self?.audioService.playSound(.levelUp)
+                    }
+                    if !outcome.newAchievements.isEmpty {
+                        self?.newAchievements.append(contentsOf: outcome.newAchievements)
                     }
                 }
             } catch {
                 DispatchQueue.main.async {
                     self?.error = .persistenceError("Failed to save result")
                 }
-                print("âš ï¸ Failed to save result: \(error)")
+                AppLog.game.error("Failed to save result: \(String(describing: error))")
             }
         }
     }
-    
+
     // MARK: - Helpers
 
     func getAvailableLettersString() -> String {
@@ -539,7 +627,6 @@ class LetterGameViewModel: ObservableObject {
         // Clean up timer
         timer?.cancel()
         timer = nil
-        cancellables.removeAll()
     }
 }
 

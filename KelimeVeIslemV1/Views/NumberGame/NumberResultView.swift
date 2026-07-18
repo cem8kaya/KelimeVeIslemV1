@@ -13,17 +13,21 @@
 import SwiftUI
 
 struct NumberResultView: View {
-    
+
     let game: NumberGame
     let message: String
+    var comboMultiplier: Int = 1
+    var finalScore: Int? = nil
     let onPlayAgain: () -> Void
     let onExit: () -> Void
-    
+
     @Environment(\.dismiss) private var dismiss
-    
+
     var isPerfect: Bool {
         game.playerResult == game.targetNumber
     }
+
+    private var displayedScore: Int { finalScore ?? game.score }
     
     var body: some View {
         ZStack {
@@ -98,12 +102,29 @@ struct NumberResultView: View {
                             Text("Skor")
                                 .font(.caption.bold())
                                 .foregroundColor(.white.opacity(0.8))
-                            Text("\(game.score)")
+                            Text("\(displayedScore)")
                                 .font(.title3.bold())
                                 .foregroundColor(.yellow)
                         }
                     }
                     .padding(.vertical, 8)
+
+                    // Combo bonus line (only when a multiplier applied)
+                    if comboMultiplier > 1 {
+                        HStack(spacing: 6) {
+                            Image(systemName: "flame.fill")
+                                .foregroundColor(.orange)
+                            Text("Kombo Bonusu: \(game.score) × \(comboMultiplier)")
+                                .font(.caption.bold())
+                                .foregroundColor(.orange)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.orange.opacity(0.15))
+                        )
+                    }
 
                     // Compact solution display
                     if !game.playerSolution.isEmpty {

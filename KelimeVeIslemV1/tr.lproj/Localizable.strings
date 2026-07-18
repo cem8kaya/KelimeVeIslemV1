@@ -155,3 +155,10 @@
 
 // MARK: - Info Messages
 "info.result" = "Sonuç: %d (hedef: %d)";
+
+// MARK: - Letter Result
+"letter_result.suggestions" = "Olası Kelimeler (sözlükten)";
+"letter_result.no_suggestions" = "Başka kelime bulunamadı.";
+
+// MARK: - Statistics (extra)
+"stats.never_played" = "Hiç oynanmadı";

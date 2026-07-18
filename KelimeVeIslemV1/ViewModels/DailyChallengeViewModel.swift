@@ -16,6 +16,7 @@ class DailyChallengeViewModel: ObservableObject {
     @Published var leaderboard: [DailyChallengeResult]
     @Published var showChallengeGame = false
     @Published var todayResult: DailyChallengeResult?
+    @Published var newAchievements: [Achievement] = []
 
     private let persistenceService = PersistenceService.shared
 
@@ -24,7 +25,8 @@ class DailyChallengeViewModel: ObservableObject {
     }
 
     init() {
-        self.todayChallenge = DailyChallenge.today()
+        let language = PersistenceService.shared.loadSettings().language
+        self.todayChallenge = DailyChallenge.today(language: language)
         self.stats = persistenceService.loadDailyChallengeStats()
         self.leaderboard = persistenceService.loadDailyChallengeLeaderboard()
         self.todayResult = persistenceService.loadTodayChallengeResult()
@@ -47,6 +49,10 @@ class DailyChallengeViewModel: ObservableObject {
         leaderboard.insert(result, at: 0)
         persistenceService.saveDailyChallengeLeaderboard(leaderboard)
 
+        // Daily-challenge achievements (first completion, streaks) are only
+        // reachable from here — the generic post-game check doesn't see them.
+        newAchievements = AchievementTracker.shared.checkDailyChallengeAchievements(stats: stats)
+
         showChallengeGame = false
     }
 
@@ -56,11 +62,17 @@ class DailyChallengeViewModel: ObservableObject {
         todayResult = persistenceService.loadTodayChallengeResult()
 
         // Check if we need to generate a new challenge for today
+        let language = persistenceService.loadSettings().language
         if let lastResult = todayResult {
             if !todayChallenge.isSameDay(as: lastResult.challengeDate) {
                 todayResult = nil
-                todayChallenge = DailyChallenge.today()
+                todayChallenge = DailyChallenge.today(language: language)
             }
+        }
+
+        // Regenerate if the player switched languages since the challenge was built
+        if todayChallenge.language != language {
+            todayChallenge = DailyChallenge.today(language: language)
         }
     }
 }

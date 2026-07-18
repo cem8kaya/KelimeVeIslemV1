@@ -67,48 +67,46 @@ struct NumberGame: Codable, Identifiable {
         }
     }
     
+    // Classic Countdown / "Bir Kelime Bir İşlem" rules: every intermediate
+    // result must be a non-negative integer, and division must be exact.
+    // Evaluation is pure Int arithmetic — no silent Double truncation.
     func evaluateExpression(_ expression: String) throws -> Int {
         // Remove whitespace
         let cleaned = expression.replacingOccurrences(of: " ", with: "")
-        
+
         guard !cleaned.isEmpty else {
             throw AppError.invalidInput("Empty expression")
         }
-        
+
         // Replace × and ÷ with * and /
         let normalized = cleaned
             .replacingOccurrences(of: "×", with: "*")
             .replacingOccurrences(of: "÷", with: "/")
             .replacingOccurrences(of: "−", with: "-")
-        
+
         // Validate characters
-        let allowedCharacters = CharacterSet(charactersIn: "0123456789+-*/().")
+        let allowedCharacters = CharacterSet(charactersIn: "0123456789+-*/()")
         guard normalized.unicodeScalars.allSatisfy({ allowedCharacters.contains($0) }) else {
             throw AppError.invalidInput("Invalid characters in expression")
         }
-        
-        // Use safer evaluation method
-        do {
-            let result = try safeEvaluate(expression: normalized)
-            return Int(result)
-        } catch {
-            throw AppError.expressionEvaluationFailed
+
+        let tokens = tokenize(expression: normalized)
+        var index = 0
+        let result = try parseExpression(tokens: tokens, index: &index)
+
+        guard index == tokens.count else {
+            throw AppError.invalidInput("Unexpected token: \(tokens[index])")
         }
-    }
-    
-    private func safeEvaluate(expression: String) throws -> Double {
-        // Manual expression parser (safer than NSExpression)
-        let tokens = tokenize(expression: expression)
-        let result = try evaluate(tokens: tokens)
+
         return result
     }
-    
+
     private func tokenize(expression: String) -> [String] {
         var tokens: [String] = []
         var currentNumber = ""
-        
+
         for char in expression {
-            if char.isNumber || char == "." {
+            if char.isNumber {
                 currentNumber.append(char)
             } else if "+-*/()".contains(char) {
                 if !currentNumber.isEmpty {
@@ -118,86 +116,82 @@ struct NumberGame: Codable, Identifiable {
                 tokens.append(String(char))
             }
         }
-        
+
         if !currentNumber.isEmpty {
             tokens.append(currentNumber)
         }
-        
+
         return tokens
     }
-    
-    private func evaluate(tokens: [String]) throws -> Double {
-        var index = 0
-        return try parseExpression(tokens: tokens, index: &index)
-    }
-    
-    private func parseExpression(tokens: [String], index: inout Int) throws -> Double {
+
+    private func parseExpression(tokens: [String], index: inout Int) throws -> Int {
         var result = try parseTerm(tokens: tokens, index: &index)
-        
+
         while index < tokens.count && (tokens[index] == "+" || tokens[index] == "-") {
             let op = tokens[index]
             index += 1
             let right = try parseTerm(tokens: tokens, index: &index)
-            
+
             if op == "+" {
                 result += right
             } else {
-                result -= right
+                let difference = result - right
+                guard difference >= 0 else {
+                    throw AppError.invalidInput("Negatif ara sonuç: \(result) - \(right)")
+                }
+                result = difference
             }
         }
-        
+
         return result
     }
-    
-    private func parseTerm(tokens: [String], index: inout Int) throws -> Double {
+
+    private func parseTerm(tokens: [String], index: inout Int) throws -> Int {
         var result = try parseFactor(tokens: tokens, index: &index)
-        
+
         while index < tokens.count && (tokens[index] == "*" || tokens[index] == "/") {
             let op = tokens[index]
             index += 1
             let right = try parseFactor(tokens: tokens, index: &index)
-            
+
             if op == "*" {
                 result *= right
             } else {
                 guard right != 0 else {
                     throw AppError.invalidInput("Division by zero")
                 }
+                guard result % right == 0 else {
+                    throw AppError.invalidInput("\(result)/\(right) tam bölünmüyor")
+                }
                 result /= right
             }
         }
-        
+
         return result
     }
-    
-    private func parseFactor(tokens: [String], index: inout Int) throws -> Double {
+
+    private func parseFactor(tokens: [String], index: inout Int) throws -> Int {
         guard index < tokens.count else {
             throw AppError.invalidInput("Unexpected end of expression")
         }
-        
+
         let token = tokens[index]
-        
+
         if token == "(" {
             index += 1
             let result = try parseExpression(tokens: tokens, index: &index)
-            
+
             guard index < tokens.count && tokens[index] == ")" else {
                 throw AppError.invalidInput("Missing closing parenthesis")
             }
             index += 1
             return result
         }
-        
-        if token == "-" {
-            index += 1
-            let factor = try parseFactor(tokens: tokens, index: &index)
-            return -factor
-        }
-        
-        guard let number = Double(token) else {
+
+        guard let number = Int(token) else {
             throw AppError.invalidInput("Invalid number: \(token)")
         }
-        
+
         index += 1
         return number
     }

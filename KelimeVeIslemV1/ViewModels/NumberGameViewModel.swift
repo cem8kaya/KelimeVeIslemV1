@@ -11,16 +11,38 @@
 //
 
 import Foundation
+import os
 import Combine
 import UIKit
 
+/// One element of the player's solution. Numbers carry the index of the tile
+/// they came from so duplicate numbers in the pool stay distinguishable and
+/// deletion always removes a whole number, never a single digit.
+enum SolutionToken: Equatable {
+    case number(value: Int, tileIndex: Int)
+    case op(String) // "+", "-", "*", "/", "(", ")"
+
+    var text: String {
+        switch self {
+        case .number(let value, _): return String(value)
+        case .op(let symbol): return symbol
+        }
+    }
+
+    var isNumber: Bool {
+        if case .number = self { return true }
+        return false
+    }
+}
+
 @MainActor
 class NumberGameViewModel: ObservableObject {
-    
+
     // MARK: - Published Properties
-    
+
     @Published var game: NumberGame?
-    @Published var currentSolution: String = ""
+    @Published private(set) var currentSolution: String = ""
+    @Published private(set) var solutionTokens: [SolutionToken] = []
     @Published var timeRemaining: Int = 0
     @Published var gameState: GameState = .ready
     @Published var resultMessage: String = ""
@@ -28,10 +50,14 @@ class NumberGameViewModel: ObservableObject {
     @Published var hintSolution: [Operation]?
     @Published var isLoading: Bool = false
     @Published var error: AppError?
-    @Published var comboCount: Int = 0 // Combo counter for consecutive valid submissions
+    @Published var comboCount: Int = 0 // Streak of successful games; persists across games
     @Published var showConfetti: Bool = false // Trigger for confetti animation
     @Published var levelUpInfo: Level? = nil // Level-up notification
     @Published var showLevelUp: Bool = false // Trigger for level-up screen
+    @Published var newAchievements: [Achievement] = [] // Freshly unlocked, awaiting display
+    @Published private(set) var isTimeUnlimited: Bool = false // Practice mode: no countdown
+    @Published private(set) var timerTotalDuration: Int = 90 // Full duration of the running timer
+    @Published private(set) var allowedOperations: [String] = ["+", "-", "*", "/"]
 
     // MARK: - Undo/Redo System
     @Published var commandHistory = CommandHistory()
@@ -44,39 +70,41 @@ class NumberGameViewModel: ObservableObject {
     
     private var timer: DispatchSourceTimer?
     private var settings: GameSettings
-    private var cancellables = Set<AnyCancellable>()
-    
+
+    // Set for daily-challenge games; doubles the XP earned from the result.
+    private let isDailyChallenge: Bool
+
+    // Wall-clock start of the current game; used for the real duration in results.
+    private var gameStartDate: Date?
+
     // MARK: - Initialization
 
     init(settings: GameSettings? = nil) {
-        // Load settings synchronously from a nonisolated context-safe way
-        if let providedSettings = settings {
-            self.settings = providedSettings
-        } else {
-            // Access PersistenceService in a safe way
-            self.settings = GameSettings.default
-            // Load actual settings after initialization
-            Task { @MainActor in
-                self.settings = PersistenceService.shared.loadSettings()
-            }
-        }
+        self.isDailyChallenge = false
+        // Load settings synchronously so the first game can't race a deferred load
+        self.settings = settings ?? PersistenceService.shared.loadSettings()
+        self.comboCount = PersistenceService.shared.loadComboCount()
     }
 
     // Custom initializer for daily challenges with pre-generated numbers
-    init(customGame: NumberGame, settings: GameSettings) {
+    init(customGame: NumberGame, settings: GameSettings, isDailyChallenge: Bool = false) {
+        self.isDailyChallenge = isDailyChallenge
         self.settings = settings
         self.game = customGame
         self.timeRemaining = settings.numberTimerDuration
+        self.timerTotalDuration = settings.numberTimerDuration
         self.gameState = .playing
         self.currentSolution = ""
         self.resultMessage = ""
         self.showHint = false
         self.hintSolution = nil
-        self.comboCount = 0
+        self.comboCount = PersistenceService.shared.loadComboCount()
     }
 
     // Start the game timer (call this after custom init)
     func startGameTimer() {
+        guard gameState == .playing, timer == nil else { return }
+        gameStartDate = Date()
         audioService.playSound(.gameStart)
         startTimer()
     }
@@ -98,27 +126,59 @@ class NumberGameViewModel: ObservableObject {
         let currentLevel = statistics.level
         let difficulty = currentLevel.difficulty
 
-        // Apply level-based difficulty for target number
-        let targetRange = settings.practiceMode ? 10...100 : difficulty.targetNumberRange
-        let target = Int.random(in: targetRange)
+        // Difficulty source: the level system auto-scales target range, pool
+        // composition and allowed operations. The player's Settings difficulty
+        // wins for pool composition in practice mode, or once they've explicitly
+        // chosen a difficulty (so the "Zorluk" control is never inert).
+        let target: Int
+        let numbers: [Int]
+        if settings.practiceMode {
+            let config = settings.difficultyLevel.numberConfig
+            numbers = numberGenerator.generateNumbers(smallCount: config.small, largeCount: config.large)
+            target = Int.random(in: 10...100)
+            allowedOperations = ["+", "-", "*", "/"]
+        } else {
+            let config = settings.usesCustomDifficulty
+                ? settings.difficultyLevel.numberConfig
+                : (small: difficulty.smallNumberCount, large: difficulty.largeNumberCount)
 
-        let (numbers, _) = numberGenerator.generateGame(difficulty: settings.difficultyLevel)
+            // For small targets, restrict the large tile to [25, 50] so it's
+            // actually usable instead of an unreachable 75/100.
+            let restrictedLargePool = [25, 50]
+            let largePool = (difficulty.targetNumberRange.upperBound <= 100
+                             && config.large <= restrictedLargePool.count)
+                ? restrictedLargePool : nil
+
+            numbers = numberGenerator.generateNumbers(
+                smallCount: config.small,
+                largeCount: config.large,
+                largePool: largePool
+            )
+            target = Int.random(in: difficulty.targetNumberRange)
+            allowedOperations = difficulty.allowedOperations
+        }
 
         game = NumberGame(numbers: numbers, targetNumber: target)
+        solutionTokens = []
         currentSolution = ""
 
-        // Apply level-based timer duration
-        let timerDuration = settings.practiceMode ? 999999 :
-            (settings.numberTimerDuration > 0 ? settings.numberTimerDuration : difficulty.numberTimeSeconds)
-
-        timeRemaining = timerDuration
+        // Timer: the level's time budget applies unless the player explicitly
+        // customized the duration in Settings. Practice mode has no timer at all.
+        isTimeUnlimited = settings.practiceMode
+        let timerDuration = settings.usesCustomTimers
+            ? settings.numberTimerDuration
+            : difficulty.numberTimeSeconds
+        timerTotalDuration = timerDuration
+        timeRemaining = settings.practiceMode ? 0 : timerDuration
+        gameStartDate = Date()
         gameState = .playing
         resultMessage = ""
         showHint = false
         hintSolution = nil
         error = nil
         isLoading = false
-        comboCount = 0 // Reset combo counter
+        // The combo streak carries across games; only a failed submission resets it
+        comboCount = persistenceService.loadComboCount()
 
         audioService.playSound(.gameStart)
         // Only start timer if not in practice mode
@@ -127,9 +187,66 @@ class NumberGameViewModel: ObservableObject {
         }
     }
     
-    func updateSolution(_ solution: String) {
-        currentSolution = solution
-        game?.updateSolution(solution)
+    // MARK: - Token-based solution editing
+
+    /// Tile indices currently consumed by the solution, derived from the tokens.
+    var usedNumberIndices: [Int] {
+        solutionTokens.compactMap {
+            if case .number(_, let tileIndex) = $0 { return tileIndex }
+            return nil
+        }
+    }
+
+    var lastTokenIsNumber: Bool {
+        solutionTokens.last?.isNumber == true
+    }
+
+    private func syncSolutionFromTokens() {
+        currentSolution = solutionTokens.map(\.text).joined()
+        game?.updateSolution(currentSolution)
+    }
+
+    func appendToken(_ token: SolutionToken) {
+        solutionTokens.append(token)
+        syncSolutionFromTokens()
+    }
+
+    func removeLastToken() {
+        guard !solutionTokens.isEmpty else { return }
+        solutionTokens.removeLast()
+        syncSolutionFromTokens()
+    }
+
+    func restoreTokens(_ tokens: [SolutionToken]) {
+        solutionTokens = tokens
+        syncSolutionFromTokens()
+    }
+
+    /// Rebuilds tokens from a plain string (used when restoring a saved game).
+    /// Number tile indices are re-assigned greedily against the game's pool.
+    func tokenize(solution: String, numbers: [Int]) -> [SolutionToken] {
+        var tokens: [SolutionToken] = []
+        var usedIndices: Set<Int> = []
+        var digits = ""
+
+        func flushNumber() {
+            guard let value = Int(digits), !digits.isEmpty else { digits = ""; return }
+            let tileIndex = numbers.indices.first { numbers[$0] == value && !usedIndices.contains($0) } ?? -1
+            if tileIndex >= 0 { usedIndices.insert(tileIndex) }
+            tokens.append(.number(value: value, tileIndex: tileIndex))
+            digits = ""
+        }
+
+        for char in solution {
+            if char.isNumber {
+                digits.append(char)
+            } else if "+-*/()".contains(char) {
+                flushNumber()
+                tokens.append(.op(String(char)))
+            }
+        }
+        flushNumber()
+        return tokens
     }
     
     func submitSolution() {
@@ -146,7 +263,9 @@ class NumberGameViewModel: ObservableObject {
                 let difference = abs(game.targetNumber - result)
 
                 if difference == 0 {
-                    comboCount += 1 // Increment combo on perfect match
+                    comboCount += 1 // Extend the streak on perfect match
+                    persistCombo()
+                    checkComboAchievements()
                     // Trigger confetti for perfect score (100 points)
                     showConfetti = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -157,19 +276,23 @@ class NumberGameViewModel: ObservableObject {
                     audioService.playSound(.success)
                     audioService.playSuccessHaptic()
                 } else if difference <= 5 {
-                    comboCount += 1 // Increment combo on close match
+                    comboCount += 1 // Extend the streak on close match
+                    persistCombo()
+                    checkComboAchievements()
                     resultMessage = String(format: NSLocalizedString("success.close_match",
                         comment: "Close! Off by %d"), difference)
                     audioService.playSound(.success)
                     audioService.playHaptic(style: .medium)
                 } else {
-                    comboCount = 0 // Reset combo on far miss
+                    comboCount = 0 // Reset the streak on far miss
+                    persistCombo()
                     resultMessage = String(format: NSLocalizedString("info.result",
                         comment: "Result: %d (target: %d)"), result, game.targetNumber)
                     audioService.playSound(.buttonTap)
                 }
             } else {
-                comboCount = 0 // Reset combo on invalid expression
+                comboCount = 0 // Reset the streak on invalid expression
+                persistCombo()
                 resultMessage = NSLocalizedString("error.invalid_expression",
                     comment: "Invalid expression")
                 audioService.playSound(.failure)
@@ -217,26 +340,18 @@ class NumberGameViewModel: ObservableObject {
         }
     }
     
-    func addToSolution(_ text: String) {
-        currentSolution += text
-        updateSolution(currentSolution)
+    /// Deletes the last token: a whole number (freeing its tile) or one operator.
+    func deleteLastToken() {
+        guard !solutionTokens.isEmpty else { return }
+        removeLastToken()
         audioService.playSound(.buttonTap)
     }
-    
-    func deleteLast() {
-        if !currentSolution.isEmpty {
-            currentSolution.removeLast()
-            updateSolution(currentSolution)
-            audioService.playSound(.buttonTap)
-        }
-    }
-    
+
     func clearSolution() {
-        currentSolution = ""
-        updateSolution(currentSolution)
-        audioService.playSound(.buttonTap)
+        solutionTokens = []
+        syncSolutionFromTokens()
     }
-    
+
     func pauseGame() {
         guard gameState == .playing else { return }
         stopTimer()
@@ -252,6 +367,7 @@ class NumberGameViewModel: ObservableObject {
     func resetGame() {
         stopTimer()
         game = nil
+        solutionTokens = []
         currentSolution = ""
         timeRemaining = 0
         gameState = .ready
@@ -260,51 +376,56 @@ class NumberGameViewModel: ObservableObject {
         hintSolution = nil
         error = nil
         isLoading = false
-        comboCount = 0
+        comboCount = persistenceService.loadComboCount()
         showConfetti = false
         commandHistory.clear()
     }
 
-    // MARK: - Undo/Redo Support Methods
+    // MARK: - Combo Persistence
 
-    func addNumberToSolution(_ number: Int) {
-        currentSolution += String(number)
-        updateSolution(currentSolution)
+    private func persistCombo() {
+        guard !settings.practiceMode else { return }
+        persistenceService.saveComboCount(comboCount)
     }
 
-    func addOperatorToSolution(_ operation: String) {
-        currentSolution += operation
-        updateSolution(currentSolution)
-    }
-
-    func removeLastFromSolution() {
-        if !currentSolution.isEmpty {
-            currentSolution.removeLast()
-            updateSolution(currentSolution)
+    private func checkComboAchievements() {
+        guard !settings.practiceMode else { return }
+        let unlocked = AchievementTracker.shared.checkComboAchievement(comboCount)
+        if !unlocked.isEmpty {
+            newAchievements.append(contentsOf: unlocked)
         }
     }
 
-    func restoreSolution(_ solution: String) {
-        currentSolution = solution
-        updateSolution(currentSolution)
+    func dismissAchievement(_ achievement: Achievement) {
+        newAchievements.removeAll { $0.id == achievement.id }
     }
 
-    func selectNumber(_ number: Int) {
-        let command = NumberSelectionCommand(number: number, viewModel: self)
+    // MARK: - Undo/Redo Support Methods
+
+    func selectNumber(_ number: Int, tileIndex: Int) {
+        let command = AppendTokenCommand(
+            token: .number(value: number, tileIndex: tileIndex),
+            viewModel: self
+        )
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
         audioService.playHaptic(style: .light)
     }
 
     func selectOperator(_ operation: String) {
-        let command = OperatorSelectionCommand(operation: operation, viewModel: self)
+        // Level gating: ×/÷ unlock at higher levels (parentheses always allowed)
+        if "+-*/".contains(operation), !allowedOperations.contains(operation) {
+            audioService.playErrorHaptic()
+            return
+        }
+        let command = AppendTokenCommand(token: .op(operation), viewModel: self)
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
         audioService.playHaptic(style: .light)
     }
 
     func clearSolutionWithCommand() {
-        let command = ClearSolutionCommand(previousSolution: currentSolution, viewModel: self)
+        let command = ClearSolutionCommand(previousTokens: solutionTokens, viewModel: self)
         commandHistory.executeCommand(command)
         audioService.playSound(.buttonTap)
     }
@@ -379,9 +500,9 @@ class NumberGameViewModel: ObservableObject {
 
         do {
             try persistenceService.saveGameState(savedState)
-            print("✅ Game state saved successfully")
+            AppLog.game.info("Game state saved successfully")
         } catch {
-            print("⚠️ Failed to save game state: \(error)")
+            AppLog.game.error("Failed to save game state: \(String(describing: error))")
         }
     }
 
@@ -392,8 +513,17 @@ class NumberGameViewModel: ObservableObject {
         }
 
         self.game = restoredGame
-        self.currentSolution = savedState.currentSolution ?? ""
+        self.solutionTokens = tokenize(
+            solution: savedState.currentSolution ?? "",
+            numbers: restoredGame.numbers
+        )
+        syncSolutionFromTokens()
         self.timeRemaining = savedState.timeRemaining
+        self.timerTotalDuration = max(savedState.timeRemaining, settings.numberTimerDuration)
+        // Approximate the original start so result durations stay meaningful
+        self.gameStartDate = Date().addingTimeInterval(
+            -Double(max(0, timerTotalDuration - savedState.timeRemaining))
+        )
         self.comboCount = savedState.comboCount
         self.gameState = .playing
         self.resultMessage = ""
@@ -415,11 +545,12 @@ class NumberGameViewModel: ObservableObject {
 
         // Don't save results in practice mode
         if settings.practiceMode {
-            print("Practice mode: result not saved")
+            AppLog.game.info("Practice mode: result not saved")
             return
         }
 
-        let timeTaken = settings.numberTimerDuration - timeRemaining
+        // Real elapsed time, robust against restored games and custom timers
+        let timeTaken = max(0, Int(Date().timeIntervalSince(gameStartDate ?? Date())))
         let details = GameResult.ResultDetails.numbers(
             target: game.targetNumber,
             result: game.playerResult,
@@ -436,27 +567,30 @@ class NumberGameViewModel: ObservableObject {
             duration: timeTaken,
             details: details,
             combo: comboCount,
-            isDailyChallenge: false
+            isDailyChallenge: isDailyChallenge
         )
         
         // Save on background thread to avoid blocking UI
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
-                let levelUp = try self?.persistenceService.saveResult(result)
-                print("âœ… Result saved successfully")
+                guard let outcome = try self?.persistenceService.saveResult(result) else { return }
+                AppLog.game.info("Result saved successfully")
 
-                // Handle level-up on main thread
-                if let newLevel = levelUp {
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
+                    if let newLevel = outcome.levelUp {
                         self?.levelUpInfo = newLevel
                         self?.showLevelUp = true
+                        self?.audioService.playSound(.levelUp)
+                    }
+                    if !outcome.newAchievements.isEmpty {
+                        self?.newAchievements.append(contentsOf: outcome.newAchievements)
                     }
                 }
             } catch {
                 DispatchQueue.main.async {
                     self?.error = .persistenceError("Failed to save result")
                 }
-                print("âš ï¸ Failed to save result: \(error)")
+                AppLog.game.error("Failed to save result: \(String(describing: error))")
             }
         }
     }
@@ -486,6 +620,5 @@ class NumberGameViewModel: ObservableObject {
         // Clean up timer
         timer?.cancel()
         timer = nil
-        cancellables.removeAll()
     }
 }

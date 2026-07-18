@@ -15,8 +15,6 @@
 		8774FF7D2EC1B57900D720B3 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8774FF7C2EC1B57900D720B3 /* AchievementsView.swift */; };
 		8774FF7F2EC1B68800D720B3 /* DailyChallengeGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8774FF7E2EC1B68800D720B3 /* DailyChallengeGameView.swift */; };
 		87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E172EB2453900B16425 /* Assets.xcassets */; };
-		87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */; };
-		87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E192EB2453900B16425 /* Persistence.swift */; };
 		87D71E272EB245D000B16425 /* KelimeVeIslemApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */; };
 		87D71E292EB245F600B16425 /* GameMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E282EB245F600B16425 /* GameMode.swift */; };
 		87D71E2B2EB2460F00B16425 /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E2A2EB2460F00B16425 /* GameResult.swift */; };
@@ -24,8 +22,6 @@
 		87D71E2F2EB2463000B16425 /* LetterGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E2E2EB2463000B16425 /* LetterGame.swift */; };
 		87D71E312EB2464000B16425 /* NumberGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E302EB2464000B16425 /* NumberGame.swift */; };
 		87D71E332EB2466200B16425 /* english_words.txt in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E322EB2465D00B16425 /* english_words.txt */; };
-		87D71E352EB2467500B16425 /* Localizable.strings.en in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E342EB2467300B16425 /* Localizable.strings.en */; };
-		87D71E372EB2468300B16425 /* Localizable.strings.tr in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E362EB2468200B16425 /* Localizable.strings.tr */; };
 		87D71E392EB2469D00B16425 /* turkish_words.txt in Resources */ = {isa = PBXBuildFile; fileRef = 87D71E382EB2469900B16425 /* turkish_words.txt */; };
 		87D71E3C2EB246D500B16425 /* AudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E3B2EB246D400B16425 /* AudioService.swift */; };
 		87D71E402EB2470000B16425 /* DictionaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D71E3F2EB246FF00B16425 /* DictionaryService.swift */; };
@@ -49,10 +45,22 @@
 		87EF52FD2EC11D0000B4F222 /* VisualFeedbackComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52FB2EC11D0000B4F222 /* VisualFeedbackComponents.swift */; };
 		87EF52FE2EC11D0000B4F222 /* AnimationModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52F82EC11D0000B4F222 /* AnimationModifiers.swift */; };
 		87EF52FF2EC11D0000B4F222 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EF52FA2EC11D0000B4F222 /* ThemeManager.swift */; };
+		87C0FE112F17A00000000011 /* LevelSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE012F17A00000000001 /* LevelSystem.swift */; };
+		87C0FE122F17A00000000012 /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE022F17A00000000002 /* LevelUpView.swift */; };
+		87C0FE132F17A00000000013 /* LevelProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE032F17A00000000003 /* LevelProgressView.swift */; };
+		87C0FE402F17B00000000040 /* NumberGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE302F17B00000000030 /* NumberGameTests.swift */; };
+		87C0FE412F17B00000000041 /* LetterGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE312F17B00000000031 /* LetterGameTests.swift */; };
+		87C0FE422F17B00000000042 /* NumberGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE322F17B00000000032 /* NumberGeneratorTests.swift */; };
+		87C0FE432F17B00000000043 /* DailyChallengeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE332F17B00000000033 /* DailyChallengeTests.swift */; };
+		87C0FE442F17B00000000044 /* LevelSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE342F17B00000000034 /* LevelSystemTests.swift */; };
+		87C0FE452F17B00000000045 /* PersistenceServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */; };
+		87C0FE462F17B00000000046 /* LocaleAndTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE362F17B00000000036 /* LocaleAndTokenTests.swift */; };
+		87C0FE472F17B00000000047 /* AchievementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C0FE372F17B00000000037 /* AchievementTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		870030512EBE8C4600A6E0DA /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = Localizable.strings; sourceTree = "<group>"; };
+		870030512EBE8C4600A6E0DA /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		87C0FE512F17C00000000051 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		870030552EBE8C5B00A6E0DA /* Achievement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievement.swift; sourceTree = "<group>"; };
 		870030562EBE8C5B00A6E0DA /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
 		870030592EBE8C7F00A6E0DA /* DailyChallengeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeViewModel.swift; sourceTree = "<group>"; };
@@ -61,8 +69,6 @@
 		8774FF7E2EC1B68800D720B3 /* DailyChallengeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeGameView.swift; sourceTree = "<group>"; };
 		87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KelimeVeIslemV1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		87D71E172EB2453900B16425 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		87D71E192EB2453900B16425 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = KelimeVeIslemV1.xcdatamodel; sourceTree = "<group>"; };
 		87D71E262EB245CE00B16425 /* KelimeVeIslemApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KelimeVeIslemApp.swift; sourceTree = "<group>"; };
 		87D71E282EB245F600B16425 /* GameMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameMode.swift; sourceTree = "<group>"; };
 		87D71E2A2EB2460F00B16425 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
@@ -70,8 +76,6 @@
 		87D71E2E2EB2463000B16425 /* LetterGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterGame.swift; sourceTree = "<group>"; };
 		87D71E302EB2464000B16425 /* NumberGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGame.swift; sourceTree = "<group>"; };
 		87D71E322EB2465D00B16425 /* english_words.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = english_words.txt; sourceTree = "<group>"; };
-		87D71E342EB2467300B16425 /* Localizable.strings.en */ = {isa = PBXFileReference; lastKnownFileType = text; path = Localizable.strings.en; sourceTree = "<group>"; };
-		87D71E362EB2468200B16425 /* Localizable.strings.tr */ = {isa = PBXFileReference; lastKnownFileType = text; path = Localizable.strings.tr; sourceTree = "<group>"; };
 		87D71E382EB2469900B16425 /* turkish_words.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = turkish_words.txt; sourceTree = "<group>"; };
 		87D71E3B2EB246D400B16425 /* AudioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
 		87D71E3F2EB246FF00B16425 /* DictionaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryService.swift; sourceTree = "<group>"; };
@@ -95,6 +99,18 @@
 		87EF52F92EC11D0000B4F222 /* GameCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCommand.swift; sourceTree = "<group>"; };
 		87EF52FA2EC11D0000B4F222 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		87EF52FB2EC11D0000B4F222 /* VisualFeedbackComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualFeedbackComponents.swift; sourceTree = "<group>"; };
+		87C0FE012F17A00000000001 /* LevelSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSystem.swift; sourceTree = "<group>"; };
+		87C0FE022F17A00000000002 /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
+		87C0FE032F17A00000000003 /* LevelProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelProgressView.swift; sourceTree = "<group>"; };
+		87C0FE212F17B00000000021 /* KelimeVeIslemV1Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KelimeVeIslemV1Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		87C0FE302F17B00000000030 /* NumberGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGameTests.swift; sourceTree = "<group>"; };
+		87C0FE312F17B00000000031 /* LetterGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterGameTests.swift; sourceTree = "<group>"; };
+		87C0FE322F17B00000000032 /* NumberGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberGeneratorTests.swift; sourceTree = "<group>"; };
+		87C0FE332F17B00000000033 /* DailyChallengeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallengeTests.swift; sourceTree = "<group>"; };
+		87C0FE342F17B00000000034 /* LevelSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSystemTests.swift; sourceTree = "<group>"; };
+		87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceServiceTests.swift; sourceTree = "<group>"; };
+		87C0FE362F17B00000000036 /* LocaleAndTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleAndTokenTests.swift; sourceTree = "<group>"; };
+		87C0FE372F17B00000000037 /* AchievementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,17 +121,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		87C0FE242F17B00000000024 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		870030532EBE8C4600A6E0DA /* tr.lproj */ = {
-			isa = PBXGroup;
-			children = (
-				870030522EBE8C4600A6E0DA /* Localizable.strings */,
-			);
-			path = tr.lproj;
-			sourceTree = "<group>";
-		};
 		8700305C2EBE8C8E00A6E0DA /* Achievements */ = {
 			isa = PBXGroup;
 			children = (
@@ -137,14 +152,31 @@
 			isa = PBXGroup;
 			children = (
 				87D71E1A2EB2453900B16425 /* KelimeVeIslemV1 */,
+				87C0FE222F17B00000000022 /* KelimeVeIslemV1Tests */,
 				87D71E052EB2452200B16425 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		87C0FE222F17B00000000022 /* KelimeVeIslemV1Tests */ = {
+			isa = PBXGroup;
+			children = (
+				87C0FE302F17B00000000030 /* NumberGameTests.swift */,
+				87C0FE312F17B00000000031 /* LetterGameTests.swift */,
+				87C0FE322F17B00000000032 /* NumberGeneratorTests.swift */,
+				87C0FE332F17B00000000033 /* DailyChallengeTests.swift */,
+				87C0FE342F17B00000000034 /* LevelSystemTests.swift */,
+				87C0FE352F17B00000000035 /* PersistenceServiceTests.swift */,
+				87C0FE362F17B00000000036 /* LocaleAndTokenTests.swift */,
+				87C0FE372F17B00000000037 /* AchievementTests.swift */,
+			);
+			path = KelimeVeIslemV1Tests;
 			sourceTree = "<group>";
 		};
 		87D71E052EB2452200B16425 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */,
+				87C0FE212F17B00000000021 /* KelimeVeIslemV1Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -152,11 +184,9 @@
 		87D71E1A2EB2453900B16425 /* KelimeVeIslemV1 */ = {
 			isa = PBXGroup;
 			children = (
-				870030532EBE8C4600A6E0DA /* tr.lproj */,
-				87D71E192EB2453900B16425 /* Persistence.swift */,
+				870030522EBE8C4600A6E0DA /* Localizable.strings */,
 				87D71E172EB2453900B16425 /* Assets.xcassets */,
 				87D71E1F2EB2457800B16425 /* App */,
-				87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */,
 				87D71E212EB2459500B16425 /* Models */,
 				87D71E222EB2459C00B16425 /* Resources */,
 				87D71E232EB245AA00B16425 /* Services */,
@@ -193,6 +223,7 @@
 			isa = PBXGroup;
 			children = (
 				87EF52F62EC11CE500B4F222 /* SavedGameState.swift */,
+				87C0FE012F17A00000000001 /* LevelSystem.swift */,
 				870030552EBE8C5B00A6E0DA /* Achievement.swift */,
 				870030562EBE8C5B00A6E0DA /* DailyChallenge.swift */,
 				87D71E2C2EB2462000B16425 /* GameSettings.swift */,
@@ -208,9 +239,7 @@
 			isa = PBXGroup;
 			children = (
 				87D71E322EB2465D00B16425 /* english_words.txt */,
-				87D71E342EB2467300B16425 /* Localizable.strings.en */,
 				87D71E382EB2469900B16425 /* turkish_words.txt */,
-				87D71E362EB2468200B16425 /* Localizable.strings.tr */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -255,6 +284,8 @@
 			isa = PBXGroup;
 			children = (
 				87D71E522EB2479900B16425 /* HomeView.swift */,
+				87C0FE022F17A00000000002 /* LevelUpView.swift */,
+				87C0FE032F17A00000000003 /* LevelProgressView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -315,6 +346,26 @@
 			productReference = 87D71E042EB2452200B16425 /* KelimeVeIslemV1.app */;
 			productType = "com.apple.product-type.application";
 		};
+		87C0FE202F17B00000000020 /* KelimeVeIslemV1Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 87C0FE282F17B00000000028 /* Build configuration list for PBXNativeTarget "KelimeVeIslemV1Tests" */;
+			buildPhases = (
+				87C0FE232F17B00000000023 /* Sources */,
+				87C0FE242F17B00000000024 /* Frameworks */,
+				87C0FE252F17B00000000025 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				87C0FE272F17B00000000027 /* PBXTargetDependency */,
+			);
+			name = KelimeVeIslemV1Tests;
+			packageProductDependencies = (
+			);
+			productName = KelimeVeIslemV1Tests;
+			productReference = 87C0FE212F17B00000000021 /* KelimeVeIslemV1Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -327,6 +378,10 @@
 				TargetAttributes = {
 					87D71E032EB2452200B16425 = {
 						CreatedOnToolsVersion = 26.0.1;
+					};
+					87C0FE202F17B00000000020 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = 87D71E032EB2452200B16425;
 					};
 				};
 			};
@@ -346,21 +401,45 @@
 			projectRoot = "";
 			targets = (
 				87D71E032EB2452200B16425 /* KelimeVeIslemV1 */,
+				87C0FE202F17B00000000020 /* KelimeVeIslemV1Tests */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXContainerItemProxy section */
+		87C0FE262F17B00000000026 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 87D71DFC2EB2452200B16425 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 87D71E032EB2452200B16425;
+			remoteInfo = KelimeVeIslemV1;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		87C0FE272F17B00000000027 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 87D71E032EB2452200B16425 /* KelimeVeIslemV1 */;
+			targetProxy = 87C0FE262F17B00000000026 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXResourcesBuildPhase section */
 		87D71E022EB2452200B16425 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				87D71E372EB2468300B16425 /* Localizable.strings.tr in Resources */,
 				870030542EBE8C4600A6E0DA /* Localizable.strings in Resources */,
 				87D71E392EB2469D00B16425 /* turkish_words.txt in Resources */,
 				87D71E1C2EB2453900B16425 /* Assets.xcassets in Resources */,
 				87D71E332EB2466200B16425 /* english_words.txt in Resources */,
-				87D71E352EB2467500B16425 /* Localizable.strings.en in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		87C0FE252F17B00000000025 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,7 +455,6 @@
 				87D71E272EB245D000B16425 /* KelimeVeIslemApp.swift in Sources */,
 				87D71E2D2EB2462000B16425 /* GameSettings.swift in Sources */,
 				87D71E4E2EB2476E00B16425 /* NumberGameViewModel.swift in Sources */,
-				87D71E1D2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld in Sources */,
 				87EF52F72EC11CE500B4F222 /* SavedGameState.swift in Sources */,
 				87EF52FC2EC11D0000B4F222 /* GameCommand.swift in Sources */,
 				87EF52FD2EC11D0000B4F222 /* VisualFeedbackComponents.swift in Sources */,
@@ -385,7 +463,6 @@
 				87EF52FF2EC11D0000B4F222 /* ThemeManager.swift in Sources */,
 				87D71E442EB2471A00B16425 /* NumberGenerator.swift in Sources */,
 				87D71E462EB2472600B16425 /* PersistenceService.swift in Sources */,
-				87D71E1E2EB2453900B16425 /* Persistence.swift in Sources */,
 				87D71E562EB247B400B16425 /* LetterGameView.swift in Sources */,
 				87D71E602EB2480700B16425 /* SettingsView.swift in Sources */,
 				87D71E5B2EB247DC00B16425 /* NumberGameView.swift in Sources */,
@@ -407,6 +484,24 @@
 				87D71E5D2EB247EC00B16425 /* NumberResultView.swift in Sources */,
 				87D71E502EB2477C00B16425 /* StatisticsViewModel.swift in Sources */,
 				87D71E532EB2479900B16425 /* HomeView.swift in Sources */,
+				87C0FE112F17A00000000011 /* LevelSystem.swift in Sources */,
+				87C0FE122F17A00000000012 /* LevelUpView.swift in Sources */,
+				87C0FE132F17A00000000013 /* LevelProgressView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		87C0FE232F17B00000000023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				87C0FE402F17B00000000040 /* NumberGameTests.swift in Sources */,
+				87C0FE412F17B00000000041 /* LetterGameTests.swift in Sources */,
+				87C0FE422F17B00000000042 /* NumberGeneratorTests.swift in Sources */,
+				87C0FE432F17B00000000043 /* DailyChallengeTests.swift in Sources */,
+				87C0FE442F17B00000000044 /* LevelSystemTests.swift in Sources */,
+				87C0FE452F17B00000000045 /* PersistenceServiceTests.swift in Sources */,
+				87C0FE462F17B00000000046 /* LocaleAndTokenTests.swift in Sources */,
+				87C0FE472F17B00000000047 /* AchievementTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -417,6 +512,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				870030512EBE8C4600A6E0DA /* tr */,
+				87C0FE512F17C00000000051 /* en */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -613,6 +709,48 @@
 			};
 			name = Release;
 		};
+		87C0FE292F17B00000000029 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5T896483H9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oqza.KelimeVeIslemV1Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KelimeVeIslemV1.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KelimeVeIslemV1";
+			};
+			name = Debug;
+		};
+		87C0FE2A2F17B0000000002A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5T896483H9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oqza.KelimeVeIslemV1Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KelimeVeIslemV1.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KelimeVeIslemV1";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -634,20 +772,17 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		87C0FE282F17B00000000028 /* Build configuration list for PBXNativeTarget "KelimeVeIslemV1Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				87C0FE292F17B00000000029 /* Debug */,
+				87C0FE2A2F17B0000000002A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
-/* Begin XCVersionGroup section */
-		87D71E182EB2453900B16425 /* KelimeVeIslemV1.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */,
-			);
-			currentVersion = 87D71E1B2EB2453900B16425 /* KelimeVeIslemV1.xcdatamodel */;
-			path = KelimeVeIslemV1.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 87D71DFC2EB2452200B16425 /* Project object */;
 }
